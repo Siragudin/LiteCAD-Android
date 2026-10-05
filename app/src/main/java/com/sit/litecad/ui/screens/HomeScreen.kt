@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FolderOpen
@@ -29,11 +28,9 @@ import androidx.compose.ui.unit.sp
 fun HomeScreen(
     onOpenProject: (String) -> Unit
 ) {
-    // Временный реактивный список проектов-заглушек в памяти
     val projects = remember { mutableStateListOf("План этажа", "Деталь КМ-3", "Чертеж болта") }
     var searchQuery by remember { mutableStateOf("") }
 
-    // Фильтрация списка по поисковому запросу
     val displayedProjects = if (searchQuery.isEmpty()) {
         projects
     } else {
@@ -43,8 +40,8 @@ fun HomeScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var newProjectName by remember { mutableStateOf("") }
 
-    val headerColor = Color(0xFF383838) // Ваш темный цвет шапки
-    val bodyColor = Color(0xFF6E6E6E)   // Серый фон экрана
+    val headerColor = Color(0xFF383838)
+    val bodyColor = Color(0xFF6E6E6E)
 
     Scaffold(
         floatingActionButton = {
@@ -65,7 +62,6 @@ fun HomeScreen(
                 .background(bodyColor)
                 .padding(padding)
         ) {
-            // --- 1. ШАПКА ЭКРАНА С НАЗВАНИЕМ И ПОИСКОМ ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,7 +101,6 @@ fun HomeScreen(
                 }
             }
 
-            // --- 2. ТЕЛО ЭКРАНА (СЕТКА ПРОЕКТОВ) ---
             Box(
                 modifier = Modifier
                     .weight(0.75f)
@@ -148,7 +143,6 @@ fun HomeScreen(
         }
     }
 
-    // ДИАЛОГ СОЗДАНИЯ ПРОЕКТА
     if (showCreateDialog) {
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
@@ -166,7 +160,7 @@ fun HomeScreen(
                 Button(
                     onClick = {
                         if (newProjectName.isNotBlank()) {
-                            projects.add(newProjectName) // Добавляем в виртуальный список
+                            projects.add(newProjectName)
                             onOpenProject(newProjectName)
                             showCreateDialog = false
                             newProjectName = ""
@@ -185,7 +179,6 @@ fun HomeScreen(
     }
 }
 
-// УПРОЩЕННАЯ КАРТОЧКА ПРОЕКТА БЕЗ ЛИШНИХ ЗАВИСИМОСТЕЙ
 @Composable
 fun ProjectCardDummy(
     name: String,
@@ -207,7 +200,6 @@ fun ProjectCardDummy(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                // Вместо асинхронной картинки Coil пока выводим красивую стандартную иконку чертежа
                 Icon(
                     imageVector = Icons.Outlined.Description,
                     contentDescription = null,

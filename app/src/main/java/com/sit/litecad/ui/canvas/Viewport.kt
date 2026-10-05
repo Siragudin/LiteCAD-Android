@@ -42,4 +42,6 @@ class Viewport {
         panX += delta.x
         panY += delta.y
     }
+
+    fun toCamera(): Camera = Camera(zoom, panX, panY)
 }

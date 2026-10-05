@@ -16,15 +16,18 @@ object EdgeOperations {
      * Фундаментальный метод добавления линии в топологический граф CAD (Аналог AddSegment с ПК)
      */
     fun addSegment(document: CadDocument, start: Point2, end: Point2, template: CadEdge, tolerance: Double) {
+        android.util.Log.d("EdgeOps", "addSegment: start=$start end=$end dist=${MathUtils.distance(start, end)} doc.edgesBefore=${document.edges.size}")
         val mutTolerance = TopologyTolerance.ForMutation
 
         // 1. Защита от линий нулевой длины
         if (MathUtils.distance(start, end) <= mutTolerance) {
+            android.util.Log.d("EdgeOps", "addSegment SKIPPED: zero length")
             return
         }
 
         // 2. Если линия полностью совпадает с существующей — просто обновляем её стиль
         if (tryReplaceCoincidentEdge(document, start, end, template, mutTolerance)) {
+            android.util.Log.d("EdgeOps", "addSegment REPLACED coincident")
             return
         }
 
@@ -82,6 +85,8 @@ object EdgeOperations {
             // Финальное создание ребра и его регистрация в графе уникальных вершин документов
             TopologyService.createEdgeFromPoints(document, segmentStart, segmentEnd, template, mutTolerance)
         }
+
+        android.util.Log.d("EdgeOps", "addSegment done: breakpoints=${breakpoints.size} doc.edgesAfter=${document.edges.size}")
     }
 
     private fun trySplitEdge(document: CadDocument, edge: CadEdge, point: Point2, tolerance: Double) {

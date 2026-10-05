@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.services.SnapService
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.ui.canvas.CadCanvas
 import com.sit.litecad.ui.canvas.Viewport
@@ -33,7 +34,8 @@ fun EditorScreen(
     // 1. ИНИЦИАЛИЗАЦИЯ: Поднимаем камеру, кроссплатформенный документ графа и менеджер инструментов
     val viewport = remember { Viewport() }
     val document = remember { CadDocument() }
-    val toolManager = remember { ToolManager(document) }
+    val snapService = remember { SnapService() }
+    val toolManager = remember { ToolManager(document, snapService) }
 
     // Управляющие стейты интерфейса
     var isGridVisible by remember { mutableStateOf(true) }
@@ -105,7 +107,9 @@ fun EditorScreen(
                     viewport = viewport,
                     document = document,
                     toolManager = toolManager,
-                    isGridVisible = isGridVisible
+                    isGridVisible = isGridVisible,
+                    isOrthoEnabled = isOrthoEnabled,
+                    isSnapEnabled = isSnapEnabled,
                 )
 
                 // Панель отладочной информации поверх холста

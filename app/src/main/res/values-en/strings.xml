@@ -1,0 +1,21 @@
+<resources>
+    <!-- UI Elements -->
+    <string name="ui_header_title">LITE CAD</string>
+    <string name="app_name">LiteCAD</string>
+    <string name="search_projects_placeholder">Search projects...</string>
+
+    <!-- Empty States and Messages -->
+    <string name="empty_project_list_message">Nothing found</string>
+
+    <!-- Project Card Details -->
+    <string name="document_type_litecad">LiteCAD document</string>
+
+    <!-- Dialog/Input Forms -->
+    <string name="dialog_new_project_title">New project</string>
+    <string name="input_name_label">Name</string>
+    <string name="button_create">Create</string>
+    <string name="button_cancel">Cancel</string>
+
+    <!-- Fallbacks -->
+    <string name="default_drawing_name">Drawing</string>
+</resources>

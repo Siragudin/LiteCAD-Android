@@ -5,13 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.services.SnapService
 
 class ToolManager(
-    private val document: CadDocument
+    private val document: CadDocument,
+    private val snapService: SnapService
 ) {
-    // РЕГИСТРАЦИЯ: Добавляем нашу новую, умную линию в карту диспетчера!
     private val tools = mapOf<String, Tool>(
-        "line" to LineToolHandler()
+        "line" to LineToolHandler(snapService)
     )
 
     var activeToolId by mutableStateOf("hand")
@@ -25,12 +26,12 @@ class ToolManager(
         activeToolId = id
     }
 
-    fun handleStart(worldPoint: Point2) {
-        activeTool?.onStart(worldPoint, document)
+    fun handleStart(worldPoint: Point2, zoom: Double, orthoEnabled: Boolean) {
+        activeTool?.onStart(worldPoint, document, zoom, orthoEnabled)
     }
 
-    fun handleMove(worldPoint: Point2) {
-        activeTool?.onMove(worldPoint, document)
+    fun handleMove(worldPoint: Point2, zoom: Double, orthoEnabled: Boolean) {
+        activeTool?.onMove(worldPoint, document, zoom, orthoEnabled)
     }
 
     fun handleEnd() {

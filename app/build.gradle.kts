@@ -61,4 +61,5 @@ dependencies {
 
     // НОМЕР 3: Для сохранения чертежей в JSON формат (пригодится на следующем этапе)
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

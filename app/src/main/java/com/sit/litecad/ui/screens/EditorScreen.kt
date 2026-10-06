@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.storage.ProjectStorage
+import com.sit.litecad.storage.ThumbnailGenerator
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.ui.canvas.CadCanvas
 import com.sit.litecad.ui.canvas.Viewport
@@ -28,16 +30,33 @@ import com.sit.litecad.ui.canvas.Viewport
 @Composable
 fun EditorScreen(
     projectName: String,
+    storage: ProjectStorage,
     onBack: () -> Unit
 ) {
-    BackHandler { onBack() }
-
-    // 1. ИНИЦИАЛИЗАЦИЯ: Поднимаем камеру, кроссплатформенный документ графа и менеджер инструментов
+    // 1. ИНИЦИАЛИЗАЦИЯ
     val viewport = remember { Viewport() }
     val document = remember { CadDocument() }
     val snapService = remember { SnapService() }
     val historyService = remember { DocumentHistoryService() }
     val toolManager = remember { ToolManager(document, snapService, historyService) }
+
+    // Загрузка проекта при открытии
+    LaunchedEffect(projectName) {
+        storage.loadIntoDocument(projectName, document)
+    }
+
+    // Сохранение и выход
+    val saveAndExit: () -> Unit = {
+        try {
+            val thumb = ThumbnailGenerator.generate(document)
+            storage.saveProject(document, projectName, thumb)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        onBack()
+    }
+
+    BackHandler { saveAndExit() }
 
     // Управляющие стейты интерфейса
     var isGridVisible by remember { mutableStateOf(true) }
@@ -51,11 +70,14 @@ fun EditorScreen(
                 CenterAlignedTopAppBar(
                     title = { Text(projectName, style = MaterialTheme.typography.titleMedium) },
                     navigationIcon = {
-                        IconButton(onClick = { onBack() }) {
+                        IconButton(onClick = { saveAndExit() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                         }
                     },
                     actions = {
+                        IconButton(onClick = { saveAndExit() }) {
+                            Icon(Icons.Default.Save, "Save")
+                        }
                         IconButton(
                             onClick = { toolManager.undo() },
                             enabled = toolManager.canUndo
@@ -80,7 +102,6 @@ fun EditorScreen(
                     }
                 )
 
-                // Если активна не рука — выводим верхнюю контекстную панель параметров
                 if (toolManager.activeToolId != "hand") {
                     TopSettingsBarDummy(
                         isOrthoEnabled = isOrthoEnabled,
@@ -92,7 +113,6 @@ fun EditorScreen(
             }
         },
         bottomBar = {
-            // Подключаем кнопки тулбара к стейту менеджера инструментов
             ToolsPanelDummy(
                 selectedToolId = toolManager.activeToolId,
                 onToolSelect = { id -> toolManager.selectTool(id) }
@@ -114,7 +134,6 @@ fun EditorScreen(
                     .background(Color.White)
                     .clipToBounds()
             ) {
-                // ИНТЕГРАЦИЯ: Передаем наш новый CadDocument в обновленный холст
                 CadCanvas(
                     viewport = viewport,
                     document = document,
@@ -124,7 +143,6 @@ fun EditorScreen(
                     isSnapEnabled = isSnapEnabled,
                 )
 
-                // Панель отладочной информации поверх холста
                 Surface(
                     modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
                     color = Color.Black.copy(alpha = 0.7f),

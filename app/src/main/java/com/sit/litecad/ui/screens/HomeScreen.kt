@@ -1,5 +1,7 @@
 package com.sit.litecad.ui.screens
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,8 +11,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.*
@@ -19,26 +20,50 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
+import coil.compose.AsyncImage
+import com.sit.litecad.storage.ProjectInfo
+import com.sit.litecad.storage.ProjectStorage
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
+    storage: ProjectStorage,
     onOpenProject: (String) -> Unit
 ) {
-    val projects = remember { mutableStateListOf("План этажа", "Деталь КМ-3", "Чертеж болта") }
+    val context = LocalContext.current
+
+    val projects = remember { mutableStateListOf<ProjectInfo>() }
     var searchQuery by remember { mutableStateOf("") }
 
     val displayedProjects = if (searchQuery.isEmpty()) {
         projects
     } else {
-        projects.filter { it.contains(searchQuery, ignoreCase = true) }
+        projects.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
+
+    fun refreshProjects() {
+        projects.clear()
+        projects.addAll(storage.listProjects())
+    }
+
+    LaunchedEffect(Unit) { refreshProjects() }
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var newProjectName by remember { mutableStateOf("") }
+
+    var projectToDelete by remember { mutableStateOf<String?>(null) }
+    var projectToRename by remember { mutableStateOf<String?>(null) }
+    var renameText by remember { mutableStateOf("") }
 
     val headerColor = Color(0xFF383838)
     val bodyColor = Color(0xFF6E6E6E)
@@ -62,6 +87,7 @@ fun HomeScreen(
                 .background(bodyColor)
                 .padding(padding)
         ) {
+            // --- ШАПКА ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -101,6 +127,7 @@ fun HomeScreen(
                 }
             }
 
+            // --- ТЕЛО ---
             Box(
                 modifier = Modifier
                     .weight(0.75f)
@@ -131,18 +158,30 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(displayedProjects) { name ->
-                            ProjectCardDummy(
-                                name = name,
-                                onClick = { onOpenProject(name) }
+                        items(displayedProjects, key = { it.filePath }) { info ->
+                            ProjectCard(
+                                info = info,
+                                previewPath = storage.getPreviewPath(info.name),
+                                onClick = { onOpenProject(info.name) },
+                                onDelete = { projectToDelete = info.name },
+                                onRename = {
+                                    projectToRename = info.name
+                                    renameText = info.name
+                                },
+                                onShare = {
+                                    val file = storage.getProjectFile(info.name)
+                                    shareFile(context, file, "application/zip")
+                                }
                             )
                         }
+                        item { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }
         }
     }
 
+    // --- ДИАЛОГ СОЗДАНИЯ ---
     if (showCreateDialog) {
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
@@ -159,11 +198,11 @@ fun HomeScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (newProjectName.isNotBlank()) {
-                            projects.add(newProjectName)
-                            onOpenProject(newProjectName)
+                        val name = newProjectName.trim()
+                        if (name.isNotEmpty()) {
                             showCreateDialog = false
                             newProjectName = ""
+                            onOpenProject(name)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = headerColor)
@@ -171,19 +210,85 @@ fun HomeScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showCreateDialog = false },
+                    onClick = { showCreateDialog = false; newProjectName = "" },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
                 ) { Text("Отмена") }
+            }
+        )
+    }
+
+    // --- ДИАЛОГ УДАЛЕНИЯ ---
+    projectToDelete?.let { name ->
+        AlertDialog(
+            onDismissRequest = { projectToDelete = null },
+            title = { Text("Удалить проект?") },
+            text = { Text("Проект «$name» будет удалён безвозвратно.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        storage.deleteProject(name)
+                        projectToDelete = null
+                        refreshProjects()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020))
+                ) { Text("Удалить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { projectToDelete = null }) { Text("Отмена") }
+            }
+        )
+    }
+
+    // --- ДИАЛОГ ПЕРЕИМЕНОВАНИЯ ---
+    projectToRename?.let { oldName ->
+        AlertDialog(
+            onDismissRequest = { projectToRename = null },
+            title = { Text("Переименовать") },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    label = { Text("Новое имя") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val newName = renameText.trim()
+                        if (newName.isNotEmpty() && newName != oldName) {
+                            val oldFile = storage.getProjectFile(oldName)
+                            val newFile = storage.getProjectFile(newName)
+                            oldFile.renameTo(newFile)
+                            storage.deleteProject(oldName) // чистим кэш превью старого
+                        }
+                        projectToRename = null
+                        refreshProjects()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = headerColor)
+                ) { Text("ОК") }
+            },
+            dismissButton = {
+                TextButton(onClick = { projectToRename = null }) { Text("Отмена") }
             }
         )
     }
 }
 
 @Composable
-fun ProjectCardDummy(
-    name: String,
-    onClick: () -> Unit
+fun ProjectCard(
+    info: ProjectInfo,
+    previewPath: String?,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onRename: () -> Unit,
+    onShare: () -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+    val date = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+        .format(Date(info.modifiedUtc))
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,39 +298,104 @@ fun ProjectCardDummy(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFD9D9D9)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Description,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(48.dp)
-                )
+        Box(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (previewPath != null) {
+                        AsyncImage(
+                            model = File(previewPath),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    } else {
+                        Icon(
+                            Icons.Outlined.Description,
+                            null,
+                            tint = Color.LightGray,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = info.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-            ) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "LiteCAD документ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
+            Box(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
+                IconButton(
+                    onClick = { showMenu = true },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Поделиться") },
+                        onClick = { onShare(); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.Share, null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Переименовать") },
+                        onClick = { onRename(); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.Edit, null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Удалить") },
+                        onClick = { onDelete(); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.Delete, null) }
+                    )
+                }
             }
         }
     }
+}
+
+fun shareFile(context: Context, file: File, mimeType: String) {
+    if (!file.exists()) return
+    val uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        file
+    )
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = mimeType
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    val chooser = Intent.createChooser(intent, "Отправить")
+    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(chooser)
 }

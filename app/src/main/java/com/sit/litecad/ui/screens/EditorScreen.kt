@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.ui.canvas.CadCanvas
@@ -35,7 +36,8 @@ fun EditorScreen(
     val viewport = remember { Viewport() }
     val document = remember { CadDocument() }
     val snapService = remember { SnapService() }
-    val toolManager = remember { ToolManager(document, snapService) }
+    val historyService = remember { DocumentHistoryService() }
+    val toolManager = remember { ToolManager(document, snapService, historyService) }
 
     // Управляющие стейты интерфейса
     var isGridVisible by remember { mutableStateOf(true) }
@@ -54,8 +56,18 @@ fun EditorScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* Undo (Будущая команда) */ }) { Icon(Icons.AutoMirrored.Filled.Undo, "Undo") }
-                        IconButton(onClick = { /* Redo (Будущая команда) */ }) { Icon(Icons.AutoMirrored.Filled.Redo, "Redo") }
+                        IconButton(
+                            onClick = { toolManager.undo() },
+                            enabled = toolManager.canUndo
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Undo, "Undo")
+                        }
+                        IconButton(
+                            onClick = { toolManager.redo() },
+                            enabled = toolManager.canRedo
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Redo, "Redo")
+                        }
                         Box {
                             IconButton(onClick = { showMenu = true }) { Icon(Icons.Default.MoreVert, "Menu") }
                             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {

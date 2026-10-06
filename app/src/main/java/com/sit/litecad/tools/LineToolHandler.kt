@@ -15,13 +15,15 @@ import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
+import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapKind
 import com.sit.litecad.services.SnapService
 import com.sit.litecad.ui.canvas.Camera
 import com.sit.litecad.ui.canvas.Viewport
 
 class LineToolHandler(
-    private val snapService: SnapService
+    private val snapService: SnapService,
+    private val historyService: DocumentHistoryService
 ) : Tool {
 
     private var hasStart by mutableStateOf(false)
@@ -112,6 +114,7 @@ class LineToolHandler(
             android.util.Log.d("LineTool", "commitSegment SKIPPED: start==end")
             return
         }
+        historyService.record(document)
 
         val mutTolerance = TopologyTolerance.ForMutation
         val alignment = Geometry2D.getOrthoAlignment(startPoint, endPoint, mutTolerance)

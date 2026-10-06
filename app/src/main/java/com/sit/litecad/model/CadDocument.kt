@@ -1,12 +1,11 @@
 package com.sit.litecad.model
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.google.gson.annotations.SerializedName
 import java.util.UUID
 
-/**
- * Эквивалент класса Edge из C# версии.
- * Линия не хранит координаты напрямую, а ссылается на ID вершин.
- */
 data class CadEdge(
     @SerializedName("Id") val id: UUID = UUID.randomUUID(),
     @SerializedName("StartVertexId") var startVertexId: UUID,
@@ -17,9 +16,6 @@ data class CadEdge(
     @SerializedName("OrthoAlignment") var orthoAlignment: OrthoAlignment = OrthoAlignment.NONE,
     @SerializedName("ColorARGB") var colorArgb: Int = 0xFF222222.toInt()
 ) {
-    /**
-     * Клонирование стиля геометрии для создания новых ребер (аналог CloneGeometry на ПК)
-     */
     fun cloneGeometry(): CadEdge {
         return CadEdge(
             id = UUID.randomUUID(),
@@ -34,25 +30,25 @@ data class CadEdge(
     }
 
     companion object {
-        /**
-         * Создание пустого шаблона стиля (эквивалент CreateStyleTemplate на ПК)
-         */
         fun createStyleTemplate(): CadEdge {
-            val emptyId = UUID(0L, 0L) // Эквивалент Guid.Empty
+            val emptyId = UUID(0L, 0L)
             return CadEdge(startVertexId = emptyId, endVertexId = emptyId)
         }
     }
 }
 
-/**
- * Эквивалент класса CadDocument из C# версии.
- * Является главной базой данных активного чертежа.
- */
 data class CadDocument(
     @SerializedName("Version") val version: String = "0.4.5",
     @SerializedName("Vertices") val vertices: MutableList<CadVertex> = mutableListOf(),
     @SerializedName("Edges") val edges: MutableList<CadEdge> = mutableListOf()
 ) {
+    var revision by mutableStateOf(0)
+        private set
+
+    fun bumpRevision() {
+        revision++
+    }
+
     fun addVertex(vertex: CadVertex) {
         vertices.add(vertex)
     }

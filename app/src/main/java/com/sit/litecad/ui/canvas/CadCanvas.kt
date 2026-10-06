@@ -45,6 +45,7 @@ fun CadCanvas(
             .fillMaxSize()
             .onSizeChanged { canvasSize = it }
     ) {
+        val revision = document.revision
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,6 +90,8 @@ fun CadCanvas(
                     }
                 }
         ) {
+            @Suppress("UNUSED_EXPRESSION")
+            revision
             drawCadScene(
                 camera = viewport.toCamera(),
                 document = document,

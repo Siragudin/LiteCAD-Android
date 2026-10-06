@@ -2,6 +2,8 @@ package com.sit.litecad.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -65,19 +67,73 @@ fun HomeScreen(
     var projectToRename by remember { mutableStateOf<String?>(null) }
     var renameText by remember { mutableStateOf("") }
 
+    var importError by remember { mutableStateOf<String?>(null) }
+
     val headerColor = Color(0xFF383838)
     val bodyColor = Color(0xFF6E6E6E)
 
+    // Лончер для выбора .sit файла
+    val openLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val result = try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                    ?: throw IllegalStateException("Не удалось открыть файл")
+
+                val fileName = queryFileName(context, uri) ?: "Imported"
+                val baseName = fileName.removeSuffix(".sit").removeSuffix(".SIT")
+                    .ifEmpty { "Imported" }
+
+                val targetFile = storage.getUniqueFile(baseName)
+
+                inputStream.use { input ->
+                    targetFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                null
+            } catch (e: Exception) {
+                e.message ?: "Ошибка импорта"
+            }
+
+            if (result == null) {
+                refreshProjects()
+            } else {
+                importError = result
+            }
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCreateDialog = true },
-                containerColor = headerColor,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.size(64.dp)
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.Add, null, modifier = Modifier.size(32.dp))
+                // Кнопка "Открыть"
+                SmallFloatingActionButton(
+                    onClick = {
+                        openLauncher.launch(arrayOf("*/*"))
+                    },
+                    containerColor = headerColor,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.Default.FolderOpen, "Open", modifier = Modifier.size(28.dp))
+                }
+
+                // Кнопка "Создать"
+                FloatingActionButton(
+                    onClick = { showCreateDialog = true },
+                    containerColor = headerColor,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(32.dp))
+                }
             }
         }
     ) { padding ->
@@ -174,7 +230,7 @@ fun HomeScreen(
                                 }
                             )
                         }
-                        item { Spacer(Modifier.height(80.dp)) }
+                        item { Spacer(Modifier.height(160.dp)) }
                     }
                 }
             }
@@ -261,7 +317,7 @@ fun HomeScreen(
                             val oldFile = storage.getProjectFile(oldName)
                             val newFile = storage.getProjectFile(newName)
                             oldFile.renameTo(newFile)
-                            storage.deleteProject(oldName) // чистим кэш превью старого
+                            storage.deleteProject(oldName)
                         }
                         projectToRename = null
                         refreshProjects()
@@ -273,6 +329,30 @@ fun HomeScreen(
                 TextButton(onClick = { projectToRename = null }) { Text("Отмена") }
             }
         )
+    }
+
+    // --- ОШИБКА ИМПОРТА ---
+    importError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { importError = null },
+            title = { Text("Ошибка открытия") },
+            text = { Text(msg) },
+            confirmButton = {
+                TextButton(onClick = { importError = null }) { Text("ОК") }
+            }
+        )
+    }
+}
+
+// Утилита: получить имя файла по content Uri
+private fun queryFileName(context: Context, uri: android.net.Uri): String? {
+    return try {
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            if (nameIndex >= 0 && cursor.moveToFirst()) cursor.getString(nameIndex) else null
+        }
+    } catch (e: Exception) {
+        null
     }
 }
 

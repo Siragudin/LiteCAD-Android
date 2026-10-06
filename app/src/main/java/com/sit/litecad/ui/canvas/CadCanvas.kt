@@ -56,11 +56,11 @@ fun CadCanvas(
                             val newZoom = (oldZoom * zoom).coerceIn(viewport.minZoom, viewport.maxZoom)
 
                             val worldTargetX = (centroid.x - viewport.panX) / oldZoom
-                            val worldTargetY = (centroid.y - viewport.panY) / oldZoom
+                            val worldTargetY = (viewport.panY - centroid.y) / oldZoom
 
                             viewport.zoom = newZoom
                             viewport.panX = centroid.x - (worldTargetX * newZoom) + pan.x
-                            viewport.panY = centroid.y - (worldTargetY * newZoom) + pan.y
+                            viewport.panY = centroid.y + (worldTargetY * newZoom) + pan.y
                         }
                     }
                 }

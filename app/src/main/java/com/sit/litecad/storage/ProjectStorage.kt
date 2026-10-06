@@ -41,6 +41,17 @@ class ProjectStorage(private val context: Context) {
     fun getProjectFile(projectName: String): File =
         File(projectsDirectory, sanitizeName(projectName) + SIT_EXTENSION)
 
+    fun getUniqueFile(baseName: String): File {
+        val sanitized = sanitizeName(baseName)
+        var candidate = File(projectsDirectory, sanitized + SIT_EXTENSION)
+        var counter = 1
+        while (candidate.exists()) {
+            candidate = File(projectsDirectory, "$sanitized ($counter)$SIT_EXTENSION")
+            counter++
+        }
+        return candidate
+    }
+
     fun getProjectDisplayName(file: File): String =
         file.name.removeSuffix(SIT_EXTENSION)
 

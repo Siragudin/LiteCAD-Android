@@ -21,7 +21,7 @@ class Viewport {
      */
     fun screenToWorld(screenOffset: Offset): Point2 {
         val worldX = (screenOffset.x - panX) / zoom
-        val worldY = (screenOffset.y - panY) / zoom
+        val worldY = (panY - screenOffset.y) / zoom
         return Point2(worldX, worldY)
     }
 
@@ -31,7 +31,7 @@ class Viewport {
      */
     fun worldToScreen(worldPoint: Point2): Offset {
         val screenX = (worldPoint.X * zoom) + panX
-        val screenY = (worldPoint.Y * zoom) + panY
+        val screenY = (-worldPoint.Y * zoom) + panY
         return Offset(screenX.toFloat(), screenY.toFloat())
     }
 

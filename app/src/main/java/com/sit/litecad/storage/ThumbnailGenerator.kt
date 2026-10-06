@@ -42,7 +42,7 @@ object ThumbnailGenerator {
 
         val scale = (SIZE * 0.8) / maxDim
         val offsetX = (SIZE - width * scale) / 2.0 - minX * scale
-        val offsetY = (SIZE - height * scale) / 2.0 - minY * scale
+        val offsetY = (SIZE - height * scale) / 2.0 + maxY * scale
 
         val paint = Paint().apply {
             style = Paint.Style.STROKE
@@ -54,9 +54,9 @@ object ThumbnailGenerator {
             val end = TopologyService.getEdgeEndPoint(document, edge)
 
             val x1 = (start.X * scale + offsetX).toFloat()
-            val y1 = (start.Y * scale + offsetY).toFloat()
+            val y1 = (-start.Y * scale + offsetY).toFloat()
             val x2 = (end.X * scale + offsetX).toFloat()
-            val y2 = (end.Y * scale + offsetY).toFloat()
+            val y2 = (-end.Y * scale + offsetY).toFloat()
 
             paint.color = if (edge.isAxis) Color.rgb(0x99, 0x00, 0x00) else edge.colorArgb
             paint.strokeWidth = max(2f, edge.thickness.toFloat() * scale.toFloat())

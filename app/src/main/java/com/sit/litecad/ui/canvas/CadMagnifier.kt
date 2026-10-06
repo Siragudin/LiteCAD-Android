@@ -72,7 +72,7 @@ fun CadMagnifier(
             val worldTarget = viewport.screenToWorld(cursorPosition)
 
             val magPanX = (size.width / 2.0) - (worldTarget.X * magZoom)
-            val magPanY = (size.height / 2.0) - (worldTarget.Y * magZoom)
+            val magPanY = (size.height / 2.0) + (worldTarget.Y * magZoom)
 
             val magCamera = Camera(zoom = magZoom, panX = magPanX, panY = magPanY)
 

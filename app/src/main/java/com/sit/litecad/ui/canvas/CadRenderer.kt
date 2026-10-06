@@ -42,7 +42,7 @@ fun DrawScope.drawCadScene(
     // --- МИРОВЫЕ КООРДИНАТЫ ---
     withTransform({
         translate(camera.panX.toFloat(), camera.panY.toFloat())
-        scale(camera.zoom.toFloat(), camera.zoom.toFloat(), pivot = Offset.Zero)
+        scale(camera.zoom.toFloat(), -camera.zoom.toFloat(), pivot = Offset.Zero)
     }) {
         document.edges.forEach { edge ->
             val start = TopologyService.getEdgeStartPoint(document, edge)

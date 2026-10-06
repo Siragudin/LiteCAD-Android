@@ -18,8 +18,8 @@ import com.sit.litecad.model.CadEdge
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapKind
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.canvas.Camera
-import com.sit.litecad.ui.canvas.Viewport
 
 class LineToolHandler(
     private val snapService: SnapService,
@@ -35,13 +35,14 @@ class LineToolHandler(
 
     private var previewLineColor by mutableStateOf(Color.Gray)
 
+    private var lastSettings: ToolSettings? = null
+
     override var currentMeasurement by mutableStateOf("")
         private set
 
-    override fun onStart(point: Point2, document: CadDocument, zoom: Double, orthoEnabled: Boolean) {
-        android.util.Log.d("LineTool", "onStart: $point zoom=$zoom ortho=$orthoEnabled")
-        // Начало новой линии
-        val resolved = resolveSnap(document, point, null, zoom, orthoEnabled)
+    override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
+        lastSettings = settings
+        val resolved = resolveSnap(document, point, null, zoom, settings.orthoEnabled)
         hasStart = true
         startPoint = resolved
         previewEnd = resolved
@@ -51,11 +52,11 @@ class LineToolHandler(
         currentMeasurement = "Ведите до конечной точки"
     }
 
-    override fun onMove(point: Point2, document: CadDocument, zoom: Double, orthoEnabled: Boolean) {
-        android.util.Log.d("LineTool", "onMove: $point")
+    override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
+        lastSettings = settings
         if (!hasStart) return
 
-        val resolved = resolveSnap(document, point, startPoint, zoom, orthoEnabled)
+        val resolved = resolveSnap(document, point, startPoint, zoom, settings.orthoEnabled)
         previewEnd = resolved
         endSnapKind = querySnapKind(document, point, zoom)
 
@@ -66,9 +67,13 @@ class LineToolHandler(
     }
 
     override fun onEnd(document: CadDocument) {
-        android.util.Log.d("LineTool", "onEnd")
         if (!hasStart) return
-        commitSegment(document, previewEnd)
+        val s = lastSettings
+        if (s == null) {
+            reset()
+            return
+        }
+        commitSegment(document, previewEnd, s)
         reset()
     }
 
@@ -104,28 +109,23 @@ class LineToolHandler(
             tolerance = tolerance,
             includeOnEdge = true
         )
-        android.util.Log.d("LineTool", "snap query: cursor=$cursor kind=${query.Best.Snap?.Kind} best=${query.Best.Snap?.Position}")
         return query.Best.Snap?.Kind
     }
 
-    private fun commitSegment(document: CadDocument, endPoint: Point2) {
-        android.util.Log.d("LineTool", "commitSegment: start=$startPoint end=$endPoint doc.edgesBefore=${document.edges.size}")
-        if (MathUtils.arePointsEqual(startPoint, endPoint, TopologyTolerance.ForMutation)) {
-            android.util.Log.d("LineTool", "commitSegment SKIPPED: start==end")
-            return
-        }
+    private fun commitSegment(document: CadDocument, endPoint: Point2, settings: ToolSettings) {
+        if (MathUtils.arePointsEqual(startPoint, endPoint, TopologyTolerance.ForMutation)) return
         historyService.record(document)
 
         val mutTolerance = TopologyTolerance.ForMutation
         val alignment = Geometry2D.getOrthoAlignment(startPoint, endPoint, mutTolerance)
 
         val template = CadEdge.createStyleTemplate()
-        template.colorArgb = 0xFF222222.toInt()
-        template.thickness = 2.0
+        template.colorArgb = settings.color
+        template.thickness = settings.thickness
+        template.lineType = settings.lineType
         template.orthoAlignment = alignment
 
         EdgeOperations.addSegment(document, startPoint, endPoint, template, mutTolerance)
-        android.util.Log.d("LineTool", "commitSegment done: doc.edgesAfter=${document.edges.size} doc.vertices=${document.vertices.size}")
     }
 
     private fun reset() {
@@ -136,6 +136,7 @@ class LineToolHandler(
         endSnapKind = null
         previewLineColor = Color.Gray
         currentMeasurement = ""
+        lastSettings = null
     }
 
     override fun drawPreview(scope: DrawScope, camera: Camera) {

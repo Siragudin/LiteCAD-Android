@@ -7,11 +7,13 @@ import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.settings.ToolSettings
 
 class ToolManager(
     private val document: CadDocument,
     private val snapService: SnapService,
-    private val historyService: DocumentHistoryService
+    private val historyService: DocumentHistoryService,
+    val settings: ToolSettings
 ) {
     private val tools = mapOf<String, Tool>(
         "line" to LineToolHandler(snapService, historyService)
@@ -28,12 +30,12 @@ class ToolManager(
         activeToolId = id
     }
 
-    fun handleStart(worldPoint: Point2, zoom: Double, orthoEnabled: Boolean) {
-        activeTool?.onStart(worldPoint, document, zoom, orthoEnabled)
+    fun handleStart(worldPoint: Point2, zoom: Double) {
+        activeTool?.onStart(worldPoint, document, zoom, settings)
     }
 
-    fun handleMove(worldPoint: Point2, zoom: Double, orthoEnabled: Boolean) {
-        activeTool?.onMove(worldPoint, document, zoom, orthoEnabled)
+    fun handleMove(worldPoint: Point2, zoom: Double) {
+        activeTool?.onMove(worldPoint, document, zoom, settings)
     }
 
     fun handleEnd() {

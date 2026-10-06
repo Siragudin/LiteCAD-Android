@@ -3,6 +3,7 @@ package com.sit.litecad.tools
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.canvas.Camera
 
 interface Tool {
@@ -10,8 +11,8 @@ interface Tool {
     val currentMeasurement: String
         get() = ""
 
-    fun onStart(point: Point2, document: CadDocument, zoom: Double, orthoEnabled: Boolean)
-    fun onMove(point: Point2, document: CadDocument, zoom: Double, orthoEnabled: Boolean)
+    fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
+    fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onEnd(document: CadDocument)
     fun drawPreview(scope: DrawScope, camera: Camera)
     fun cancel()

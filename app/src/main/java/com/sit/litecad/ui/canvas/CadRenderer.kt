@@ -39,39 +39,43 @@ fun DrawScope.drawCadScene(
         }
     }
 
-    // --- МИРОВЫЕ КООРДИНАТЫ ---
-    withTransform({
-        translate(camera.panX.toFloat(), camera.panY.toFloat())
-        scale(camera.zoom.toFloat(), -camera.zoom.toFloat(), pivot = Offset.Zero)
-    }) {
-        document.edges.forEach { edge ->
-            val start = TopologyService.getEdgeStartPoint(document, edge)
-            val end = TopologyService.getEdgeEndPoint(document, edge)
+    // --- РЁБРА (в экранных координатах, чтобы толщина не масштабировалась) ---
+    document.edges.forEach { edge ->
+        val start = TopologyService.getEdgeStartPoint(document, edge)
+        val end = TopologyService.getEdgeEndPoint(document, edge)
 
-            val drawColor = if (edge.isAxis) Color(0xFF990000) else Color(edge.colorArgb)
+        val p1 = camera.worldToScreen(start)
+        val p2 = camera.worldToScreen(end)
 
-            val pathEffect = when (edge.lineType) {
-                EdgeLineType.DASHED -> PathEffect.dashPathEffect(floatArrayOf(8f, 4f), 0f)
-                EdgeLineType.DOTTED -> PathEffect.dashPathEffect(floatArrayOf(2f, 4f), 0f)
-                EdgeLineType.SOLID -> null
-            }
+        val drawColor = if (edge.isAxis) Color(0xFF990000) else Color(edge.colorArgb)
 
-            drawLine(
-                color = drawColor,
-                start = Offset(start.X.toFloat(), start.Y.toFloat()),
-                end = Offset(end.X.toFloat(), end.Y.toFloat()),
-                strokeWidth = edge.thickness.toFloat(),
-                cap = StrokeCap.Round,
-                pathEffect = pathEffect
-            )
+        val t = edge.thickness.toFloat()
+        val pathEffect = when (edge.lineType) {
+            EdgeLineType.DASHED -> PathEffect.dashPathEffect(floatArrayOf(8f * t, 4f * t), 0f)
+            EdgeLineType.DOTTED -> PathEffect.dashPathEffect(floatArrayOf(2f * t, 4f * t), 0f)
+            EdgeLineType.SOLID -> null
         }
 
-        val zero = Point2.Zero
-        val axisSize = 100f
-        drawLine(Color.Red, Offset(zero.X.toFloat(), zero.Y.toFloat()), Offset((zero.X + axisSize).toFloat(), zero.Y.toFloat()), strokeWidth = 2f)
-        drawLine(Color.Green, Offset(zero.X.toFloat(), zero.Y.toFloat()), Offset(zero.X.toFloat(), (zero.Y + axisSize).toFloat()), strokeWidth = 2f)
+        drawLine(
+            color = drawColor,
+            start = p1,
+            end = p2,
+            strokeWidth = edge.thickness.toFloat(),
+            cap = StrokeCap.Round,
+            pathEffect = pathEffect
+        )
     }
+
+    // --- МИРОВОЙ НОЛЬ (оси) ---
+    val zeroScreen = camera.worldToScreen(Point2.Zero)
+    val axisSize = 100.0
+    val xAxisEnd = camera.worldToScreen(Point2(axisSize, 0.0))
+    val yAxisEnd = camera.worldToScreen(Point2(0.0, axisSize))
+
+    drawLine(Color.Red, zeroScreen, xAxisEnd, strokeWidth = 2f)
+    drawLine(Color.Green, zeroScreen, yAxisEnd, strokeWidth = 2f)
 
     // --- ПРЕВЬЮ АКТИВНОГО ИНСТРУМЕНТА ---
     toolManager.activeTool?.drawPreview(this, camera)
 }
+

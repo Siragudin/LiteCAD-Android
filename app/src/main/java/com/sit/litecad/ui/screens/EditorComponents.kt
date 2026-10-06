@@ -10,12 +10,16 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.settings.ColorTable
+import com.sit.litecad.settings.LineTypeTable
+import com.sit.litecad.settings.LineWeightTable
 
 @Composable
 fun ToolsPanelDummy(
@@ -63,9 +67,13 @@ fun ToolsPanelDummy(
 @Composable
 fun TopSettingsBarDummy(
     isOrthoEnabled: Boolean,
-    isSnapEnabled: Boolean,
     onOrthoToggle: () -> Unit,
-    onSnapToggle: () -> Unit
+    currentThickness: Double,
+    onThicknessChange: (Double) -> Unit,
+    currentColor: Int,
+    onColorChange: (Int) -> Unit,
+    currentLineType: EdgeLineType,
+    onLineTypeChange: (EdgeLineType) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -81,11 +89,20 @@ fun TopSettingsBarDummy(
             isActive = isOrthoEnabled,
             onClick = onOrthoToggle
         )
-        SettingsButtonDummy(
-            icon = Icons.Default.Straighten,
-            label = "Snap",
-            isActive = isSnapEnabled,
-            onClick = onSnapToggle
+
+        ColorSelector(
+            currentColor = currentColor,
+            onColorChange = onColorChange
+        )
+
+        ThicknessSelector(
+            currentThickness = currentThickness,
+            onThicknessChange = onThicknessChange
+        )
+
+        LineTypeSelector(
+            currentLineType = currentLineType,
+            onLineTypeChange = onLineTypeChange
         )
     }
 }
@@ -110,6 +127,157 @@ private fun SettingsButtonDummy(
             Icon(icon, null, modifier = Modifier.size(16.dp), tint = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray)
             Spacer(Modifier.width(4.dp))
             Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray)
+        }
+    }
+}
+
+@Composable
+private fun ColorSelector(
+    currentColor: Int,
+    onColorChange: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(8.dp),
+            color = Color.Transparent,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(14.dp)
+                        .background(Color(currentColor), RoundedCornerShape(3.dp))
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = ColorTable.nameFor(currentColor),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("▾", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ColorTable.values.forEach { entry ->
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .background(Color(entry.argb), RoundedCornerShape(3.dp))
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(entry.name)
+                        }
+                    },
+                    onClick = {
+                        onColorChange(entry.argb)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThicknessSelector(
+    currentThickness: Double,
+    onThicknessChange: (Double) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(8.dp),
+            color = Color.Transparent,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = LineWeightTable.display(currentThickness),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("▾", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            LineWeightTable.values.forEach { value ->
+                DropdownMenuItem(
+                    text = { Text(LineWeightTable.display(value)) },
+                    onClick = {
+                        onThicknessChange(value)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LineTypeSelector(
+    currentLineType: EdgeLineType,
+    onLineTypeChange: (EdgeLineType) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(8.dp),
+            color = Color.Transparent,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = LineTypeTable.nameFor(currentLineType),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("▾", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            LineTypeTable.values.forEach { entry ->
+                DropdownMenuItem(
+                    text = { Text(entry.name) },
+                    onClick = {
+                        onLineTypeChange(entry.type)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

@@ -59,7 +59,7 @@ object ThumbnailGenerator {
             val y2 = (-end.Y * scale + offsetY).toFloat()
 
             paint.color = if (edge.isAxis) Color.rgb(0x99, 0x00, 0x00) else edge.colorArgb
-            paint.strokeWidth = max(2f, edge.thickness.toFloat() * scale.toFloat())
+            paint.strokeWidth = edge.thickness.toFloat()
             paint.pathEffect = when (edge.lineType) {
                 EdgeLineType.DASHED -> DashPathEffect(floatArrayOf(10f, 5f), 0f)
                 EdgeLineType.DOTTED -> DashPathEffect(floatArrayOf(2f, 5f), 0f)

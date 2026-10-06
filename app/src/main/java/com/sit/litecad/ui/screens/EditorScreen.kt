@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.storage.ProjectStorage
 import com.sit.litecad.storage.ThumbnailGenerator
 import com.sit.litecad.tools.ToolManager
@@ -38,7 +39,8 @@ fun EditorScreen(
     val document = remember { CadDocument() }
     val snapService = remember { SnapService() }
     val historyService = remember { DocumentHistoryService() }
-    val toolManager = remember { ToolManager(document, snapService, historyService) }
+    val settings = remember { ToolSettings() }
+    val toolManager = remember { ToolManager(document, snapService, historyService, settings) }
 
     // Загрузка проекта при открытии
     LaunchedEffect(projectName) {
@@ -60,8 +62,7 @@ fun EditorScreen(
 
     // Управляющие стейты интерфейса
     var isGridVisible by remember { mutableStateOf(true) }
-    var isOrthoEnabled by remember { mutableStateOf(false) }
-    var isSnapEnabled by remember { mutableStateOf(true) }
+
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -104,10 +105,14 @@ fun EditorScreen(
 
                 if (toolManager.activeToolId != "hand") {
                     TopSettingsBarDummy(
-                        isOrthoEnabled = isOrthoEnabled,
-                        isSnapEnabled = isSnapEnabled,
-                        onOrthoToggle = { isOrthoEnabled = !isOrthoEnabled },
-                        onSnapToggle = { isSnapEnabled = !isSnapEnabled }
+                        isOrthoEnabled = settings.orthoEnabled,
+                        onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
+                        currentThickness = settings.thickness,
+                        onThicknessChange = { settings.thickness = it },
+                        currentColor = settings.color,
+                        onColorChange = { settings.color = it },
+                        currentLineType = settings.lineType,
+                        onLineTypeChange = { settings.lineType = it }
                     )
                 }
             }
@@ -139,8 +144,7 @@ fun EditorScreen(
                     document = document,
                     toolManager = toolManager,
                     isGridVisible = isGridVisible,
-                    isOrthoEnabled = isOrthoEnabled,
-                    isSnapEnabled = isSnapEnabled,
+                    isOrthoEnabled = settings.orthoEnabled,
                 )
 
                 Surface(

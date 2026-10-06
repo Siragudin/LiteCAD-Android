@@ -32,7 +32,6 @@ fun CadCanvas(
     toolManager: ToolManager,
     isGridVisible: Boolean,
     isOrthoEnabled: Boolean,
-    isSnapEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -70,13 +69,13 @@ fun CadCanvas(
                             onDragStart = { offset ->
                                 cursorPosition = offset
                                 val worldPoint = viewport.screenToWorld(offset)
-                                toolManager.handleStart(worldPoint, viewport.zoom, isOrthoEnabled)
+                                toolManager.handleStart(worldPoint, viewport.zoom)
                             },
                             onDrag = { change, _ ->
                                 change.consume()
                                 cursorPosition = change.position
                                 val worldPoint = viewport.screenToWorld(change.position)
-                                toolManager.handleMove(worldPoint, viewport.zoom, isOrthoEnabled)
+                                toolManager.handleMove(worldPoint, viewport.zoom)
                             },
                             onDragEnd = {
                                 cursorPosition = Offset.Unspecified

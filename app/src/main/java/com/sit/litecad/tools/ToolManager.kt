@@ -16,10 +16,13 @@ class ToolManager(
     val settings: ToolSettings
 ) {
     private val tools = mapOf<String, Tool>(
-        "line" to LineToolHandler(snapService, historyService)
+        "line" to LineToolHandler(snapService, historyService, this)
     )
 
     var activeToolId by mutableStateOf("hand")
+        private set
+
+    var pendingInput by mutableStateOf<PendingInput?>(null)
         private set
 
     val activeTool: Tool?
@@ -27,6 +30,7 @@ class ToolManager(
 
     fun selectTool(id: String) {
         activeTool?.cancel()
+        pendingInput = null
         activeToolId = id
     }
 
@@ -42,6 +46,22 @@ class ToolManager(
         activeTool?.onEnd(document)
     }
 
+    fun requestInput(input: PendingInput) {
+        pendingInput = input
+    }
+
+    fun submitInput(value: Double) {
+        if (pendingInput == null) return
+        pendingInput = null
+        activeTool?.onInputSubmitted(value, document)
+    }
+
+    fun cancelInput() {
+        if (pendingInput == null) return
+        pendingInput = null
+        activeTool?.onInputCancelled(document)
+    }
+
     val canUndo: Boolean
         get() = historyService.canUndo
 
@@ -51,10 +71,12 @@ class ToolManager(
     fun undo() {
         historyService.undo(document)
         activeTool?.cancel()
+        pendingInput = null
     }
 
     fun redo() {
         historyService.redo(document)
         activeTool?.cancel()
+        pendingInput = null
     }
 }

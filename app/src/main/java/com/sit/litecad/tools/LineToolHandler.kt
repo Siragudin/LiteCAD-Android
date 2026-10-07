@@ -23,7 +23,8 @@ import com.sit.litecad.ui.canvas.Camera
 
 class LineToolHandler(
     private val snapService: SnapService,
-    private val historyService: DocumentHistoryService
+    private val historyService: DocumentHistoryService,
+    private val toolManager: ToolManager
 ) : Tool {
 
     private var hasStart by mutableStateOf(false)
@@ -36,6 +37,9 @@ class LineToolHandler(
     private var previewLineColor by mutableStateOf(Color.Gray)
 
     private var lastSettings: ToolSettings? = null
+
+    // Черновик незакоммиченного сегмента (пока открыт ввод длины)
+    private var draftSettings: ToolSettings? = null
 
     override var currentMeasurement by mutableStateOf("")
         private set
@@ -73,8 +77,54 @@ class LineToolHandler(
             reset()
             return
         }
-        commitSegment(document, previewEnd, s)
+
+        val dist = MathUtils.distance(startPoint, previewEnd)
+        if (dist <= TopologyTolerance.ForMutation) {
+            reset()
+            return
+        }
+
+        if (s.exactInputEnabled) {
+            // ждём ввод длины
+            draftSettings = s
+            toolManager.requestInput(PendingInput.Length(dist))
+        } else {
+            // коммитим сразу
+            commitSegment(document, previewEnd, s)
+            reset()
+        }
+    }
+
+    override fun onInputSubmitted(value: Double, document: CadDocument) {
+        commitWithLength(value, document)
+    }
+
+    override fun onInputCancelled(document: CadDocument) {
+        // «принять как нарисовано» — коммит с исходной длиной
+        val start = startPoint
+        val end = previewEnd
+        commitWithLength(MathUtils.distance(start, end), document)
+    }
+
+    private fun commitWithLength(length: Double, document: CadDocument) {
+        val s = draftSettings ?: lastSettings
+        draftSettings = null
+
+        if (s == null || !hasStart) {
+            reset()
+            return
+        }
+
+        val finalEnd = scaleEnd(startPoint, previewEnd, length)
+        commitSegment(document, finalEnd, s)
         reset()
+    }
+
+    private fun scaleEnd(start: Point2, end: Point2, length: Double): Point2 {
+        val d = MathUtils.distance(start, end)
+        if (d <= TopologyTolerance.ForMutation) return end
+        val k = length / d
+        return Point2(start.X + (end.X - start.X) * k, start.Y + (end.Y - start.Y) * k)
     }
 
     private fun resolveSnap(
@@ -137,6 +187,7 @@ class LineToolHandler(
         previewLineColor = Color.Gray
         currentMeasurement = ""
         lastSettings = null
+        draftSettings = null
     }
 
     override fun drawPreview(scope: DrawScope, camera: Camera) {

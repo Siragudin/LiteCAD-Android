@@ -309,7 +309,7 @@ class SnapService {
         target: Point2,
         tolerance: Double
     ): Point2? {
-        val resolvedTolerance = TopologyTolerance.ForMutation
+        val resolvedTolerance = tolerance
         val alignment = Geometry2D.getOrthoAlignment(start, target, resolvedTolerance)
         if (alignment == OrthoAlignment.NONE) {
             return null

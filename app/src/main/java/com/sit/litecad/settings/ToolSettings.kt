@@ -20,4 +20,6 @@ class ToolSettings {
     var orthoEnabled: Boolean by mutableStateOf(false)
 
     var snapEnabled: Boolean by mutableStateOf(true)
+
+    var exactInputEnabled: Boolean by mutableStateOf(false)
 }

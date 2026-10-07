@@ -10,7 +10,8 @@ interface Tool {
 
     val currentMeasurement: String
         get() = ""
-
+    fun onInputSubmitted(value: Double, document: CadDocument) {}
+    fun onInputCancelled(document: CadDocument) {}
     fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onEnd(document: CadDocument)

@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
@@ -23,6 +22,7 @@ import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.storage.ProjectStorage
 import com.sit.litecad.storage.ThumbnailGenerator
+import com.sit.litecad.tools.PendingInput
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.ui.canvas.CadCanvas
 import com.sit.litecad.ui.canvas.Viewport
@@ -67,8 +67,7 @@ fun EditorScreen(
 
     Scaffold(
         topBar = {
-            Column {
-                CenterAlignedTopAppBar(
+            CenterAlignedTopAppBar(
                     title = { Text(projectName, style = MaterialTheme.typography.titleMedium) },
                     navigationIcon = {
                         IconButton(onClick = { saveAndExit() }) {
@@ -101,21 +100,7 @@ fun EditorScreen(
                             }
                         }
                     }
-                )
-
-                if (toolManager.activeToolId != "hand") {
-                    TopSettingsBarDummy(
-                        isOrthoEnabled = settings.orthoEnabled,
-                        onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
-                        currentThickness = settings.thickness,
-                        onThicknessChange = { settings.thickness = it },
-                        currentColor = settings.color,
-                        onColorChange = { settings.color = it },
-                        currentLineType = settings.lineType,
-                        onLineTypeChange = { settings.lineType = it }
-                    )
-                }
-            }
+            )
         },
         bottomBar = {
             ToolsPanelDummy(
@@ -147,17 +132,34 @@ fun EditorScreen(
                     isOrthoEnabled = settings.orthoEnabled,
                 )
 
-                Surface(
-                    modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                    color = Color.Black.copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(8.dp)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        Text(text = "Инструмент: ${toolManager.activeToolId.uppercase()}", color = Color.White)
-                        Text(text = "Ребер (Edges): ${document.edges.size}", color = Color.Green, style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Вершин (Vertices): ${document.vertices.size}", color = Color.Cyan, style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Zoom: ${String.format("%.2f", viewport.zoom)}", color = Color.LightGray, style = MaterialTheme.typography.bodySmall)
-                    }
+                    TopSettingsBarDummy(
+                        isOrthoEnabled = settings.orthoEnabled,
+                        onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
+                        exactInputEnabled = settings.exactInputEnabled,
+                        onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
+                        currentThickness = settings.thickness,
+                        onThicknessChange = { settings.thickness = it },
+                        currentColor = settings.color,
+                        onColorChange = { settings.color = it },
+                        currentLineType = settings.lineType,
+                        onLineTypeChange = { settings.lineType = it },
+                        showControls = toolManager.activeToolId != "hand"
+                    )
+                }
+            }
+            val pending = toolManager.pendingInput
+            if (pending is PendingInput.Length) {
+                Box(Modifier.align(Alignment.BottomCenter)) {
+                    LengthInputPanel(
+                        hint = pending.initial,
+                        onSubmit = { toolManager.submitInput(it) },
+                        onCancel = { toolManager.cancelInput() }
+                    )
                 }
             }
         }

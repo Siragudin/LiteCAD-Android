@@ -111,20 +111,7 @@ fun CadCanvas(
 
         val measurementText = toolManager.activeTool?.currentMeasurement ?: ""
         if (measurementText.isNotEmpty()) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(bottom = 16.dp, start = 16.dp),
-                color = Color.Black.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = measurementText,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.sit.litecad.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
@@ -68,42 +70,56 @@ fun ToolsPanelDummy(
 fun TopSettingsBarDummy(
     isOrthoEnabled: Boolean,
     onOrthoToggle: () -> Unit,
+    exactInputEnabled: Boolean,
+    onExactInputToggle: () -> Unit,
     currentThickness: Double,
     onThicknessChange: (Double) -> Unit,
     currentColor: Int,
     onColorChange: (Int) -> Unit,
     currentLineType: EdgeLineType,
-    onLineTypeChange: (EdgeLineType) -> Unit
+    onLineTypeChange: (EdgeLineType) -> Unit,
+    showControls: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(40.dp)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SettingsButtonDummy(
-            icon = Icons.Default.RoundedCorner,
-            label = "Ortho",
-            isActive = isOrthoEnabled,
-            onClick = onOrthoToggle
-        )
+        if (showControls) {
+            SettingsButtonDummy(
+                icon = Icons.Default.RoundedCorner,
+                label = "Ortho",
+                isActive = isOrthoEnabled,
+                onClick = onOrthoToggle
+            )
 
-        ColorSelector(
-            currentColor = currentColor,
-            onColorChange = onColorChange
-        )
+            SettingsButtonDummy(
+                icon = Icons.Default.Straighten,
+                label = "Точный",
+                isActive = exactInputEnabled,
+                onClick = onExactInputToggle
+            )
 
-        ThicknessSelector(
-            currentThickness = currentThickness,
-            onThicknessChange = onThicknessChange
-        )
+            ColorSelector(
+                currentColor = currentColor,
+                onColorChange = onColorChange
+            )
 
-        LineTypeSelector(
-            currentLineType = currentLineType,
-            onLineTypeChange = onLineTypeChange
-        )
+            ThicknessSelector(
+                currentThickness = currentThickness,
+                onThicknessChange = onThicknessChange
+            )
+
+            LineTypeSelector(
+                currentLineType = currentLineType,
+                onLineTypeChange = onLineTypeChange
+            )
+        }
     }
 }
 
@@ -120,13 +136,16 @@ private fun SettingsButtonDummy(
         color = if (isActive) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
         border = if (isActive) null else androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, modifier = Modifier.size(16.dp), tint = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray)
-            Spacer(Modifier.width(4.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray)
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(18.dp),
+                tint = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray
+            )
         }
     }
 }
@@ -146,7 +165,7 @@ private fun ColorSelector(
             border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -207,7 +226,7 @@ private fun ThicknessSelector(
             border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -252,7 +271,7 @@ private fun LineTypeSelector(
             border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(

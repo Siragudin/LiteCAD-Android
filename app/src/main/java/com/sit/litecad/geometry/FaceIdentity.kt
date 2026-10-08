@@ -72,21 +72,46 @@ object FaceIdentity {
     }
 
     /**
-     * Выбирает лексикографически минимальную ротацию последовательности.
+     * Выбирает лексикографически минимальную циклическую ротацию последовательности.
      * Гарантирует один и тот же ключ независимо от того, с какой вершины начат обход.
+     *
+     * Используется алгоритм Боута — O(n) (раньше было O(n²) из-за построения n склеенных
+     * строк). Токены ([UUID.toString]) имеют одинаковую длину и разделяются ',', поэтому
+     * сравнение склеенных строк эквивалентно поэлементному сравнению токенов.
      */
     private fun canonicalizeCyclicSequence(sequence: List<UUID>): String {
-        if (sequence.isEmpty()) return ""
-        var best: String? = null
         val n = sequence.size
-        for (offset in 0 until n) {
-            val parts = arrayOfNulls<String>(n)
-            for (i in 0 until n) {
-                parts[i] = sequence[(offset + i) % n].toString()
+        if (n == 0) return ""
+
+        val tokens = Array(n) { sequence[it].toString() }
+
+        // Поиск начала минимальной ротации (алгоритм Боута).
+        var i = 0
+        var j = 1
+        var k = 0
+        while (i < n && j < n && k < n) {
+            val cmp = tokens[(i + k) % n].compareTo(tokens[(j + k) % n])
+            when {
+                cmp == 0 -> k++
+                cmp > 0 -> {
+                    i += k + 1
+                    if (i <= j) i = j + 1
+                    k = 0
+                }
+                else -> {
+                    j += k + 1
+                    if (j <= i) j = i + 1
+                    k = 0
+                }
             }
-            val candidate = parts.joinToString(",")
-            if (best == null || candidate < best!!) best = candidate
         }
-        return best ?: ""
+        val start = minOf(i, j)
+
+        val sb = StringBuilder(n * 37)
+        for (t in 0 until n) {
+            if (t > 0) sb.append(',')
+            sb.append(tokens[(start + t) % n])
+        }
+        return sb.toString()
     }
 }

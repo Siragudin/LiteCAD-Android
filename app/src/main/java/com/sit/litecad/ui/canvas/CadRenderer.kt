@@ -8,14 +8,42 @@ import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
+import com.sit.litecad.geometry.FaceIdentity
 import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.Polygon
 import com.sit.litecad.model.PolygonType
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.model.Selection
+import java.util.UUID
+
+/**
+ * Кэш ключей заливки граней.
+ *
+ * Ключ ([FaceIdentity]) зависит только от топологии грани, а PolygonBuilder пересоздаёт
+ * FACE-полигоны при каждом изменении топологии (новый Id). Поэтому кэш по Id полигона
+ * корректно инвалидируется и позволяет НЕ пересчитывать ключ на каждом кадре отрисовки.
+ * Именно это вычисление (O(E²) по длине контура) и вешало перерисовку больших чертежей.
+ */
+private val faceFillKeyCache = HashMap<UUID, String>()
+
+private fun cachedFaceFillKey(document: CadDocument, polygon: Polygon): String {
+    val cached = faceFillKeyCache[polygon.id]
+    if (cached != null) return cached
+    val key = FaceIdentity.create(document, polygon)
+    faceFillKeyCache[polygon.id] = key
+    return key
+}
+
+/** Убирает из кэша ключи граней, которых больше нет в документе. */
+private fun pruneFaceFillKeyCache(usedFaceIds: Set<UUID>) {
+    if (faceFillKeyCache.size > usedFaceIds.size) {
+        faceFillKeyCache.keys.retainAll(usedFaceIds)
+    }
+}
 
 fun DrawScope.drawCadScene(
     camera: Camera,
@@ -46,8 +74,10 @@ fun DrawScope.drawCadScene(
 
 
     // --- ГРАНИ (заливка, отладочный цвет) ---
+    val usedFaceIds = HashSet<UUID>()
     document.polygons.forEach { polygon ->
         if (polygon.type != PolygonType.FACE) return@forEach
+        usedFaceIds.add(polygon.id)
 
         val outerPoints = PolygonGeometry
             .getOuterBoundaryPoints(document, polygon)
@@ -76,7 +106,7 @@ fun DrawScope.drawCadScene(
             path.close()
         }
 
-        val fillKey = com.sit.litecad.geometry.FaceIdentity.create(document, polygon)
+        val fillKey = cachedFaceFillKey(document, polygon)
         val fillStyle = document.faceFillStyles[fillKey] ?: com.sit.litecad.model.FaceFillStyle.Default
         val fillColor = Color(fillStyle.fillColor)
 
@@ -86,6 +116,7 @@ fun DrawScope.drawCadScene(
             style = Fill
         )
     }
+    pruneFaceFillKeyCache(usedFaceIds)
 
     // --- РЁБРА (в экранных координатах, чтобы толщина не масштабировалась) ---
     document.edges.forEach { edge ->

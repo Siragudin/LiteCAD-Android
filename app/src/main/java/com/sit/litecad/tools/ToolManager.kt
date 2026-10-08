@@ -21,7 +21,8 @@ class ToolManager(
     private val tools = mapOf<String, Tool>(
         "line" to LineToolHandler(snapService, historyService, this),
         "rect" to RectangleToolHandler(snapService, historyService, this),
-        "select" to SelectionToolHandler(this)
+        "select" to SelectionToolHandler(this),
+        "erase" to EraserToolHandler(historyService)
     )
 
     var activeToolId by mutableStateOf("hand")

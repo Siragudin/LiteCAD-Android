@@ -67,6 +67,24 @@ fun EditorScreen(
 
     var showMenu by remember { mutableStateOf(false) }
 
+    // Пустая тонкая полоса панели свойств (для «hand», «dim», «erase» и прочих
+    // инструментов без собственных настроек).
+    val emptySettingsBar: @Composable () -> Unit = {
+        TopSettingsBarDummy(
+            isOrthoEnabled = settings.orthoEnabled,
+            onOrthoToggle = {},
+            exactInputEnabled = settings.exactInputEnabled,
+            onExactInputToggle = {},
+            currentThickness = settings.thickness,
+            onThicknessChange = {},
+            currentColor = settings.color,
+            onColorChange = {},
+            currentLineType = settings.lineType,
+            onLineTypeChange = {},
+            showControls = false
+        )
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -103,12 +121,6 @@ fun EditorScreen(
                         }
                     }
             )
-        },
-        bottomBar = {
-            ToolsPanelDummy(
-                selectedToolId = toolManager.activeToolId,
-                onToolSelect = { id -> toolManager.selectTool(id) }
-            )
         }
     ) { padding ->
         Box(
@@ -133,6 +145,14 @@ fun EditorScreen(
                     isGridVisible = isGridVisible,
                     isOrthoEnabled = settings.orthoEnabled,
                 )
+
+                // Выдвижная панель инструментов — overlay поверх холста внизу рамки.
+                Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    ToolsBottomPanel(
+                        selectedToolId = toolManager.activeToolId,
+                        onToolSelect = { id -> toolManager.selectTool(id) }
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -178,21 +198,13 @@ fun EditorScreen(
                                 onClear = { toolManager.selection.clear() }
                             )
                         }
+                        "erase" -> {
+                            // Ластик: панель свойств скрыта — пустая тонкая полоса (как у «hand»).
+                            emptySettingsBar()
+                        }
                         else -> {
-                            // hand и всё остальное — пустая тонкая полоса
-                            TopSettingsBarDummy(
-                                isOrthoEnabled = settings.orthoEnabled,
-                                onOrthoToggle = {},
-                                exactInputEnabled = settings.exactInputEnabled,
-                                onExactInputToggle = {},
-                                currentThickness = settings.thickness,
-                                onThicknessChange = {},
-                                currentColor = settings.color,
-                                onColorChange = {},
-                                currentLineType = settings.lineType,
-                                onLineTypeChange = {},
-                                showControls = false
-                            )
+                            // hand, dim и всё остальное — пустая тонкая полоса
+                            emptySettingsBar()
                         }
                     }
                 }

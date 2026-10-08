@@ -6,10 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AdsClick
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PanTool
-import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
@@ -23,50 +19,6 @@ import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.settings.ColorTable
 import com.sit.litecad.settings.LineTypeTable
 import com.sit.litecad.settings.LineWeightTable
-
-@Composable
-fun ToolsPanelDummy(
-    selectedToolId: String,
-    onToolSelect: (String) -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        tonalElevation = 8.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val tools = listOf(
-                Triple("hand", Icons.Default.PanTool, "Рука"),
-                Triple("line", Icons.Default.Edit, "Линия"),
-                Triple("rect", Icons.Default.Rectangle, "Прямоуг."),
-                Triple("dim", Icons.Default.Straighten, "Размер"),
-                Triple("select", Icons.Default.AdsClick, "Выбор")
-            )
-
-            tools.forEach { (id, icon, label) ->
-                val isActive = selectedToolId == id
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    FilledIconButton(
-                        onClick = { onToolSelect(id) },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            contentColor = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(icon, contentDescription = label)
-                    }
-                    Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun TopSettingsBarDummy(

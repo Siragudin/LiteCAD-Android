@@ -155,6 +155,21 @@ fun EditorScreen(
                                 showControls = true
                             )
                         }
+                        "rect" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = false,
+                                onOrthoToggle = {},
+                                exactInputEnabled = settings.exactInputEnabled,
+                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
+                                currentThickness = settings.thickness,
+                                onThicknessChange = { settings.thickness = it },
+                                currentColor = settings.color,
+                                onColorChange = { settings.color = it },
+                                currentLineType = settings.lineType,
+                                onLineTypeChange = { settings.lineType = it },
+                                showControls = true
+                            )
+                        }
                         "select" -> {
                             SelectionSettingsBar(
                                 multiMode = settings.selectionMultiMode,
@@ -183,14 +198,27 @@ fun EditorScreen(
                 }
             }
             val pending = toolManager.pendingInput
-            if (pending is PendingInput.Length) {
-                Box(Modifier.align(Alignment.BottomCenter)) {
-                    LengthInputPanel(
-                        hint = pending.initial,
-                        onSubmit = { toolManager.submitInput(it) },
-                        onCancel = { toolManager.cancelInput() }
-                    )
+            when (pending) {
+                is PendingInput.Length -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        LengthInputPanel(
+                            hint = pending.initial,
+                            onSubmit = { toolManager.submitInput(it) },
+                            onCancel = { toolManager.cancelInput() }
+                        )
+                    }
                 }
+                is PendingInput.RectangleSize -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        RectangleSizePanel(
+                            hintWidth = pending.width,
+                            hintHeight = pending.height,
+                            onSubmit = { w, h -> toolManager.submitRectangleInput(w, h) },
+                            onCancel = { toolManager.cancelRectangleInput() }
+                        )
+                    }
+                }
+                else -> {}
             }
         }
     }

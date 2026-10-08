@@ -12,6 +12,8 @@ interface Tool {
         get() = ""
     fun onInputSubmitted(value: Double, document: CadDocument) {}
     fun onInputCancelled(document: CadDocument) {}
+    fun onRectangleInputSubmitted(width: Double, height: Double, document: CadDocument) {}
+    fun onRectangleInputCancelled(document: CadDocument) {}
     fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onEnd(document: CadDocument)

@@ -20,6 +20,7 @@ class ToolManager(
 ) {
     private val tools = mapOf<String, Tool>(
         "line" to LineToolHandler(snapService, historyService, this),
+        "rect" to RectangleToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this)
     )
 
@@ -55,15 +56,45 @@ class ToolManager(
     }
 
     fun submitInput(value: Double) {
-        if (pendingInput == null) return
+        when (val pending = pendingInput) {
+            null -> return
+            is PendingInput.Length -> {
+                pendingInput = null
+                activeTool?.onInputSubmitted(value, document)
+            }
+            is PendingInput.RectangleSize -> {
+                pendingInput = null
+                activeTool?.onRectangleInputSubmitted(pending.width, pending.height, document)
+            }
+        }
+    }
+
+    /** Отправка размеров прямоугольника (Ширина × Высота) из панели точного ввода. */
+    fun submitRectangleInput(width: Double, height: Double) {
+        if (pendingInput !is PendingInput.RectangleSize) return
         pendingInput = null
-        activeTool?.onInputSubmitted(value, document)
+        activeTool?.onRectangleInputSubmitted(width, height, document)
     }
 
     fun cancelInput() {
-        if (pendingInput == null) return
+        when (pendingInput) {
+            null -> return
+            is PendingInput.Length -> {
+                pendingInput = null
+                activeTool?.onInputCancelled(document)
+            }
+            is PendingInput.RectangleSize -> {
+                pendingInput = null
+                activeTool?.onRectangleInputCancelled(document)
+            }
+        }
+    }
+
+    /** Отмена ввода размеров прямоугольника — коммит "как нарисовано". */
+    fun cancelRectangleInput() {
+        if (pendingInput !is PendingInput.RectangleSize) return
         pendingInput = null
-        activeTool?.onInputCancelled(document)
+        activeTool?.onRectangleInputCancelled(document)
     }
 
     val canUndo: Boolean

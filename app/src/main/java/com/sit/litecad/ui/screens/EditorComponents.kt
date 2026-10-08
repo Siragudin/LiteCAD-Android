@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PanTool
+import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
@@ -42,6 +43,7 @@ fun ToolsPanelDummy(
             val tools = listOf(
                 Triple("hand", Icons.Default.PanTool, "Рука"),
                 Triple("line", Icons.Default.Edit, "Линия"),
+                Triple("rect", Icons.Default.Rectangle, "Прямоуг."),
                 Triple("dim", Icons.Default.Straighten, "Размер"),
                 Triple("select", Icons.Default.AdsClick, "Выбор")
             )

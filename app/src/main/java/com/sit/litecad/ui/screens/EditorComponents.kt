@@ -32,7 +32,9 @@ fun TopSettingsBarDummy(
     onColorChange: (Int) -> Unit,
     currentLineType: EdgeLineType,
     onLineTypeChange: (EdgeLineType) -> Unit,
-    showControls: Boolean = true
+    showControls: Boolean = true,
+    showOrtho: Boolean = true,
+    showExactInput: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -45,19 +47,23 @@ fun TopSettingsBarDummy(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (showControls) {
-            SettingsButtonDummy(
-                icon = Icons.Default.RoundedCorner,
-                label = "Ortho",
-                isActive = isOrthoEnabled,
-                onClick = onOrthoToggle
-            )
+            if (showOrtho) {
+                SettingsButtonDummy(
+                    icon = Icons.Default.RoundedCorner,
+                    label = "Ortho",
+                    isActive = isOrthoEnabled,
+                    onClick = onOrthoToggle
+                )
+            }
 
-            SettingsButtonDummy(
-                icon = Icons.Default.Straighten,
-                label = "Точный",
-                isActive = exactInputEnabled,
-                onClick = onExactInputToggle
-            )
+            if (showExactInput) {
+                SettingsButtonDummy(
+                    icon = Icons.Default.Straighten,
+                    label = "Точный",
+                    isActive = exactInputEnabled,
+                    onClick = onExactInputToggle
+                )
+            }
 
             ColorSelector(
                 currentColor = currentColor,

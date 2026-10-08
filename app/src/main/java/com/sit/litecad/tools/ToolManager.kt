@@ -21,6 +21,8 @@ class ToolManager(
     private val tools = mapOf<String, Tool>(
         "line" to LineToolHandler(snapService, historyService, this),
         "rect" to RectangleToolHandler(snapService, historyService, this),
+        "circle" to CircleToolHandler(snapService, historyService, this),
+        "sector" to SectorToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this),
         "erase" to EraserToolHandler(historyService)
     )
@@ -67,6 +69,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onRectangleInputSubmitted(pending.width, pending.height, document)
             }
+            is PendingInput.SectorAngle -> {
+                pendingInput = null
+                activeTool?.onSectorAngleSubmitted(value, document)
+            }
         }
     }
 
@@ -75,6 +81,13 @@ class ToolManager(
         if (pendingInput !is PendingInput.RectangleSize) return
         pendingInput = null
         activeTool?.onRectangleInputSubmitted(width, height, document)
+    }
+
+    /** Отправка угла сектора из панели точного ввода. */
+    fun submitSectorAngle(angle: Double) {
+        if (pendingInput !is PendingInput.SectorAngle) return
+        pendingInput = null
+        activeTool?.onSectorAngleSubmitted(angle, document)
     }
 
     fun cancelInput() {
@@ -88,6 +101,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onRectangleInputCancelled(document)
             }
+            is PendingInput.SectorAngle -> {
+                pendingInput = null
+                activeTool?.onSectorAngleCancelled(document)
+            }
         }
     }
 
@@ -96,6 +113,13 @@ class ToolManager(
         if (pendingInput !is PendingInput.RectangleSize) return
         pendingInput = null
         activeTool?.onRectangleInputCancelled(document)
+    }
+
+    /** Отмена ввода угла сектора — фигура не рисуется. */
+    fun cancelSectorAngle() {
+        if (pendingInput !is PendingInput.SectorAngle) return
+        pendingInput = null
+        activeTool?.onSectorAngleCancelled(document)
     }
 
     val canUndo: Boolean

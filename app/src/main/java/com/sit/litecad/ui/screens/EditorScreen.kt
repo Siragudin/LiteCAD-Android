@@ -187,7 +187,43 @@ fun EditorScreen(
                                 onColorChange = { settings.color = it },
                                 currentLineType = settings.lineType,
                                 onLineTypeChange = { settings.lineType = it },
-                                showControls = true
+                                showControls = true,
+                                // Ortho у прямоугольника не используется — кнопку скрываем.
+                                showOrtho = false
+                            )
+                        }
+                        "circle" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = false,
+                                onOrthoToggle = {},
+                                exactInputEnabled = settings.exactInputEnabled,
+                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
+                                currentThickness = settings.thickness,
+                                onThicknessChange = { settings.thickness = it },
+                                currentColor = settings.color,
+                                onColorChange = { settings.color = it },
+                                currentLineType = settings.lineType,
+                                onLineTypeChange = { settings.lineType = it },
+                                showControls = true,
+                                // Ortho у круга не используется — кнопку скрываем.
+                                showOrtho = false
+                            )
+                        }
+                        "sector" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = false,
+                                onOrthoToggle = {},
+                                exactInputEnabled = settings.exactInputEnabled,
+                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
+                                currentThickness = settings.thickness,
+                                onThicknessChange = { settings.thickness = it },
+                                currentColor = settings.color,
+                                onColorChange = { settings.color = it },
+                                currentLineType = settings.lineType,
+                                onLineTypeChange = { settings.lineType = it },
+                                showControls = true,
+                                // Ortho у сектора не используется — кнопку скрываем.
+                                showOrtho = false
                             )
                         }
                         "select" -> {
@@ -227,6 +263,15 @@ fun EditorScreen(
                             hintHeight = pending.height,
                             onSubmit = { w, h -> toolManager.submitRectangleInput(w, h) },
                             onCancel = { toolManager.cancelRectangleInput() }
+                        )
+                    }
+                }
+                is PendingInput.SectorAngle -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        SectorAnglePanel(
+                            initial = pending.initial,
+                            onSubmit = { toolManager.submitSectorAngle(it) },
+                            onCancel = { toolManager.cancelSectorAngle() }
                         )
                     }
                 }

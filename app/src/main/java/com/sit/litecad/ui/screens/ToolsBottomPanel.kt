@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.AutoFixOff
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PanTool
+import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.FilledIconButton
@@ -61,7 +63,9 @@ fun ToolsBottomPanel(
             Triple("select", Icons.Default.AdsClick, "Выбор")
         ),
         listOf(
-            Triple("erase", Icons.Default.AutoFixOff, "Ластик")
+            Triple("erase", Icons.Default.AutoFixOff, "Ластик"),
+            Triple("circle", Icons.Default.Circle, "Круг"),
+            Triple("sector", Icons.Default.PieChart, "Сектор")
         )
     )
 

@@ -13,9 +13,20 @@ object EdgeOperations {
     private const val ParameterTolerance = 1e-6
 
     /**
-     * Фундаментальный метод добавления линии в топологический граф CAD (Аналог AddSegment с ПК)
+     * Фундаментальный метод добавления линии в топологический граф CAD (Аналог AddSegment с ПК).
+     * Добавляет одно ребро и перестраивает грани.
      */
     fun addSegment(document: CadDocument, start: Point2, end: Point2, template: CadEdge, tolerance: Double) {
+        addSegmentInternal(document, start, end, template, tolerance)
+        PolygonBuilder.syncFaces(document)
+    }
+
+    /**
+     * Добавляет одно ребро в топологический граф БЕЗ перестроения граней.
+     * Используется для пакетного добавления рёбер (круг, сектор), где
+     * [PolygonBuilder.syncFaces] вызывается один раз в конце — вместо N раз.
+     */
+    fun addSegmentInternal(document: CadDocument, start: Point2, end: Point2, template: CadEdge, tolerance: Double) {
         android.util.Log.d("EdgeOps", "addSegment: start=$start end=$end dist=${MathUtils.distance(start, end)} doc.edgesBefore=${document.edges.size}")
         val mutTolerance = TopologyTolerance.ForMutation
 
@@ -87,8 +98,6 @@ object EdgeOperations {
         }
 
         android.util.Log.d("EdgeOps", "addSegment done: breakpoints=${breakpoints.size} doc.edgesAfter=${document.edges.size}")
-
-        PolygonBuilder.syncFaces(document)
     }
 
     private fun trySplitEdge(document: CadDocument, edge: CadEdge, point: Point2, tolerance: Double) {

@@ -22,4 +22,6 @@ class ToolSettings {
     var snapEnabled: Boolean by mutableStateOf(true)
 
     var exactInputEnabled: Boolean by mutableStateOf(false)
+
+    var selectionMultiMode: Boolean by mutableStateOf(false)
 }

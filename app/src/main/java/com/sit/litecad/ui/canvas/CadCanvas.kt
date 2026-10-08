@@ -3,6 +3,7 @@ package com.sit.litecad.ui.canvas
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,6 +46,7 @@ fun CadCanvas(
             .onSizeChanged { canvasSize = it }
     ) {
         val revision = document.revision
+        val selectionRevision = toolManager.selection.revision
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -60,6 +62,17 @@ fun CadCanvas(
                             viewport.zoom = newZoom
                             viewport.panX = centroid.x - (worldTargetX * newZoom) + pan.x
                             viewport.panY = centroid.y + (worldTargetY * newZoom) + pan.y
+                        }
+                    }
+                }
+                .pointerInput(toolManager.activeToolId) {
+                    // Тап обрабатывается ОТДЕЛЬНО и идёт ПЕРЕД драгом: detectDragGestures
+                    // не срабатывает на чистый тап (стартует только после touch slop).
+                    if (!isHandMode) {
+                        detectTapGestures { offset ->
+                            val worldPoint = viewport.screenToWorld(offset)
+                            toolManager.handleStart(worldPoint, viewport.zoom)
+                            toolManager.handleEnd()
                         }
                     }
                 }
@@ -91,6 +104,8 @@ fun CadCanvas(
         ) {
             @Suppress("UNUSED_EXPRESSION")
             revision
+            @Suppress("UNUSED_EXPRESSION")
+            selectionRevision
             drawCadScene(
                 camera = viewport.toCamera(),
                 document = document,

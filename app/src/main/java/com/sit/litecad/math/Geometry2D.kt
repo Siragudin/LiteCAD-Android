@@ -53,6 +53,20 @@ object Geometry2D {
         val distance = MathUtils.distance(point, projection)
         return ProjectionResult(projection, distance)
     }
+    /**
+     * Hit-test точки на отрезок. Возвращает расстояние от точки до отрезка,
+     * если оно <= tolerance, иначе null.
+     * Проекция клампится к концам отрезка — работает и для «палец дальше конца».
+     */
+    fun tryHitTestSegment(
+        point: Point2,
+        segmentStart: Point2,
+        segmentEnd: Point2,
+        tolerance: Double
+    ): Double? {
+        val proj = tryProjectPointOnSegment(point, segmentStart, segmentEnd, tolerance) ?: return null
+        return if (proj.distance <= tolerance) proj.distance else null
+    }
 
     fun isPointOnSegmentInterior(
         point: Point2,

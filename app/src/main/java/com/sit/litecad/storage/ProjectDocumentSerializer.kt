@@ -92,6 +92,9 @@ object ProjectDocumentSerializer {
         }
 
         document.bumpRevision()
+
+        document.rebuildIndexes()
+        com.sit.litecad.geometry.PolygonBuilder.syncFaces(document)
     }
 
     // --- УТИЛИТЫ ---

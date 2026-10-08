@@ -12,7 +12,7 @@ import java.util.UUID
 object TopologyService {
 
     fun findVertex(document: CadDocument, position: Point2, tolerance: Double): CadVertex? {
-        // Заменяем document.Index прямым поиском с допуском погрешности CAD системы
+        // Линейный поиск. Оптимизация через spatial grid — отдельная задача.
         return document.vertices.find { MathUtils.arePointsEqual(it.position, position, tolerance) }
     }
 
@@ -24,12 +24,12 @@ object TopologyService {
         }
 
         val vertex = CadVertex(X = position.X, Y = position.Y)
-        document.vertices.add(vertex)
+        document.addVertex(vertex)
         return vertex.id
     }
 
     fun getVertex(document: CadDocument, vertexId: UUID): CadVertex {
-        return document.vertices.find { it.id == vertexId }
+        return document.vertexById(vertexId)
             ?: throw IllegalStateException("Vertex $vertexId was not found.")
     }
 
@@ -54,12 +54,12 @@ object TopologyService {
             startVertexId = startVertexId,
             endVertexId = endVertexId
         )
-        document.edges.add(edge)
+        document.addEdge(edge)
         return edge
     }
 
     fun deleteEdge(document: CadDocument, edge: CadEdge) {
-        document.edges.remove(edge)
+        document.removeEdge(edge)
     }
 
     fun splitEdge(document: CadDocument, edge: CadEdge, point: Point2, tolerance: Double) {
@@ -79,6 +79,8 @@ object TopologyService {
 
         createEdge(document, startVertexId, splitVertexId, edge)
         createEdge(document, splitVertexId, endVertexId, edge)
+
+        PolygonBuilder.syncFaces(document)
     }
 
     fun createEdgeFromPoints(
@@ -100,5 +102,6 @@ object TopologyService {
             used.add(edge.endVertexId)
         }
         document.vertices.retainAll { used.contains(it.id) }
+        document.rebuildIndexes()
     }
 }

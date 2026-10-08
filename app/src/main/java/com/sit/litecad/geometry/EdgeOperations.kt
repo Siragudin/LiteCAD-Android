@@ -8,7 +8,7 @@ import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import kotlin.collections.sortWith
 import kotlin.math.abs
-
+import com.sit.litecad.geometry.PolygonBuilder
 object EdgeOperations {
     private const val ParameterTolerance = 1e-6
 
@@ -87,6 +87,8 @@ object EdgeOperations {
         }
 
         android.util.Log.d("EdgeOps", "addSegment done: breakpoints=${breakpoints.size} doc.edgesAfter=${document.edges.size}")
+
+        PolygonBuilder.syncFaces(document)
     }
 
     private fun trySplitEdge(document: CadDocument, edge: CadEdge, point: Point2, tolerance: Double) {

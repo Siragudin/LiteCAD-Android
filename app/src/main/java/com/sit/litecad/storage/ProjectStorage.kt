@@ -153,6 +153,7 @@ class ProjectStorage(private val context: Context) {
         val dto = loadProject(projectName) ?: return false
         return try {
             ProjectDocumentSerializer.apply(document, dto)
+            document.rebuildIndexes()
             true
         } catch (e: Exception) {
             e.printStackTrace()

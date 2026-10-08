@@ -40,29 +40,74 @@ data class CadEdge(
 data class CadDocument(
     @SerializedName("Version") val version: String = "0.4.5",
     @SerializedName("Vertices") val vertices: MutableList<CadVertex> = mutableListOf(),
-    @SerializedName("Edges") val edges: MutableList<CadEdge> = mutableListOf()
+    @SerializedName("Edges") val edges: MutableList<CadEdge> = mutableListOf(),
+    @SerializedName("Polygons") val polygons: MutableList<Polygon> = mutableListOf(),
+    @SerializedName("FaceFillStyles")
+    val faceFillStyles: MutableMap<String, FaceFillStyle> = mutableMapOf(),
+    @SerializedName("SuppressedFaceGeometryKeys")
+    val suppressedFaceGeometryKeys: MutableSet<String> = mutableSetOf()
 ) {
     var revision by mutableStateOf(0)
         private set
+
+    /**
+     * Быстрый lookup по Id. Не сериализуется.
+     * Синхронизируется вручную через addVertex/addEdge/removeEdge/clear.
+     */
+    private val verticesById: MutableMap<UUID, CadVertex> = mutableMapOf()
+    private val edgesById: MutableMap<UUID, CadEdge> = mutableMapOf()
 
     fun bumpRevision() {
         revision++
     }
 
+    // --- lookup ---
+
+    fun vertexById(id: UUID): CadVertex? = verticesById[id]
+    fun edgeById(id: UUID): CadEdge? = edgesById[id]
+
+    // --- mutations ---
+
     fun addVertex(vertex: CadVertex) {
         vertices.add(vertex)
+        verticesById[vertex.id] = vertex
     }
 
     fun addEdge(edge: CadEdge) {
         edges.add(edge)
+        edgesById[edge.id] = edge
     }
 
     fun removeEdge(edge: CadEdge) {
         edges.remove(edge)
+        edgesById.remove(edge.id)
+    }
+
+    /**
+     * Полная пересборка индексов. Нужна после undo/redo, загрузки проекта,
+     * любой замены содержимого списков в обход add/remove.
+     */
+    fun rebuildIndexes() {
+        verticesById.clear()
+        edgesById.clear()
+        for (v in vertices) verticesById[v.id] = v
+        for (e in edges) edgesById[e.id] = e
     }
 
     fun clear() {
         vertices.clear()
         edges.clear()
+        polygons.clear()
+        faceFillStyles.clear()
+        suppressedFaceGeometryKeys.clear()
+        verticesById.clear()
+        edgesById.clear()
+    }
+
+    fun clearTopology() {
+        vertices.clear()
+        edges.clear()
+        verticesById.clear()
+        edgesById.clear()
     }
 }

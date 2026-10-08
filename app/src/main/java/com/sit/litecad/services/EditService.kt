@@ -1,0 +1,67 @@
+package com.sit.litecad.services
+
+import com.sit.litecad.geometry.PolygonBuilder
+import com.sit.litecad.geometry.TopologyService
+import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.PolygonType
+import com.sit.litecad.model.Selection
+
+object EditService {
+
+    /**
+     * Удаление выделенного.
+     * Возвращает true, если что-то было удалено (нужно для history.record()).
+     *
+     * Логика 1-в-1 из ПК EditService.Delete:
+     *  1. Записать снапшот в историю.
+     *  2. Подавить (suppress) выделенные Face-полигоны — они не удаляются,
+     *     а запоминаются в suppressedFaceGeometryKeys, чтобы PolygonBuilder не воссоздал.
+     *  3. Удалить выделенные рёбра.
+     *  4. Удалить выделенные пользовательские полигоны (Wall/Room/Axis).
+     *  5. Если были удалены рёбра — инвалидировать подавления + prune vertices.
+     *  6. SyncFaces — перестроить грани.
+     */
+    fun delete(
+        document: CadDocument,
+        selection: Selection,
+        history: DocumentHistoryService
+    ): Boolean {
+        if (selection.isEmpty) return false
+
+        history.record(document)
+
+        // 1. Suppress выделенных Face
+        for (polygon in document.polygons) {
+            if (polygon.id !in selection.selectedPolygonIds) continue
+            if (polygon.type != PolygonType.FACE) continue
+            PolygonBuilder.suppressFaceGeometry(document, polygon)
+        }
+
+        // 2. Удаляем выделенные рёбра
+        val edgesBefore = document.edges.size
+        document.edges.removeAll { it.id in selection.selectedEdgeIds }
+        val removedAnyEdge = document.edges.size < edgesBefore
+
+        // Синхронизировать индекс edgesById после удаления
+        if (removedAnyEdge) {
+            document.rebuildIndexes()
+        }
+
+        // 3. Удаляем выделенные пользовательские полигоны
+        document.polygons.removeAll { polygon ->
+            polygon.id in selection.selectedPolygonIds && polygon.type != PolygonType.FACE
+        }
+
+        // 4. Prune вершин + инвалидация suppression
+        if (removedAnyEdge) {
+            PolygonBuilder.invalidateSuppressionOnEdgeTopologyChange(document)
+            TopologyService.pruneUnusedVertices(document)
+        }
+
+        // 5. Перестроить грани
+        PolygonBuilder.syncFaces(document)
+
+        document.bumpRevision()
+        return true
+    }
+}

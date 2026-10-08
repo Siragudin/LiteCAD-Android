@@ -1,14 +1,17 @@
 package com.sit.litecad.model
 
-import java.util.UUID
-
 /**
  * Снимок состояния документа для undo/redo.
- * Хранит глубокую копию вершин и рёбер.
+ * Хранит глубокую копию вершин, рёбер, пользовательских полигонов
+ * и метаданных заливок/подавлений.
+ * PolygonType.FACE в снапшот НЕ попадает — он перестраивается PolygonBuilder-ом.
  */
 class DocumentSnapshot private constructor(
     private val vertices: List<CadVertex>,
-    private val edges: List<CadEdge>
+    private val edges: List<CadEdge>,
+    private val userPolygons: List<Polygon>,
+    private val faceFillStyles: Map<String, FaceFillStyle>,
+    private val suppressedFaceGeometryKeys: Set<String>
 ) {
     companion object {
         fun capture(document: CadDocument): DocumentSnapshot {
@@ -27,17 +30,41 @@ class DocumentSnapshot private constructor(
                     colorArgb = edge.colorArgb
                 )
             }
-            return DocumentSnapshot(verticesCopy, edgesCopy)
+            val userPolygonsCopy = document.polygons
+                .filter { it.type != PolygonType.FACE }
+                .map { it.clone() }
+            val faceFillStylesCopy = document.faceFillStyles
+                .mapValues { (_, style) -> style.clone() }
+            val suppressedCopy = document.suppressedFaceGeometryKeys.toSet()
+
+            return DocumentSnapshot(
+                verticesCopy,
+                edgesCopy,
+                userPolygonsCopy,
+                faceFillStylesCopy,
+                suppressedCopy
+            )
         }
     }
 
     fun restore(document: CadDocument) {
-        document.vertices.clear()
+        document.clearTopology()
         document.vertices.addAll(vertices)
-
-        document.edges.clear()
         document.edges.addAll(edges)
 
+        document.polygons.clear()
+        document.polygons.addAll(userPolygons.map { it.clone() })
+
+        document.faceFillStyles.clear()
+        for ((key, style) in faceFillStyles) {
+            document.faceFillStyles[key] = style.clone()
+        }
+
+        document.suppressedFaceGeometryKeys.clear()
+        document.suppressedFaceGeometryKeys.addAll(suppressedFaceGeometryKeys)
+
+        document.rebuildIndexes()
+        com.sit.litecad.geometry.PolygonBuilder.syncFaces(document)
         document.bumpRevision()
     }
 }

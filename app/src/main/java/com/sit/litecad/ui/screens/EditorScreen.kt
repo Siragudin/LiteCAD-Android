@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.Selection
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
@@ -40,7 +41,8 @@ fun EditorScreen(
     val snapService = remember { SnapService() }
     val historyService = remember { DocumentHistoryService() }
     val settings = remember { ToolSettings() }
-    val toolManager = remember { ToolManager(document, snapService, historyService, settings) }
+    val selection = remember { Selection() }
+    val toolManager = remember { ToolManager(document, snapService, historyService, settings, selection) }
 
     // Загрузка проекта при открытии
     LaunchedEffect(projectName) {
@@ -137,19 +139,47 @@ fun EditorScreen(
                         .align(Alignment.TopCenter)
                         .fillMaxWidth()
                 ) {
-                    TopSettingsBarDummy(
-                        isOrthoEnabled = settings.orthoEnabled,
-                        onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
-                        exactInputEnabled = settings.exactInputEnabled,
-                        onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
-                        currentThickness = settings.thickness,
-                        onThicknessChange = { settings.thickness = it },
-                        currentColor = settings.color,
-                        onColorChange = { settings.color = it },
-                        currentLineType = settings.lineType,
-                        onLineTypeChange = { settings.lineType = it },
-                        showControls = toolManager.activeToolId != "hand"
-                    )
+                    when (toolManager.activeToolId) {
+                        "line" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = settings.orthoEnabled,
+                                onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
+                                exactInputEnabled = settings.exactInputEnabled,
+                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
+                                currentThickness = settings.thickness,
+                                onThicknessChange = { settings.thickness = it },
+                                currentColor = settings.color,
+                                onColorChange = { settings.color = it },
+                                currentLineType = settings.lineType,
+                                onLineTypeChange = { settings.lineType = it },
+                                showControls = true
+                            )
+                        }
+                        "select" -> {
+                            SelectionSettingsBar(
+                                multiMode = settings.selectionMultiMode,
+                                onMultiToggle = { settings.selectionMultiMode = !settings.selectionMultiMode },
+                                onDelete = { toolManager.deleteSelected() },
+                                onClear = { toolManager.selection.clear() }
+                            )
+                        }
+                        else -> {
+                            // hand и всё остальное — пустая тонкая полоса
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = settings.orthoEnabled,
+                                onOrthoToggle = {},
+                                exactInputEnabled = settings.exactInputEnabled,
+                                onExactInputToggle = {},
+                                currentThickness = settings.thickness,
+                                onThicknessChange = {},
+                                currentColor = settings.color,
+                                onColorChange = {},
+                                currentLineType = settings.lineType,
+                                onLineTypeChange = {},
+                                showControls = false
+                            )
+                        }
+                    }
                 }
             }
             val pending = toolManager.pendingInput

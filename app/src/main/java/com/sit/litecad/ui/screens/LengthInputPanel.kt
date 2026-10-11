@@ -31,7 +31,8 @@ import androidx.compose.ui.unit.dp
 fun LengthInputPanel(
     hint: Double,
     onSubmit: (Double) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    label: String = "Длина:"
 ) {
     var text by remember { mutableStateOf("") }
 
@@ -66,7 +67,7 @@ fun LengthInputPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Длина:",
+                text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

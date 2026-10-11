@@ -24,6 +24,7 @@ class ToolManager(
         "rect" to RectangleToolHandler(snapService, historyService, this),
         "circle" to CircleToolHandler(snapService, historyService, this),
         "sector" to SectorToolHandler(snapService, historyService, this),
+        "arc" to ArcToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this),
         "erase" to EraserToolHandler(historyService),
         "move" to MoveToolHandler(snapService, historyService, this)

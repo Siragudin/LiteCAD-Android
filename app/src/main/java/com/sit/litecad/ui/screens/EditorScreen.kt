@@ -150,7 +150,8 @@ fun EditorScreen(
                 Box(modifier = Modifier.align(Alignment.BottomCenter)) {
                     ToolsBottomPanel(
                         selectedToolId = toolManager.activeToolId,
-                        onToolSelect = { id -> toolManager.selectTool(id) }
+                        onToolSelect = { id -> toolManager.selectTool(id) },
+                        settings = settings
                     )
                 }
 
@@ -242,6 +243,22 @@ fun EditorScreen(
                                 showOrtho = false
                             )
                         }
+                        "arc" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = false,
+                                onOrthoToggle = {},
+                                exactInputEnabled = settings.arc.exactInputEnabled,
+                                onExactInputToggle = { settings.arc.exactInputEnabled = !settings.arc.exactInputEnabled },
+                                currentThickness = settings.arc.thickness,
+                                onThicknessChange = { settings.arc.thickness = it },
+                                currentColor = settings.arc.color,
+                                onColorChange = { settings.arc.color = it },
+                                currentLineType = settings.arc.lineType,
+                                onLineTypeChange = { settings.arc.lineType = it },
+                                showControls = true,
+                                showOrtho = false
+                            )
+                        }
                         "select" -> {
                             SelectionSettingsBar(
                                 multiMode = settings.select.selectionMultiMode,
@@ -280,11 +297,14 @@ fun EditorScreen(
             val pending = toolManager.pendingInput
             when (pending) {
                 is PendingInput.Length -> {
+                    // У дуги «длина» — это высота (sagitta).
+                    val label = if (toolManager.activeToolId == "arc") "Высота:" else "Длина:"
                     Box(Modifier.align(Alignment.BottomCenter)) {
                         LengthInputPanel(
                             hint = pending.initial,
                             onSubmit = { toolManager.submitInput(it) },
-                            onCancel = { toolManager.cancelInput() }
+                            onCancel = { toolManager.cancelInput() },
+                            label = label
                         )
                     }
                 }

@@ -38,6 +38,14 @@ class SectorSettingsState {
     var lineType by mutableStateOf(EdgeLineType.SOLID)
 }
 
+/** Состояние настроек инструмента «Дуга». */
+class ArcSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(LineWeightTable.DEFAULT)
+    var color by mutableStateOf(0xFF222222.toInt())
+    var lineType by mutableStateOf(EdgeLineType.SOLID)
+}
+
 /** Состояние настроек инструмента «Перемещение». */
 class MoveSettingsState {
     var orthoEnabled by mutableStateOf(false)
@@ -61,6 +69,8 @@ class SelectSettingsState {
 /** Общие настройки, не привязанные к конкретному инструменту. */
 class CommonSettingsState {
     var snapEnabled by mutableStateOf(true)
+    var activeLineTool by mutableStateOf("line")     // "line" | "axis"
+    var activeCurveTool by mutableStateOf("circle")  // "circle" | "sector" | "arc"
 }
 
 /** Общий контейнер состояний всех инструментов. */
@@ -69,6 +79,7 @@ class ToolSettings {
     val rect = RectSettingsState()
     val circle = CircleSettingsState()
     val sector = SectorSettingsState()
+    val arc = ArcSettingsState()
     val axis = AxisSettingsState()
     val move = MoveSettingsState()
     val select = SelectSettingsState()

@@ -2,6 +2,7 @@ package com.sit.litecad.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AutoFixOff
+import androidx.compose.material.icons.filled.ChangeHistory
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.HorizontalRule
@@ -20,6 +23,8 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +42,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.settings.ToolSettings
+
+/**
+ * Элемент панели инструментов: одиночная кнопка либо слот-группа.
+ * Слот показывает текущий инструмент и стрелку раскрытия со списком остальных.
+ */
+sealed interface ToolBarItem {
+    /** Обычный инструмент — иконка + лейбл, тап активирует. */
+    data class Single(
+        val id: String,
+        val icon: ImageVector,
+        val label: String
+    ) : ToolBarItem
+
+    /** Слот-группа: отображает текущий инструмент + стрелку раскрытия. */
+    data class Group(
+        val items: List<Single>,
+        val defaultId: String,
+        /** ID текущего инструмента слота — читается/пишется из ToolSettings.common. */
+        val currentIdProvider: () -> String,
+        val onSelect: (String) -> Unit
+    ) : ToolBarItem
+}
 
 /**
  * Выдвижная нижняя панель инструментов.
@@ -50,27 +78,42 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ToolsBottomPanel(
     selectedToolId: String,
-    onToolSelect: (String) -> Unit
+    onToolSelect: (String) -> Unit,
+    settings: ToolSettings
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Захардкоженный список рядов инструментов.
-    // Первый ряд — всегда виден, остальные — выезжают при раскрытии.
-    val rows = listOf(
-        listOf(
-            Triple("hand", Icons.Default.PanTool, "Рука"),
-            Triple("line", Icons.Default.Edit, "Линия"),
-            Triple("rect", Icons.Default.Rectangle, "Прямоуг."),
-            Triple("dim", Icons.Default.Straighten, "Размер"),
-            Triple("select", Icons.Default.AdsClick, "Выбор")
+    // Первый ряд — виден всегда. Два слота: [Линия/Ось] и [Круг/Сектор/Дуга].
+    val firstRow: List<ToolBarItem> = listOf(
+        ToolBarItem.Single("hand", Icons.Default.PanTool, "Рука"),
+        ToolBarItem.Group(
+            items = listOf(
+                ToolBarItem.Single("line", Icons.Default.Edit, "Линия"),
+                ToolBarItem.Single("axis", Icons.Default.HorizontalRule, "Ось")
+            ),
+            defaultId = "line",
+            currentIdProvider = { settings.common.activeLineTool },
+            onSelect = { settings.common.activeLineTool = it }
         ),
-        listOf(
-            Triple("erase", Icons.Default.AutoFixOff, "Ластик"),
-            Triple("axis", Icons.Default.HorizontalRule, "Ось"),
-            Triple("circle", Icons.Default.Circle, "Круг"),
-            Triple("sector", Icons.Default.PieChart, "Сектор"),
-            Triple("move", Icons.Default.OpenWith, "Переместить")
-        )
+        ToolBarItem.Single("move", Icons.Default.OpenWith, "Переместить"),
+        ToolBarItem.Group(
+            items = listOf(
+                ToolBarItem.Single("circle", Icons.Default.Circle, "Круг"),
+                ToolBarItem.Single("sector", Icons.Default.PieChart, "Сектор"),
+                ToolBarItem.Single("arc", Icons.Default.ChangeHistory, "Дуга")
+            ),
+            defaultId = "circle",
+            currentIdProvider = { settings.common.activeCurveTool },
+            onSelect = { settings.common.activeCurveTool = it }
+        ),
+        ToolBarItem.Single("select", Icons.Default.AdsClick, "Выбор")
+    )
+
+    // Второй ряд — выезжает при раскрытии.
+    val secondRow: List<ToolBarItem> = listOf(
+        ToolBarItem.Single("erase", Icons.Default.AutoFixOff, "Ластик"),
+        ToolBarItem.Single("dim", Icons.Default.Straighten, "Размер"),
+        ToolBarItem.Single("rect", Icons.Default.Rectangle, "Прямоуг.")
     )
 
     Surface(
@@ -97,7 +140,7 @@ fun ToolsBottomPanel(
 
             // Первый ряд — виден всегда.
             ToolRow(
-                tools = rows[0],
+                items = firstRow,
                 selectedToolId = selectedToolId,
                 onToolSelect = onToolSelect
             )
@@ -105,23 +148,21 @@ fun ToolsBottomPanel(
             // Дополнительные ряды — выезжают вниз.
             AnimatedVisibility(visible = expanded) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    for (row in rows.drop(1)) {
-                        ToolRow(
-                            tools = row,
-                            selectedToolId = selectedToolId,
-                            onToolSelect = onToolSelect
-                        )
-                    }
+                    ToolRow(
+                        items = secondRow,
+                        selectedToolId = selectedToolId,
+                        onToolSelect = onToolSelect
+                    )
                 }
             }
         }
     }
 }
 
-/** Один ряд инструментов: 48dp-иконка + подпись. */
+/** Один ряд инструментов: слоты и одиночные кнопки. */
 @Composable
 private fun ToolRow(
-    tools: List<Triple<String, ImageVector, String>>,
+    items: List<ToolBarItem>,
     selectedToolId: String,
     onToolSelect: (String) -> Unit
 ) {
@@ -132,25 +173,107 @@ private fun ToolRow(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        tools.forEach { (id, icon, label) ->
-            val isActive = selectedToolId == id
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledIconButton(
-                    onClick = { onToolSelect(id) },
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent,
-                        contentColor = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(icon, contentDescription = label)
-                }
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray
-                )
+        items.forEach { item ->
+            when (item) {
+                is ToolBarItem.Single -> SingleToolButton(item, selectedToolId, onToolSelect)
+                is ToolBarItem.Group -> GroupToolButton(item, selectedToolId, onToolSelect)
             }
         }
+    }
+}
+
+/** Одиночная кнопка инструмента: 48dp-иконка + подпись. */
+@Composable
+private fun SingleToolButton(
+    item: ToolBarItem.Single,
+    selectedToolId: String,
+    onToolSelect: (String) -> Unit
+) {
+    val isActive = selectedToolId == item.id
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        FilledIconButton(
+            onClick = { onToolSelect(item.id) },
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent,
+                contentColor = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(item.icon, contentDescription = item.label)
+        }
+        Text(
+            item.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray
+        )
+    }
+}
+
+/** Кнопка слота: текущий инструмент + узкая стрелка раскрытия меню. */
+@Composable
+private fun GroupToolButton(
+    group: ToolBarItem.Group,
+    selectedToolId: String,
+    onToolSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val currentId = group.currentIdProvider()
+    val current = group.items.firstOrNull { it.id == currentId }
+        ?: group.items.firstOrNull { it.id == group.defaultId }
+        ?: group.items.first()
+
+    val isActive = selectedToolId == current.id
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Основная иконка — тап активирует ТЕКУЩИЙ инструмент слота.
+            FilledIconButton(
+                onClick = { onToolSelect(current.id) },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(current.icon, contentDescription = current.label)
+            }
+
+            // Стрелка — узкая, высотой с иконку. Тап раскрывает меню.
+            Box {
+                IconButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.size(width = 16.dp, height = 48.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowDropDown,
+                        contentDescription = "Раскрыть",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    group.items.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(item.label) },
+                            leadingIcon = { Icon(item.icon, contentDescription = item.label) },
+                            onClick = {
+                                group.onSelect(item.id)
+                                onToolSelect(item.id)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        Text(
+            current.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isActive) MaterialTheme.colorScheme.primary else Color.Gray
+        )
     }
 }

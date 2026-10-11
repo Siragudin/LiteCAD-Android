@@ -54,6 +54,12 @@ class MoveSettingsState {
     var exactInputEnabled by mutableStateOf(false)
 }
 
+/** Состояние настроек инструмента «Поворот». */
+class RotateSettingsState {
+    var copyMode by mutableStateOf(false)
+    var exactInputEnabled by mutableStateOf(false)
+}
+
 /** Состояние настроек инструмента «Ось». */
 class AxisSettingsState {
     var orthoEnabled by mutableStateOf(true)
@@ -93,6 +99,7 @@ class ToolSettings {
     val arc = ArcSettingsState()
     val axis = AxisSettingsState()
     val move = MoveSettingsState()
+    val rotate = RotateSettingsState()
     val select = SelectSettingsState()
     val dim = DimSettingsState()
     val common = CommonSettingsState()

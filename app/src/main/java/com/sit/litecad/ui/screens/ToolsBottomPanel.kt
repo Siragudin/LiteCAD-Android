@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AutoFixOff
@@ -113,7 +114,8 @@ fun ToolsBottomPanel(
     val secondRow: List<ToolBarItem> = listOf(
         ToolBarItem.Single("erase", Icons.Default.AutoFixOff, "Ластик"),
         ToolBarItem.Single("dim", Icons.Default.Straighten, "Размер"),
-        ToolBarItem.Single("rect", Icons.Default.Rectangle, "Прямоуг.")
+        ToolBarItem.Single("rect", Icons.Default.Rectangle, "Прямоуг."),
+        ToolBarItem.Single("rotate", Icons.AutoMirrored.Filled.RotateRight, "Поворот")
     )
 
     Surface(

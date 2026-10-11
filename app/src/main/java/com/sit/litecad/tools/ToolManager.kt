@@ -28,6 +28,7 @@ class ToolManager(
         "select" to SelectionToolHandler(this),
         "erase" to EraserToolHandler(historyService),
         "move" to MoveToolHandler(snapService, historyService, this),
+        "rotate" to RotateToolHandler(snapService, historyService, this),
         "dim" to DimensionToolHandler(snapService, historyService, this)
     )
 
@@ -81,6 +82,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onMoveInputSubmitted(value, document)
             }
+            is PendingInput.RotationAngle -> {
+                pendingInput = null
+                activeTool?.onRotationAngleSubmitted(value, document)
+            }
         }
     }
 
@@ -117,6 +122,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onMoveInputCancelled(document)
             }
+            is PendingInput.RotationAngle -> {
+                pendingInput = null
+                activeTool?.onRotationAngleCancelled(document)
+            }
         }
     }
 
@@ -146,6 +155,20 @@ class ToolManager(
         if (pendingInput !is PendingInput.MoveDistance) return
         pendingInput = null
         activeTool?.onMoveInputCancelled(document)
+    }
+
+    /** Отправка угла поворота из панели точного ввода. */
+    fun submitRotationAngle(value: Double) {
+        if (pendingInput !is PendingInput.RotationAngle) return
+        pendingInput = null
+        activeTool?.onRotationAngleSubmitted(value, document)
+    }
+
+    /** Отмена ввода угла поворота — ничего не коммитим. */
+    fun cancelRotationAngle() {
+        if (pendingInput !is PendingInput.RotationAngle) return
+        pendingInput = null
+        activeTool?.onRotationAngleCancelled(document)
     }
 
     val canUndo: Boolean

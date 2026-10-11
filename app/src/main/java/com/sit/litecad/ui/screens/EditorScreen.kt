@@ -284,6 +284,14 @@ fun EditorScreen(
                                 onExactInputToggle = { settings.move.exactInputEnabled = !settings.move.exactInputEnabled },
                             )
                         }
+                        "rotate" -> {
+                            RotateSettingsBar(
+                                copyMode = settings.rotate.copyMode,
+                                onCopyToggle = { settings.rotate.copyMode = !settings.rotate.copyMode },
+                                exactInputEnabled = settings.rotate.exactInputEnabled,
+                                onExactInputToggle = { settings.rotate.exactInputEnabled = !settings.rotate.exactInputEnabled },
+                            )
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,
@@ -357,6 +365,15 @@ fun EditorScreen(
                             axis = pending.axis,
                             onSubmit = { toolManager.submitMoveInput(it) },
                             onCancel = { toolManager.cancelMoveInput() }
+                        )
+                    }
+                }
+                is PendingInput.RotationAngle -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        RotationAnglePanel(
+                            initial = pending.initial,
+                            onSubmit = { toolManager.submitRotationAngle(it) },
+                            onCancel = { toolManager.cancelRotationAngle() }
                         )
                     }
                 }

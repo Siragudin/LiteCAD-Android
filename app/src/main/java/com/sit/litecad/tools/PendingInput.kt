@@ -12,4 +12,7 @@ sealed interface PendingInput {
 
     /** Ожидание ввода точного смещения перемещения вдоль одной оси. */
     data class MoveDistance(val initial: Double, val axis: MoveAxis) : PendingInput
+
+    /** Ожидание ввода угла поворота (в градусах). */
+    data class RotationAngle(val initial: Double) : PendingInput
 }

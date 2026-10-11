@@ -5,23 +5,63 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.sit.litecad.model.EdgeLineType
 
-/**
- * Общие настройки активного инструмента.
- * Один экземпляр на EditorScreen, читается всеми инструментами.
- */
+/** Состояние настроек инструмента «Линия». */
+class LineSettingsState {
+    var orthoEnabled by mutableStateOf(false)
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(LineWeightTable.DEFAULT)
+    var color by mutableStateOf(0xFF222222.toInt())
+    var lineType by mutableStateOf(EdgeLineType.SOLID)
+}
+
+/** Состояние настроек инструмента «Прямоугольник». */
+class RectSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(LineWeightTable.DEFAULT)
+    var color by mutableStateOf(0xFF222222.toInt())
+    var lineType by mutableStateOf(EdgeLineType.SOLID)
+}
+
+/** Состояние настроек инструмента «Круг». */
+class CircleSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(LineWeightTable.DEFAULT)
+    var color by mutableStateOf(0xFF222222.toInt())
+    var lineType by mutableStateOf(EdgeLineType.SOLID)
+}
+
+/** Состояние настроек инструмента «Сектор». */
+class SectorSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(LineWeightTable.DEFAULT)
+    var color by mutableStateOf(0xFF222222.toInt())
+    var lineType by mutableStateOf(EdgeLineType.SOLID)
+}
+
+/** Состояние настроек инструмента «Перемещение». */
+class MoveSettingsState {
+    var orthoEnabled by mutableStateOf(false)
+    var copyMode by mutableStateOf(false)
+    var exactInputEnabled by mutableStateOf(false)
+}
+
+/** Состояние настроек инструмента «Выбор». */
+class SelectSettingsState {
+    var selectionMultiMode by mutableStateOf(false)
+}
+
+/** Общие настройки, не привязанные к конкретному инструменту. */
+class CommonSettingsState {
+    var snapEnabled by mutableStateOf(true)
+}
+
+/** Общий контейнер состояний всех инструментов. */
 class ToolSettings {
-
-    var thickness: Double by mutableStateOf(LineWeightTable.DEFAULT)
-
-    var color: Int by mutableStateOf(0xFF222222.toInt())
-
-    var lineType: EdgeLineType by mutableStateOf(EdgeLineType.SOLID)
-
-    var orthoEnabled: Boolean by mutableStateOf(false)
-
-    var snapEnabled: Boolean by mutableStateOf(true)
-
-    var exactInputEnabled: Boolean by mutableStateOf(false)
-
-    var selectionMultiMode: Boolean by mutableStateOf(false)
+    val line = LineSettingsState()
+    val rect = RectSettingsState()
+    val circle = CircleSettingsState()
+    val sector = SectorSettingsState()
+    val move = MoveSettingsState()
+    val select = SelectSettingsState()
+    val common = CommonSettingsState()
 }

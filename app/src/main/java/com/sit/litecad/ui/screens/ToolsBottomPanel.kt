@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Rectangle
@@ -65,7 +66,8 @@ fun ToolsBottomPanel(
         listOf(
             Triple("erase", Icons.Default.AutoFixOff, "Ластик"),
             Triple("circle", Icons.Default.Circle, "Круг"),
-            Triple("sector", Icons.Default.PieChart, "Сектор")
+            Triple("sector", Icons.Default.PieChart, "Сектор"),
+            Triple("move", Icons.Default.OpenWith, "Переместить")
         )
     )
 

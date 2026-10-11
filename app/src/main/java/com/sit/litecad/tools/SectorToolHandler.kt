@@ -183,7 +183,7 @@ class SectorToolHandler(
         val radius = MathUtils.distance(center, initialRadiusPoint)
         val directionRad = atan2(initialRadiusPoint.Y - center.Y, initialRadiusPoint.X - center.X)
 
-        if (s.exactInputEnabled) {
+        if (s.sector.exactInputEnabled) {
             // Ждём ввод угла.
             draftSettings = s
             draftCenter = center
@@ -262,9 +262,9 @@ class SectorToolHandler(
         historyService.record(document)
 
         val template = CadEdge.createStyleTemplate()
-        template.colorArgb = settings.color
-        template.thickness = settings.thickness
-        template.lineType = settings.lineType
+        template.colorArgb = settings.sector.color
+        template.thickness = settings.sector.thickness
+        template.lineType = settings.sector.lineType
 
         val arc = arcPoints(center, radius, directionRad, sign, angleDeg.toDouble())
 

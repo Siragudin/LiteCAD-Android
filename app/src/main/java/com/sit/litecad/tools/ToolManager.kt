@@ -12,7 +12,7 @@ import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
 
 class ToolManager(
-    private val document: CadDocument,
+    val document: CadDocument,
     private val snapService: SnapService,
     private val historyService: DocumentHistoryService,
     val settings: ToolSettings,
@@ -24,7 +24,8 @@ class ToolManager(
         "circle" to CircleToolHandler(snapService, historyService, this),
         "sector" to SectorToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this),
-        "erase" to EraserToolHandler(historyService)
+        "erase" to EraserToolHandler(historyService),
+        "move" to MoveToolHandler(snapService, historyService, this)
     )
 
     var activeToolId by mutableStateOf("hand")
@@ -73,6 +74,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onSectorAngleSubmitted(value, document)
             }
+            is PendingInput.MoveDistance -> {
+                pendingInput = null
+                activeTool?.onMoveInputSubmitted(value, document)
+            }
         }
     }
 
@@ -105,6 +110,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onSectorAngleCancelled(document)
             }
+            is PendingInput.MoveDistance -> {
+                pendingInput = null
+                activeTool?.onMoveInputCancelled(document)
+            }
         }
     }
 
@@ -120,6 +129,20 @@ class ToolManager(
         if (pendingInput !is PendingInput.SectorAngle) return
         pendingInput = null
         activeTool?.onSectorAngleCancelled(document)
+    }
+
+    /** Отправка смещения перемещения из панели точного ввода. */
+    fun submitMoveInput(value: Double) {
+        if (pendingInput !is PendingInput.MoveDistance) return
+        pendingInput = null
+        activeTool?.onMoveInputSubmitted(value, document)
+    }
+
+    /** Отмена ввода смещения перемещения — ничего не коммитим. */
+    fun cancelMoveInput() {
+        if (pendingInput !is PendingInput.MoveDistance) return
+        pendingInput = null
+        activeTool?.onMoveInputCancelled(document)
     }
 
     val canUndo: Boolean

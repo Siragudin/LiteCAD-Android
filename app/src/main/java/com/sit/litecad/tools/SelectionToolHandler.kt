@@ -67,7 +67,7 @@ class SelectionToolHandler(
             return
         }
 
-        val additive = toolManager.settings.selectionMultiMode
+        val additive = toolManager.settings.select.selectionMultiMode
 
         when (dragMode) {
             DragMode.TAP -> applyTap(document, additive)

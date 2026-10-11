@@ -71,15 +71,15 @@ fun EditorScreen(
     // инструментов без собственных настроек).
     val emptySettingsBar: @Composable () -> Unit = {
         TopSettingsBarDummy(
-            isOrthoEnabled = settings.orthoEnabled,
+            isOrthoEnabled = settings.line.orthoEnabled,
             onOrthoToggle = {},
-            exactInputEnabled = settings.exactInputEnabled,
+            exactInputEnabled = settings.line.exactInputEnabled,
             onExactInputToggle = {},
-            currentThickness = settings.thickness,
+            currentThickness = settings.line.thickness,
             onThicknessChange = {},
-            currentColor = settings.color,
+            currentColor = settings.line.color,
             onColorChange = {},
-            currentLineType = settings.lineType,
+            currentLineType = settings.line.lineType,
             onLineTypeChange = {},
             showControls = false
         )
@@ -143,7 +143,7 @@ fun EditorScreen(
                     document = document,
                     toolManager = toolManager,
                     isGridVisible = isGridVisible,
-                    isOrthoEnabled = settings.orthoEnabled,
+                    isOrthoEnabled = settings.line.orthoEnabled,
                 )
 
                 // Выдвижная панель инструментов — overlay поверх холста внизу рамки.
@@ -162,16 +162,16 @@ fun EditorScreen(
                     when (toolManager.activeToolId) {
                         "line" -> {
                             TopSettingsBarDummy(
-                                isOrthoEnabled = settings.orthoEnabled,
-                                onOrthoToggle = { settings.orthoEnabled = !settings.orthoEnabled },
-                                exactInputEnabled = settings.exactInputEnabled,
-                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
-                                currentThickness = settings.thickness,
-                                onThicknessChange = { settings.thickness = it },
-                                currentColor = settings.color,
-                                onColorChange = { settings.color = it },
-                                currentLineType = settings.lineType,
-                                onLineTypeChange = { settings.lineType = it },
+                                isOrthoEnabled = settings.line.orthoEnabled,
+                                onOrthoToggle = { settings.line.orthoEnabled = !settings.line.orthoEnabled },
+                                exactInputEnabled = settings.line.exactInputEnabled,
+                                onExactInputToggle = { settings.line.exactInputEnabled = !settings.line.exactInputEnabled },
+                                currentThickness = settings.line.thickness,
+                                onThicknessChange = { settings.line.thickness = it },
+                                currentColor = settings.line.color,
+                                onColorChange = { settings.line.color = it },
+                                currentLineType = settings.line.lineType,
+                                onLineTypeChange = { settings.line.lineType = it },
                                 showControls = true
                             )
                         }
@@ -179,14 +179,14 @@ fun EditorScreen(
                             TopSettingsBarDummy(
                                 isOrthoEnabled = false,
                                 onOrthoToggle = {},
-                                exactInputEnabled = settings.exactInputEnabled,
-                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
-                                currentThickness = settings.thickness,
-                                onThicknessChange = { settings.thickness = it },
-                                currentColor = settings.color,
-                                onColorChange = { settings.color = it },
-                                currentLineType = settings.lineType,
-                                onLineTypeChange = { settings.lineType = it },
+                                exactInputEnabled = settings.rect.exactInputEnabled,
+                                onExactInputToggle = { settings.rect.exactInputEnabled = !settings.rect.exactInputEnabled },
+                                currentThickness = settings.rect.thickness,
+                                onThicknessChange = { settings.rect.thickness = it },
+                                currentColor = settings.rect.color,
+                                onColorChange = { settings.rect.color = it },
+                                currentLineType = settings.rect.lineType,
+                                onLineTypeChange = { settings.rect.lineType = it },
                                 showControls = true,
                                 // Ortho у прямоугольника не используется — кнопку скрываем.
                                 showOrtho = false
@@ -196,14 +196,14 @@ fun EditorScreen(
                             TopSettingsBarDummy(
                                 isOrthoEnabled = false,
                                 onOrthoToggle = {},
-                                exactInputEnabled = settings.exactInputEnabled,
-                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
-                                currentThickness = settings.thickness,
-                                onThicknessChange = { settings.thickness = it },
-                                currentColor = settings.color,
-                                onColorChange = { settings.color = it },
-                                currentLineType = settings.lineType,
-                                onLineTypeChange = { settings.lineType = it },
+                                exactInputEnabled = settings.circle.exactInputEnabled,
+                                onExactInputToggle = { settings.circle.exactInputEnabled = !settings.circle.exactInputEnabled },
+                                currentThickness = settings.circle.thickness,
+                                onThicknessChange = { settings.circle.thickness = it },
+                                currentColor = settings.circle.color,
+                                onColorChange = { settings.circle.color = it },
+                                currentLineType = settings.circle.lineType,
+                                onLineTypeChange = { settings.circle.lineType = it },
                                 showControls = true,
                                 // Ortho у круга не используется — кнопку скрываем.
                                 showOrtho = false
@@ -213,14 +213,14 @@ fun EditorScreen(
                             TopSettingsBarDummy(
                                 isOrthoEnabled = false,
                                 onOrthoToggle = {},
-                                exactInputEnabled = settings.exactInputEnabled,
-                                onExactInputToggle = { settings.exactInputEnabled = !settings.exactInputEnabled },
-                                currentThickness = settings.thickness,
-                                onThicknessChange = { settings.thickness = it },
-                                currentColor = settings.color,
-                                onColorChange = { settings.color = it },
-                                currentLineType = settings.lineType,
-                                onLineTypeChange = { settings.lineType = it },
+                                exactInputEnabled = settings.sector.exactInputEnabled,
+                                onExactInputToggle = { settings.sector.exactInputEnabled = !settings.sector.exactInputEnabled },
+                                currentThickness = settings.sector.thickness,
+                                onThicknessChange = { settings.sector.thickness = it },
+                                currentColor = settings.sector.color,
+                                onColorChange = { settings.sector.color = it },
+                                currentLineType = settings.sector.lineType,
+                                onLineTypeChange = { settings.sector.lineType = it },
                                 showControls = true,
                                 // Ortho у сектора не используется — кнопку скрываем.
                                 showOrtho = false
@@ -228,10 +228,26 @@ fun EditorScreen(
                         }
                         "select" -> {
                             SelectionSettingsBar(
-                                multiMode = settings.selectionMultiMode,
-                                onMultiToggle = { settings.selectionMultiMode = !settings.selectionMultiMode },
+                                multiMode = settings.select.selectionMultiMode,
+                                onMultiToggle = { settings.select.selectionMultiMode = !settings.select.selectionMultiMode },
                                 onDelete = { toolManager.deleteSelected() },
                                 onClear = { toolManager.selection.clear() }
+                            )
+                        }
+                        "move" -> {
+                            MoveSettingsBar(
+                                orthoEnabled = settings.move.orthoEnabled,
+                                onOrthoToggle = {
+                                    settings.move.orthoEnabled = !settings.move.orthoEnabled
+                                    if (!settings.move.orthoEnabled) {
+                                        // Ortho выключили — сбрасываем «Точный», чтобы флаг не остался висеть
+                                        settings.move.exactInputEnabled = false
+                                    }
+                                },
+                                copyMode = settings.move.copyMode,
+                                onCopyToggle = { settings.move.copyMode = !settings.move.copyMode },
+                                exactInputEnabled = settings.move.exactInputEnabled,
+                                onExactInputToggle = { settings.move.exactInputEnabled = !settings.move.exactInputEnabled },
                             )
                         }
                         "erase" -> {
@@ -272,6 +288,16 @@ fun EditorScreen(
                             initial = pending.initial,
                             onSubmit = { toolManager.submitSectorAngle(it) },
                             onCancel = { toolManager.cancelSectorAngle() }
+                        )
+                    }
+                }
+                is PendingInput.MoveDistance -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        MoveInputPanel(
+                            initial = pending.initial,
+                            axis = pending.axis,
+                            onSubmit = { toolManager.submitMoveInput(it) },
+                            onCancel = { toolManager.cancelMoveInput() }
                         )
                     }
                 }

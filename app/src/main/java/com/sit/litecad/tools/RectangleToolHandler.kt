@@ -115,7 +115,7 @@ class RectangleToolHandler(
             return
         }
 
-        if (s.exactInputEnabled) {
+        if (s.rect.exactInputEnabled) {
             // ждём ввод размеров
             draftSettings = s
             toolManager.requestInput(PendingInput.RectangleSize(abs(dx), abs(dy)))
@@ -178,9 +178,9 @@ class RectangleToolHandler(
         historyService.record(document)
 
         val template = CadEdge.createStyleTemplate()
-        template.colorArgb = settings.color
-        template.thickness = settings.thickness
-        template.lineType = settings.lineType
+        template.colorArgb = settings.rect.color
+        template.thickness = settings.rect.thickness
+        template.lineType = settings.rect.lineType
 
         EdgeOperations.addSegment(document, rect.a, rect.b, template, mutTolerance)
         EdgeOperations.addSegment(document, rect.b, rect.c, template, mutTolerance)

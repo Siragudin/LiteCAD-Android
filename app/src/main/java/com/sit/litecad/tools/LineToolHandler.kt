@@ -46,7 +46,7 @@ class LineToolHandler(
 
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
-        val resolved = resolveSnap(document, point, null, zoom, settings.orthoEnabled)
+        val resolved = resolveSnap(document, point, null, zoom, settings.line.orthoEnabled)
         hasStart = true
         startPoint = resolved
         previewEnd = resolved
@@ -60,7 +60,7 @@ class LineToolHandler(
         lastSettings = settings
         if (!hasStart) return
 
-        val resolved = resolveSnap(document, point, startPoint, zoom, settings.orthoEnabled)
+        val resolved = resolveSnap(document, point, startPoint, zoom, settings.line.orthoEnabled)
         previewEnd = resolved
         endSnapKind = querySnapKind(document, point, zoom)
 
@@ -84,7 +84,7 @@ class LineToolHandler(
             return
         }
 
-        if (s.exactInputEnabled) {
+        if (s.line.exactInputEnabled) {
             // ждём ввод длины
             draftSettings = s
             toolManager.requestInput(PendingInput.Length(dist))
@@ -170,9 +170,9 @@ class LineToolHandler(
         val alignment = Geometry2D.getOrthoAlignment(startPoint, endPoint, mutTolerance)
 
         val template = CadEdge.createStyleTemplate()
-        template.colorArgb = settings.color
-        template.thickness = settings.thickness
-        template.lineType = settings.lineType
+        template.colorArgb = settings.line.color
+        template.thickness = settings.line.thickness
+        template.lineType = settings.line.lineType
         template.orthoAlignment = alignment
 
         EdgeOperations.addSegment(document, startPoint, endPoint, template, mutTolerance)

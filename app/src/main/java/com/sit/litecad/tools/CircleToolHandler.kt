@@ -57,7 +57,7 @@ class CircleToolHandler(
 
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
-        val resolved = resolveSnap(document, point, null, zoom, settings.orthoEnabled)
+        val resolved = resolveSnap(document, point, null, zoom, false)
         hasStart = true
         center = resolved
         radiusPoint = resolved
@@ -71,7 +71,7 @@ class CircleToolHandler(
         lastSettings = settings
         if (!hasStart) return
 
-        val resolved = resolveSnap(document, point, center, zoom, settings.orthoEnabled)
+        val resolved = resolveSnap(document, point, center, zoom, false)
         radiusPoint = resolved
         radiusSnapKind = querySnapKind(document, point, zoom)
 
@@ -95,7 +95,7 @@ class CircleToolHandler(
             return
         }
 
-        if (s.exactInputEnabled) {
+        if (s.circle.exactInputEnabled) {
             // ждём ввод радиуса
             draftSettings = s
             toolManager.requestInput(PendingInput.Length(radius))
@@ -145,9 +145,9 @@ class CircleToolHandler(
         historyService.record(document)
 
         val template = CadEdge.createStyleTemplate()
-        template.colorArgb = settings.color
-        template.thickness = settings.thickness
-        template.lineType = settings.lineType
+        template.colorArgb = settings.circle.color
+        template.thickness = settings.circle.thickness
+        template.lineType = settings.circle.lineType
 
         val segments = 36
         val stepRad = 2.0 * PI / segments

@@ -10,6 +10,7 @@ class DocumentSnapshot private constructor(
     private val vertices: List<CadVertex>,
     private val edges: List<CadEdge>,
     private val axes: List<CadAxis>,
+    private val dimensions: List<CadDimension>,
     private val userPolygons: List<Polygon>,
     private val faceFillStyles: Map<String, FaceFillStyle>,
     private val suppressedFaceGeometryKeys: Set<String>
@@ -32,6 +33,7 @@ class DocumentSnapshot private constructor(
                 )
             }
             val axesCopy = document.axes.map { axis -> axis.clone() }
+            val dimensionsCopy = document.dimensions.map { dimension -> dimension.clone() }
             val userPolygonsCopy = document.polygons
                 .filter { it.type != PolygonType.FACE }
                 .map { it.clone() }
@@ -43,6 +45,7 @@ class DocumentSnapshot private constructor(
                 verticesCopy,
                 edgesCopy,
                 axesCopy,
+                dimensionsCopy,
                 userPolygonsCopy,
                 faceFillStylesCopy,
                 suppressedCopy
@@ -57,6 +60,9 @@ class DocumentSnapshot private constructor(
 
         document.axes.clear()
         document.axes.addAll(axes.map { it.clone() })
+
+        document.dimensions.clear()
+        document.dimensions.addAll(dimensions.map { it.clone() })
 
         document.polygons.clear()
         document.polygons.addAll(userPolygons.map { it.clone() })

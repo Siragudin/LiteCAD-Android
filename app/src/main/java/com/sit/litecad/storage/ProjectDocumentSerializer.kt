@@ -2,12 +2,15 @@ package com.sit.litecad.storage
 
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadAxis
+import com.sit.litecad.model.CadDimension
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.CadVertex
+import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.model.OrthoAlignment
 import com.sit.litecad.storage.dto.AxisDto
+import com.sit.litecad.storage.dto.DimensionDto
 import com.sit.litecad.storage.dto.EdgeDto
 import com.sit.litecad.storage.dto.ProjectDocumentDto
 import com.sit.litecad.storage.dto.VertexDto
@@ -56,8 +59,26 @@ object ProjectDocumentSerializer {
                     color = argbToHex(axis.colorArgb),
                     thickness = axis.thickness
                 )
+            }.toMutableList(),
+            dimensions = document.dimensions.map { dim ->
+                DimensionDto(
+                    id = dim.id.toString(),
+                    firstVertexId = dim.FirstVertexId.toString(),
+                    secondVertexId = dim.SecondVertexId.toString(),
+                    firstAnchorX = dim.FirstAnchorPosition.X,
+                    firstAnchorY = dim.FirstAnchorPosition.Y,
+                    secondAnchorX = dim.SecondAnchorPosition.X,
+                    secondAnchorY = dim.SecondAnchorPosition.Y,
+                    offset = dim.Offset,
+                    extensionStyle = dim.ExtensionStyle.name.lowercase(),
+                    isOrthogonal = dim.IsOrthogonal,
+                    orthogonalIsHorizontal = dim.OrthogonalIsHorizontal,
+                    textSize = dim.TextSize,
+                    color = argbToHex(dim.colorArgb),
+                    thickness = dim.thickness
+                )
             }.toMutableList()
-            // Остальные поля (userPolygons, dimensions, leaders, texts,
+            // Остальные поля (userPolygons, leaders, texts,
             // elevationBaseY, suppressedFaceGeometryKeys, faceFillStyles)
             // остаются пустыми, т.к. в Android-версии их пока нет.
         )
@@ -118,6 +139,28 @@ object ProjectDocumentSerializer {
             )
         }
 
+        document.dimensions.clear()
+        for (d in dto.dimensions) {
+            val firstId = vertexIdMap[d.firstVertexId] ?: parseUuid(d.firstVertexId)
+            val secondId = vertexIdMap[d.secondVertexId] ?: parseUuid(d.secondVertexId)
+            document.dimensions.add(
+                CadDimension(
+                    id = parseUuid(d.id),
+                    FirstVertexId = firstId,
+                    SecondVertexId = secondId,
+                    FirstAnchorPosition = Point2(d.firstAnchorX, d.firstAnchorY),
+                    SecondAnchorPosition = Point2(d.secondAnchorX, d.secondAnchorY),
+                    Offset = d.offset,
+                    ExtensionStyle = parseDimensionExtensionStyle(d.extensionStyle),
+                    IsOrthogonal = d.isOrthogonal,
+                    OrthogonalIsHorizontal = d.orthogonalIsHorizontal,
+                    TextSize = d.textSize,
+                    colorArgb = hexToArgb(d.color),
+                    thickness = d.thickness
+                )
+            )
+        }
+
         document.bumpRevision()
 
         document.rebuildIndexes()
@@ -153,6 +196,13 @@ object ProjectDocumentSerializer {
             "horizontal" -> OrthoAlignment.HORIZONTAL
             "vertical" -> OrthoAlignment.VERTICAL
             else -> OrthoAlignment.NONE
+        }
+    }
+
+    private fun parseDimensionExtensionStyle(value: String): DimensionExtensionStyle {
+        return when (value.lowercase()) {
+            "short" -> DimensionExtensionStyle.SHORT
+            else -> DimensionExtensionStyle.FULL
         }
     }
 

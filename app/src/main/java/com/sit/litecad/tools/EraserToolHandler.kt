@@ -61,6 +61,7 @@ class EraserToolHandler(
 
         if (pick != null) {
             when (pick.kind) {
+                SelectionPickKind.DIMENSION -> eraseDimension(document, pick.id)
                 SelectionPickKind.EDGE -> eraseEdge(document, pick.id)
                 SelectionPickKind.AXIS -> eraseAxis(document, pick.id)
                 SelectionPickKind.POLYGON -> suppressFace(document, pick.id)
@@ -93,6 +94,18 @@ class EraserToolHandler(
         document.removeAxis(axis)
         // Оси не участвуют в топологии граней и не связаны с вершинами —
         // syncFaces и pruneUnusedVertices не нужны.
+        document.bumpRevision()
+    }
+
+    /** Удаление размера целиком. */
+    private fun eraseDimension(document: CadDocument, dimensionId: UUID) {
+        val dimension = document.dimensionById(dimensionId) ?: return
+
+        historyService.record(document)
+
+        document.removeDimension(dimension)
+        // Размер — аннотация, не участвует в топологии. rebuildIndexes не нужен
+        // (removeDimension сам синхронизирует dimensionsById).
         document.bumpRevision()
     }
 

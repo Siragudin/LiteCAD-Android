@@ -118,6 +118,9 @@ class SelectionToolHandler(
                     selection.addPolygon(pick.id)
                 }
             }
+            SelectionPickKind.DIMENSION -> {
+                // Выделение размеров пока не поддерживается (отдельная задача).
+            }
         }
     }
 

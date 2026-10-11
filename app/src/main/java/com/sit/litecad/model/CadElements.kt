@@ -45,3 +45,28 @@ data class CadAxis(
 ) {
     fun clone(): CadAxis = CadAxis(id, Start, End, colorArgb, thickness)
 }
+
+/** Стиль выносных линий размера. */
+enum class DimensionExtensionStyle { FULL, SHORT }
+
+/**
+ * Линейный размер между двумя вершинами документа.
+ * Хранит Id вершин (не координаты) — чтобы размер «следовал» за геометрией.
+ * Anchor-позиции — снимок на момент создания, для валидации.
+ */
+data class CadDimension(
+    val id: UUID = UUID.randomUUID(),
+    val FirstVertexId: UUID,
+    val SecondVertexId: UUID,
+    val FirstAnchorPosition: Point2,
+    val SecondAnchorPosition: Point2,
+    var Offset: Double = 0.0,
+    var ExtensionStyle: DimensionExtensionStyle = DimensionExtensionStyle.FULL,
+    var IsOrthogonal: Boolean = false,
+    var OrthogonalIsHorizontal: Boolean = true,
+    var TextSize: Double = 8.0,
+    var colorArgb: Int = 0xFF1565C0.toInt(),   // синий по умолчанию (как у ПК DimensionNormal)
+    var thickness: Double = 1.5
+) {
+    fun clone(): CadDimension = copy()
+}

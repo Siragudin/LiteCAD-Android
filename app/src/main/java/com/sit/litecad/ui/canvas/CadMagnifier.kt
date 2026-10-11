@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
@@ -32,7 +33,8 @@ fun CadMagnifier(
     canvasSize: IntSize,
     cursorPosition: Offset,
     isGridVisible: Boolean,
-    visible: Boolean
+    visible: Boolean,
+    textMeasurer: TextMeasurer
 ) {
     if (!visible || !cursorPosition.isSpecified || canvasSize.width == 0) return
 
@@ -80,7 +82,8 @@ fun CadMagnifier(
                 camera = magCamera,
                 document = document,
                 toolManager = toolManager,
-                isGridVisible = isGridVisible
+                isGridVisible = isGridVisible,
+                textMeasurer = textMeasurer
             )
 
             val cx = size.width / 2f

@@ -43,6 +43,7 @@ data class CadDocument(
     @SerializedName("Edges") val edges: MutableList<CadEdge> = mutableListOf(),
     @SerializedName("Polygons") val polygons: MutableList<Polygon> = mutableListOf(),
     @SerializedName("Axes") val axes: MutableList<CadAxis> = mutableListOf(),
+    @SerializedName("Dimensions") val dimensions: MutableList<CadDimension> = mutableListOf(),
     @SerializedName("FaceFillStyles")
     val faceFillStyles: MutableMap<String, FaceFillStyle> = mutableMapOf(),
     @SerializedName("SuppressedFaceGeometryKeys")
@@ -58,6 +59,7 @@ data class CadDocument(
     private val verticesById: MutableMap<UUID, CadVertex> = mutableMapOf()
     private val edgesById: MutableMap<UUID, CadEdge> = mutableMapOf()
     private val axesById: MutableMap<UUID, CadAxis> = mutableMapOf()
+    private val dimensionsById: MutableMap<UUID, CadDimension> = mutableMapOf()
 
     fun bumpRevision() {
         revision++
@@ -68,6 +70,7 @@ data class CadDocument(
     fun vertexById(id: UUID): CadVertex? = verticesById[id]
     fun edgeById(id: UUID): CadEdge? = edgesById[id]
     fun axisById(id: UUID): CadAxis? = axesById[id]
+    fun dimensionById(id: UUID): CadDimension? = dimensionsById[id]
 
     // --- mutations ---
 
@@ -96,6 +99,16 @@ data class CadDocument(
         axesById.remove(axis.id)
     }
 
+    fun addDimension(dimension: CadDimension) {
+        dimensions.add(dimension)
+        dimensionsById[dimension.id] = dimension
+    }
+
+    fun removeDimension(dimension: CadDimension) {
+        dimensions.remove(dimension)
+        dimensionsById.remove(dimension.id)
+    }
+
     /**
      * Полная пересборка индексов. Нужна после undo/redo, загрузки проекта,
      * любой замены содержимого списков в обход add/remove.
@@ -104,21 +117,25 @@ data class CadDocument(
         verticesById.clear()
         edgesById.clear()
         axesById.clear()
+        dimensionsById.clear()
         for (v in vertices) verticesById[v.id] = v
         for (e in edges) edgesById[e.id] = e
         for (a in axes) axesById[a.id] = a
+        for (d in dimensions) dimensionsById[d.id] = d
     }
 
     fun clear() {
         vertices.clear()
         edges.clear()
         axes.clear()
+        dimensions.clear()
         polygons.clear()
         faceFillStyles.clear()
         suppressedFaceGeometryKeys.clear()
         verticesById.clear()
         edgesById.clear()
         axesById.clear()
+        dimensionsById.clear()
     }
 
     fun clearTopology() {

@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.Selection
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
@@ -283,6 +284,24 @@ fun EditorScreen(
                                 onExactInputToggle = { settings.move.exactInputEnabled = !settings.move.exactInputEnabled },
                             )
                         }
+                        "dim" -> {
+                            DimSettingsBar(
+                                orthoEnabled = settings.dim.orthoEnabled,
+                                onOrthoToggle = { settings.dim.orthoEnabled = !settings.dim.orthoEnabled },
+                                exactInputEnabled = settings.dim.exactInputEnabled,
+                                onExactInputToggle = { settings.dim.exactInputEnabled = !settings.dim.exactInputEnabled },
+                                extensionStyle = settings.dim.extensionStyle,
+                                onExtensionStyleToggle = {
+                                    settings.dim.extensionStyle =
+                                        if (settings.dim.extensionStyle == DimensionExtensionStyle.FULL)
+                                            DimensionExtensionStyle.SHORT else DimensionExtensionStyle.FULL
+                                },
+                                color = settings.dim.color,
+                                onColorChange = { settings.dim.color = it },
+                                thickness = settings.dim.thickness,
+                                onThicknessChange = { settings.dim.thickness = it },
+                            )
+                        }
                         "erase" -> {
                             // Ластик: панель свойств скрыта — пустая тонкая полоса (как у «hand»).
                             emptySettingsBar()
@@ -297,8 +316,12 @@ fun EditorScreen(
             val pending = toolManager.pendingInput
             when (pending) {
                 is PendingInput.Length -> {
-                    // У дуги «длина» — это высота (sagitta).
-                    val label = if (toolManager.activeToolId == "arc") "Высота:" else "Длина:"
+                    // У дуги «длина» — это высота (sagitta), у размера — отступ.
+                    val label = when (toolManager.activeToolId) {
+                        "arc" -> "Высота:"
+                        "dim" -> "Отступ:"
+                        else -> "Длина:"
+                    }
                     Box(Modifier.align(Alignment.BottomCenter)) {
                         LengthInputPanel(
                             hint = pending.initial,

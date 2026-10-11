@@ -13,6 +13,8 @@ data class DimensionDto(
     @SerializedName("offset") var offset: Double = 0.0,
     @SerializedName("extensionStyle") var extensionStyle: String = "full",
     @SerializedName("isOrthogonal") var isOrthogonal: Boolean = false,
-    @SerializedName("orthogonalIsHorizontal") var orthogonalIsHorizontal: Boolean = false,
-    @SerializedName("textSize") var textSize: Double? = null
+    @SerializedName("orthogonalIsHorizontal") var orthogonalIsHorizontal: Boolean = true,
+    @SerializedName("textSize") var textSize: Double = 8.0,
+    @SerializedName("color") var color: String = "#FF1565C0",
+    @SerializedName("thickness") var thickness: Double = 1.5
 )

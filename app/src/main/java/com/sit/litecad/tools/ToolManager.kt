@@ -27,7 +27,8 @@ class ToolManager(
         "arc" to ArcToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this),
         "erase" to EraserToolHandler(historyService),
-        "move" to MoveToolHandler(snapService, historyService, this)
+        "move" to MoveToolHandler(snapService, historyService, this),
+        "dim" to DimensionToolHandler(snapService, historyService, this)
     )
 
     var activeToolId by mutableStateOf("hand")

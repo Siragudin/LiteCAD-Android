@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
@@ -37,6 +38,8 @@ fun CadCanvas(
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var cursorPosition by remember { mutableStateOf(Offset.Unspecified) }
+
+    val textMeasurer = rememberTextMeasurer()
 
     val isHandMode = toolManager.activeToolId == "hand"
 
@@ -110,7 +113,8 @@ fun CadCanvas(
                 camera = viewport.toCamera(),
                 document = document,
                 toolManager = toolManager,
-                isGridVisible = isGridVisible
+                isGridVisible = isGridVisible,
+                textMeasurer = textMeasurer
             )
         }
 
@@ -121,7 +125,8 @@ fun CadCanvas(
             canvasSize = canvasSize,
             cursorPosition = cursorPosition,
             isGridVisible = isGridVisible,
-            visible = !isHandMode
+            visible = !isHandMode,
+            textMeasurer = textMeasurer
         )
 
         val measurementText = toolManager.activeTool?.currentMeasurement ?: ""

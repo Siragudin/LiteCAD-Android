@@ -9,6 +9,7 @@ package com.sit.litecad.model
 class DocumentSnapshot private constructor(
     private val vertices: List<CadVertex>,
     private val edges: List<CadEdge>,
+    private val axes: List<CadAxis>,
     private val userPolygons: List<Polygon>,
     private val faceFillStyles: Map<String, FaceFillStyle>,
     private val suppressedFaceGeometryKeys: Set<String>
@@ -30,6 +31,7 @@ class DocumentSnapshot private constructor(
                     colorArgb = edge.colorArgb
                 )
             }
+            val axesCopy = document.axes.map { axis -> axis.clone() }
             val userPolygonsCopy = document.polygons
                 .filter { it.type != PolygonType.FACE }
                 .map { it.clone() }
@@ -40,6 +42,7 @@ class DocumentSnapshot private constructor(
             return DocumentSnapshot(
                 verticesCopy,
                 edgesCopy,
+                axesCopy,
                 userPolygonsCopy,
                 faceFillStylesCopy,
                 suppressedCopy
@@ -51,6 +54,9 @@ class DocumentSnapshot private constructor(
         document.clearTopology()
         document.vertices.addAll(vertices)
         document.edges.addAll(edges)
+
+        document.axes.clear()
+        document.axes.addAll(axes.map { it.clone() })
 
         document.polygons.clear()
         document.polygons.addAll(userPolygons.map { it.clone() })

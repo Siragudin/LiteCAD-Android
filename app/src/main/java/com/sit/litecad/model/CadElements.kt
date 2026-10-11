@@ -29,3 +29,19 @@ data class CadVertex(
     val position: Point2
         get() = Point2(X, Y)
 }
+
+/**
+ * Эквивалент класса Axis из ПК-версии.
+ * Ось — отдельная сущность, не ребро. Не участвует в топологии граней,
+ * не разбивает чужие рёбра. Используется как опорная линия построений
+ * и как источник снап-точек (концы, середина, тело).
+ */
+data class CadAxis(
+    val id: UUID = UUID.randomUUID(),
+    var Start: Point2,
+    var End: Point2,
+    var colorArgb: Int = 0xFF1565C0.toInt(),
+    var thickness: Double = 1.5
+) {
+    fun clone(): CadAxis = CadAxis(id, Start, End, colorArgb, thickness)
+}

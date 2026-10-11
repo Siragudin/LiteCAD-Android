@@ -22,7 +22,8 @@ data class SnapPoint(
     val Position: Point2,
     val Kind: SnapKind,
     val EdgeId: UUID? = null,
-    val VertexId: UUID? = null
+    val VertexId: UUID? = null,
+    val AxisId: UUID? = null
 )
 
 /**

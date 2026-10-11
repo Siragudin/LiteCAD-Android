@@ -20,6 +20,7 @@ class ToolManager(
 ) {
     private val tools = mapOf<String, Tool>(
         "line" to LineToolHandler(snapService, historyService, this),
+        "axis" to AxisToolHandler(snapService, historyService, this),
         "rect" to RectangleToolHandler(snapService, historyService, this),
         "circle" to CircleToolHandler(snapService, historyService, this),
         "sector" to SectorToolHandler(snapService, historyService, this),
@@ -167,8 +168,9 @@ class ToolManager(
 
     private fun pruneSelection() {
         val edgeIds = document.edges.map { it.id }.toHashSet()
+        val axisIds = document.axes.map { it.id }.toHashSet()
         val polygonIds = document.polygons.map { it.id }.toHashSet()
-        selection.pruneMissing(edgeIds, polygonIds)
+        selection.pruneMissing(edgeIds, axisIds, polygonIds)
 
 
     }

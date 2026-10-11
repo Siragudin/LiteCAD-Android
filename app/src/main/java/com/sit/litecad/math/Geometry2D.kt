@@ -10,6 +10,7 @@ object Geometry2D {
 
     class ProjectionResult(val projection: Point2, val distance: Double)
     class OverlapResult(val start: Point2, val end: Point2)
+    class UnionResult(val start: Point2, val end: Point2)
 
     fun tryGetSegmentIntersection(
         a1: Point2, a2: Point2,
@@ -171,5 +172,32 @@ object Geometry2D {
         val overlapStart = getSegmentPoint(newStart, newEnd, overlapMin)
         val overlapEnd = getSegmentPoint(newStart, newEnd, overlapMax)
         return OverlapResult(overlapStart, overlapEnd)
+    }
+
+    /**
+     * Если отрезки [aStart;aEnd] и [bStart;bEnd] лежат на одной прямой
+     * (в пределах tolerance) — вернуть их объединение: от самой «ранней»
+     * до самой «поздней» точки вдоль прямой. Иначе — null.
+     */
+    fun tryGetCollinearSegmentsUnion(
+        aStart: Point2, aEnd: Point2,
+        bStart: Point2, bEnd: Point2,
+        tolerance: Double
+    ): UnionResult? {
+        val lengthA = MathUtils.distance(aStart, aEnd)
+        val lengthB = MathUtils.distance(bStart, bEnd)
+        if (lengthA <= tolerance || lengthB <= tolerance) return null
+
+        if (!areSegmentsCollinear(aStart, aEnd, bStart, bEnd, tolerance)) return null
+
+        val tAStart = getSegmentParameter(aStart, aStart, aEnd, tolerance)
+        val tAEnd = getSegmentParameter(aEnd, aStart, aEnd, tolerance)
+        val tBStart = getSegmentParameter(bStart, aStart, aEnd, tolerance)
+        val tBEnd = getSegmentParameter(bEnd, aStart, aEnd, tolerance)
+
+        val tMin = min(min(tAStart, tAEnd), min(tBStart, tBEnd))
+        val tMax = max(max(tAStart, tAEnd), max(tBStart, tBEnd))
+
+        return UnionResult(getSegmentPoint(aStart, aEnd, tMin), getSegmentPoint(aStart, aEnd, tMax))
     }
 }

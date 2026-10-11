@@ -1,10 +1,13 @@
 package com.sit.litecad.storage
 
+import com.sit.litecad.math.Point2
+import com.sit.litecad.model.CadAxis
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.CadVertex
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.model.OrthoAlignment
+import com.sit.litecad.storage.dto.AxisDto
 import com.sit.litecad.storage.dto.EdgeDto
 import com.sit.litecad.storage.dto.ProjectDocumentDto
 import com.sit.litecad.storage.dto.VertexDto
@@ -42,8 +45,19 @@ object ProjectDocumentSerializer {
                     lineType = enumToCamel(edge.lineType.name),
                     orthoAlignment = enumToCamel(edge.orthoAlignment.name)
                 )
+            }.toMutableList(),
+            axes = document.axes.map { axis ->
+                AxisDto(
+                    id = axis.id.toString(),
+                    startX = axis.Start.X,
+                    startY = axis.Start.Y,
+                    endX = axis.End.X,
+                    endY = axis.End.Y,
+                    color = argbToHex(axis.colorArgb),
+                    thickness = axis.thickness
+                )
             }.toMutableList()
-            // Остальные поля (userPolygons, dimensions, axes, leaders, texts,
+            // Остальные поля (userPolygons, dimensions, leaders, texts,
             // elevationBaseY, suppressedFaceGeometryKeys, faceFillStyles)
             // остаются пустыми, т.к. в Android-версии их пока нет.
         )
@@ -87,6 +101,19 @@ object ProjectDocumentSerializer {
                     lineType = parseLineType(e.lineType),
                     orthoAlignment = parseOrthoAlignment(e.orthoAlignment),
                     colorArgb = hexToArgb(e.color)
+                )
+            )
+        }
+
+        document.axes.clear()
+        for (a in dto.axes) {
+            document.axes.add(
+                CadAxis(
+                    id = parseUuid(a.id),
+                    Start = Point2(a.startX, a.startY),
+                    End = Point2(a.endX, a.endY),
+                    colorArgb = hexToArgb(a.color),
+                    thickness = a.thickness
                 )
             )
         }

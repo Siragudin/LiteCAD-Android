@@ -30,11 +30,12 @@ fun TopSettingsBarDummy(
     onThicknessChange: (Double) -> Unit,
     currentColor: Int,
     onColorChange: (Int) -> Unit,
-    currentLineType: EdgeLineType,
-    onLineTypeChange: (EdgeLineType) -> Unit,
+    currentLineType: EdgeLineType = EdgeLineType.SOLID,
+    onLineTypeChange: (EdgeLineType) -> Unit = {},
     showControls: Boolean = true,
     showOrtho: Boolean = true,
-    showExactInput: Boolean = true
+    showExactInput: Boolean = true,
+    showLineType: Boolean = true,
 ) {
     Row(
         modifier = Modifier
@@ -75,10 +76,12 @@ fun TopSettingsBarDummy(
                 onThicknessChange = onThicknessChange
             )
 
-            LineTypeSelector(
-                currentLineType = currentLineType,
-                onLineTypeChange = onLineTypeChange
-            )
+            if (showLineType) {
+                LineTypeSelector(
+                    currentLineType = currentLineType,
+                    onLineTypeChange = onLineTypeChange
+                )
+            }
         }
     }
 }

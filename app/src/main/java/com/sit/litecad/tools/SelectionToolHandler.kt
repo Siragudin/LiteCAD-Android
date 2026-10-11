@@ -100,6 +100,15 @@ class SelectionToolHandler(
                     selection.addEdge(pick.id)
                 }
             }
+            SelectionPickKind.AXIS -> {
+                val already = selection.selectedAxisIds.contains(pick.id)
+                if (additive && already) {
+                    selection.removeAxis(pick.id)
+                } else {
+                    if (!additive) selection.clear()
+                    selection.addAxis(pick.id)
+                }
+            }
             SelectionPickKind.POLYGON -> {
                 val already = selection.selectedPolygonIds.contains(pick.id)
                 if (additive && already) {
@@ -130,6 +139,9 @@ class SelectionToolHandler(
                 val e = com.sit.litecad.geometry.TopologyService.getEdgeEndPoint(document, edge)
                 if (bounds.containsSegmentFully(s, e)) selection.addEdge(edge.id)
             }
+            for (axis in document.axes) {
+                if (bounds.containsSegmentFully(axis.Start, axis.End)) selection.addAxis(axis.id)
+            }
             for (polygon in document.polygons) {
                 if (polygon.outerLoop.edges.size < 3) continue
                 if (bounds.containsPolygonFully(document, polygon)) selection.addPolygon(polygon.id)
@@ -140,6 +152,9 @@ class SelectionToolHandler(
                 val s = com.sit.litecad.geometry.TopologyService.getEdgeStartPoint(document, edge)
                 val e = com.sit.litecad.geometry.TopologyService.getEdgeEndPoint(document, edge)
                 if (bounds.intersectsSegment(s, e)) selection.addEdge(edge.id)
+            }
+            for (axis in document.axes) {
+                if (bounds.intersectsSegment(axis.Start, axis.End)) selection.addAxis(axis.id)
             }
             for (polygon in document.polygons) {
                 if (polygon.outerLoop.edges.size < 3) continue

@@ -145,6 +145,22 @@ fun DrawScope.drawCadScene(
         )
     }
 
+    // --- ОСИ (отдельная сущность, паттерн «точка-тире») ---
+    document.axes.forEach { axis ->
+        val p1 = camera.worldToScreen(axis.Start)
+        val p2 = camera.worldToScreen(axis.End)
+        val t = axis.thickness.toFloat()
+        val effect = PathEffect.dashPathEffect(floatArrayOf(12f * t, 4f * t, 2f * t, 4f * t), 0f)
+        drawLine(
+            color = Color(axis.colorArgb),
+            start = p1,
+            end = p2,
+            strokeWidth = t,
+            cap = StrokeCap.Round,
+            pathEffect = effect
+        )
+    }
+
     // --- МИРОВОЙ НОЛЬ (оси) ---
     val zeroScreen = camera.worldToScreen(Point2.Zero)
     val axisSize = 100.0
@@ -201,6 +217,19 @@ fun DrawScope.drawCadScene(
             color = selectedStroke,
             start = p1,
             end = p2,
+            strokeWidth = selectedEdgeStroke,
+            cap = StrokeCap.Round
+        )
+    }
+
+    // Оси — толстые синие линии поверх
+    document.axes.forEach { axis ->
+        if (axis.id !in selection.selectedAxisIds) return@forEach
+        val p1 = camera.worldToScreen(axis.Start)
+        val p2 = camera.worldToScreen(axis.End)
+        drawLine(
+            color = selectedStroke,
+            start = p1, end = p2,
             strokeWidth = selectedEdgeStroke,
             cap = StrokeCap.Round
         )

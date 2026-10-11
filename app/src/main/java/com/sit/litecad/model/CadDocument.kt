@@ -42,6 +42,7 @@ data class CadDocument(
     @SerializedName("Vertices") val vertices: MutableList<CadVertex> = mutableListOf(),
     @SerializedName("Edges") val edges: MutableList<CadEdge> = mutableListOf(),
     @SerializedName("Polygons") val polygons: MutableList<Polygon> = mutableListOf(),
+    @SerializedName("Axes") val axes: MutableList<CadAxis> = mutableListOf(),
     @SerializedName("FaceFillStyles")
     val faceFillStyles: MutableMap<String, FaceFillStyle> = mutableMapOf(),
     @SerializedName("SuppressedFaceGeometryKeys")
@@ -56,6 +57,7 @@ data class CadDocument(
      */
     private val verticesById: MutableMap<UUID, CadVertex> = mutableMapOf()
     private val edgesById: MutableMap<UUID, CadEdge> = mutableMapOf()
+    private val axesById: MutableMap<UUID, CadAxis> = mutableMapOf()
 
     fun bumpRevision() {
         revision++
@@ -65,6 +67,7 @@ data class CadDocument(
 
     fun vertexById(id: UUID): CadVertex? = verticesById[id]
     fun edgeById(id: UUID): CadEdge? = edgesById[id]
+    fun axisById(id: UUID): CadAxis? = axesById[id]
 
     // --- mutations ---
 
@@ -83,6 +86,16 @@ data class CadDocument(
         edgesById.remove(edge.id)
     }
 
+    fun addAxis(axis: CadAxis) {
+        axes.add(axis)
+        axesById[axis.id] = axis
+    }
+
+    fun removeAxis(axis: CadAxis) {
+        axes.remove(axis)
+        axesById.remove(axis.id)
+    }
+
     /**
      * Полная пересборка индексов. Нужна после undo/redo, загрузки проекта,
      * любой замены содержимого списков в обход add/remove.
@@ -90,18 +103,22 @@ data class CadDocument(
     fun rebuildIndexes() {
         verticesById.clear()
         edgesById.clear()
+        axesById.clear()
         for (v in vertices) verticesById[v.id] = v
         for (e in edges) edgesById[e.id] = e
+        for (a in axes) axesById[a.id] = a
     }
 
     fun clear() {
         vertices.clear()
         edges.clear()
+        axes.clear()
         polygons.clear()
         faceFillStyles.clear()
         suppressedFaceGeometryKeys.clear()
         verticesById.clear()
         edgesById.clear()
+        axesById.clear()
     }
 
     fun clearTopology() {

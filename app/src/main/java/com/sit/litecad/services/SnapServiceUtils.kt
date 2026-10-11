@@ -28,6 +28,13 @@ internal object SnapServiceUtils {
             hash = (hash * 31) + edge.startVertexId.hashCode()
             hash = (hash * 31) + edge.endVertexId.hashCode()
         }
+
+        hash = (hash * 31) + document.axes.size
+        for (axis in document.axes) {
+            hash = (hash * 31) + axis.id.hashCode()
+            hash = hashPoint(hash, axis.Start)
+            hash = hashPoint(hash, axis.End)
+        }
         return hash
     }
 

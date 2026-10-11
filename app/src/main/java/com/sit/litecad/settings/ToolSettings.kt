@@ -45,6 +45,14 @@ class MoveSettingsState {
     var exactInputEnabled by mutableStateOf(false)
 }
 
+/** Состояние настроек инструмента «Ось». */
+class AxisSettingsState {
+    var orthoEnabled by mutableStateOf(true)
+    var exactInputEnabled by mutableStateOf(false)
+    var thickness by mutableStateOf(1.5)
+    var color by mutableStateOf(0xFF1565C0.toInt())
+}
+
 /** Состояние настроек инструмента «Выбор». */
 class SelectSettingsState {
     var selectionMultiMode by mutableStateOf(false)
@@ -61,6 +69,7 @@ class ToolSettings {
     val rect = RectSettingsState()
     val circle = CircleSettingsState()
     val sector = SectorSettingsState()
+    val axis = AxisSettingsState()
     val move = MoveSettingsState()
     val select = SelectSettingsState()
     val common = CommonSettingsState()

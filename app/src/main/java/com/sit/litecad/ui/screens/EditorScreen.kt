@@ -175,6 +175,22 @@ fun EditorScreen(
                                 showControls = true
                             )
                         }
+                        "axis" -> {
+                            TopSettingsBarDummy(
+                                isOrthoEnabled = settings.axis.orthoEnabled,
+                                onOrthoToggle = { settings.axis.orthoEnabled = !settings.axis.orthoEnabled },
+                                exactInputEnabled = settings.axis.exactInputEnabled,
+                                onExactInputToggle = { settings.axis.exactInputEnabled = !settings.axis.exactInputEnabled },
+                                currentThickness = settings.axis.thickness,
+                                onThicknessChange = { settings.axis.thickness = it },
+                                currentColor = settings.axis.color,
+                                onColorChange = { settings.axis.color = it },
+                                showControls = true,
+                                showOrtho = true,
+                                showExactInput = true,
+                                showLineType = false,
+                            )
+                        }
                         "rect" -> {
                             TopSettingsBarDummy(
                                 isOrthoEnabled = false,

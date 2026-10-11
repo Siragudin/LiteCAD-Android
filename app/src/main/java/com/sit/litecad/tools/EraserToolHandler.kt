@@ -62,6 +62,7 @@ class EraserToolHandler(
         if (pick != null) {
             when (pick.kind) {
                 SelectionPickKind.EDGE -> eraseEdge(document, pick.id)
+                SelectionPickKind.AXIS -> eraseAxis(document, pick.id)
                 SelectionPickKind.POLYGON -> suppressFace(document, pick.id)
             }
         }
@@ -80,6 +81,18 @@ class EraserToolHandler(
         // Перестроить грани. Подавления НЕ инвалидируем —
         // иначе потеряем подавленные ранее грани.
         PolygonBuilder.syncFaces(document)
+        document.bumpRevision()
+    }
+
+    /** Удаление оси целиком. */
+    private fun eraseAxis(document: CadDocument, axisId: UUID) {
+        val axis = document.axisById(axisId) ?: return
+
+        historyService.record(document)
+
+        document.removeAxis(axis)
+        // Оси не участвуют в топологии граней и не связаны с вершинами —
+        // syncFaces и pruneUnusedVertices не нужны.
         document.bumpRevision()
     }
 

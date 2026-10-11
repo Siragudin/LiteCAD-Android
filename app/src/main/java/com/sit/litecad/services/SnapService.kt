@@ -173,6 +173,28 @@ class SnapService {
             )
         }
 
+        for (axis in document.axes) {
+            candidates.add(
+                Pair(
+                    SnapPoint(axis.Start, SnapKind.Endpoint, AxisId = axis.id),
+                    SnapIdentity.forAxisEndpoint(axis.id, isStart = true)
+                )
+            )
+            candidates.add(
+                Pair(
+                    SnapPoint(axis.End, SnapKind.Endpoint, AxisId = axis.id),
+                    SnapIdentity.forAxisEndpoint(axis.id, isStart = false)
+                )
+            )
+            val mid = Point2((axis.Start.X + axis.End.X) / 2.0, (axis.Start.Y + axis.End.Y) / 2.0)
+            candidates.add(
+                Pair(
+                    SnapPoint(mid, SnapKind.Midpoint, AxisId = axis.id),
+                    SnapIdentity.forAxisMidpoint(axis.id)
+                )
+            )
+        }
+
         addLinearContactCandidates(document, candidates, tolerance)
         return candidates
     }
@@ -203,6 +225,22 @@ class SnapService {
                 Pair(
                     SnapPoint(projResult.projection, SnapKind.OnEdge, edge.id),
                     SnapIdentity.forOnEdge(edge.id, parameterKey)
+                )
+            )
+        }
+
+        for (axis in document.axes) {
+            val start = axis.Start
+            val end = axis.End
+            val projResult = Geometry2D.tryProjectPointOnSegment(cursor, start, end, tolerance) ?: continue
+            if (projResult.distance > tolerance) continue
+            if (!Geometry2D.isPointOnSegmentInterior(projResult.projection, start, end, tolerance)) continue
+
+            val parameterKey = SnapServiceUtils.quantizeEdgeParameter(start, end, projResult.projection, tolerance)
+            candidates.add(
+                Pair(
+                    SnapPoint(projResult.projection, SnapKind.OnEdge, AxisId = axis.id),
+                    SnapIdentity.forOnAxis(axis.id, parameterKey)
                 )
             )
         }

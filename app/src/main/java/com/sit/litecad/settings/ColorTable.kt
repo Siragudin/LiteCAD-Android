@@ -12,7 +12,8 @@ object ColorTable {
         Entry("Серый", 0xFF808080.toInt()),
         Entry("Синий", 0xFF0000FF.toInt()),
         Entry("Красный", 0xFFFF0000.toInt()),
-        Entry("Зелёный", 0xFF00A000.toInt())
+        Entry("Зелёный", 0xFF00A000.toInt()),
+        Entry("Тёмно-синий", 0xFF1565C0.toInt()),
     )
 
     val DEFAULT: Int = values[0].argb

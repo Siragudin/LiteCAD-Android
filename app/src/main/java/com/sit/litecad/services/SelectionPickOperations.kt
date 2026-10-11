@@ -9,6 +9,7 @@ import java.util.UUID
 
 enum class SelectionPickKind {
     EDGE,
+    AXIS,
     POLYGON
 }
 
@@ -20,8 +21,9 @@ data class SelectionPick(
 object SelectionPickOperations {
 
     /**
-     * Приоритет: Edge → Polygon.
+     * Приоритет: Edge → Axis → Polygon.
      * Для Edge — ближайшее ребро в пределах tolerance.
+     * Для Axis — ближайшая ось в пределах tolerance.
      * Для Polygon — минимальная по площади грань, содержащая точку (чтобы клик в дырку
      * попадал в маленькую грань, а не в большую).
      */
@@ -31,6 +33,7 @@ object SelectionPickOperations {
         tolerance: Double
     ): SelectionPick? {
         tryPickEdge(document, world, tolerance)?.let { return it }
+        tryPickAxis(document, world, tolerance)?.let { return it }
         tryPickPolygon(document, world, tolerance)?.let { return it }
         return null
     }
@@ -50,6 +53,21 @@ object SelectionPickOperations {
         }
 
         return closestEdgeId?.let { SelectionPick(SelectionPickKind.EDGE, it) }
+    }
+
+    fun tryPickAxis(document: CadDocument, world: Point2, tolerance: Double): SelectionPick? {
+        var closestAxisId: UUID? = null
+        var closestDistance = tolerance
+
+        for (axis in document.axes) {
+            val dist = Geometry2D.tryHitTestSegment(world, axis.Start, axis.End, tolerance) ?: continue
+            if (dist > closestDistance) continue
+
+            closestAxisId = axis.id
+            closestDistance = dist
+        }
+
+        return closestAxisId?.let { SelectionPick(SelectionPickKind.AXIS, it) }
     }
 
     fun tryPickPolygon(document: CadDocument, world: Point2, tolerance: Double): SelectionPick? {

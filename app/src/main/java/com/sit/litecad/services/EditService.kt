@@ -42,23 +42,28 @@ object EditService {
         document.edges.removeAll { it.id in selection.selectedEdgeIds }
         val removedAnyEdge = document.edges.size < edgesBefore
 
-        // Синхронизировать индекс edgesById после удаления
-        if (removedAnyEdge) {
+        // 3. Удаляем выделенные оси.
+        val axesBefore = document.axes.size
+        document.axes.removeAll { it.id in selection.selectedAxisIds }
+        val removedAnyAxis = document.axes.size < axesBefore
+
+        // Синхронизировать индексы после удаления рёбер/осей
+        if (removedAnyEdge || removedAnyAxis) {
             document.rebuildIndexes()
         }
 
-        // 3. Удаляем выделенные пользовательские полигоны
+        // 4. Удаляем выделенные пользовательские полигоны
         document.polygons.removeAll { polygon ->
             polygon.id in selection.selectedPolygonIds && polygon.type != PolygonType.FACE
         }
 
-        // 4. Prune вершин + инвалидация suppression
+        // 5. Prune вершин + инвалидация suppression
         if (removedAnyEdge) {
             PolygonBuilder.invalidateSuppressionOnEdgeTopologyChange(document)
             TopologyService.pruneUnusedVertices(document)
         }
 
-        // 5. Перестроить грани
+        // 6. Перестроить грани
         PolygonBuilder.syncFaces(document)
 
         document.bumpRevision()

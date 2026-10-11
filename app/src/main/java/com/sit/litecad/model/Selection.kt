@@ -15,6 +15,7 @@ import java.util.UUID
 class Selection {
 
     val selectedEdgeIds: MutableSet<UUID> = mutableSetOf()
+    val selectedAxisIds: MutableSet<UUID> = mutableSetOf()
     val selectedPolygonIds: MutableSet<UUID> = mutableSetOf()
 
     /**
@@ -26,11 +27,14 @@ class Selection {
         private set
 
     val isEmpty: Boolean
-        get() = selectedEdgeIds.isEmpty() && selectedPolygonIds.isEmpty()
+        get() = selectedEdgeIds.isEmpty() &&
+                selectedAxisIds.isEmpty() &&
+                selectedPolygonIds.isEmpty()
 
     fun clear() {
         val hadAny = !isEmpty
         selectedEdgeIds.clear()
+        selectedAxisIds.clear()
         selectedPolygonIds.clear()
         if (hadAny) revision++
     }
@@ -41,6 +45,14 @@ class Selection {
 
     fun removeEdge(id: UUID) {
         if (selectedEdgeIds.remove(id)) revision++
+    }
+
+    fun addAxis(id: UUID) {
+        if (selectedAxisIds.add(id)) revision++
+    }
+
+    fun removeAxis(id: UUID) {
+        if (selectedAxisIds.remove(id)) revision++
     }
 
     fun addPolygon(id: UUID) {
@@ -57,10 +69,12 @@ class Selection {
      */
     fun pruneMissing(
         edgesById: Set<UUID>,
+        axesById: Set<UUID>,
         polygonsById: Set<UUID>
     ) {
         val removedEdges = selectedEdgeIds.retainAll(edgesById)
+        val removedAxes = selectedAxisIds.retainAll(axesById)
         val removedPolys = selectedPolygonIds.retainAll(polygonsById)
-        if (removedEdges || removedPolys) revision++
+        if (removedEdges || removedAxes || removedPolys) revision++
     }
 }

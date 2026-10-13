@@ -295,7 +295,7 @@ fun DrawScope.drawCadScene(
         if (leader.text.isNotEmpty()) {
             val textStyle = TextStyle(
                 color = color,
-                fontSize = (LeaderGeometry.TEXT_HEIGHT_SCREEN * camera.zoom).toFloat().toSp(),
+                fontSize = LeaderGeometry.TEXT_HEIGHT_SCREEN.toFloat().toSp(),
                 fontWeight = FontWeight.Normal
             )
             val textLayoutResult = textMeasurer.measure(text = leader.text, style = textStyle)

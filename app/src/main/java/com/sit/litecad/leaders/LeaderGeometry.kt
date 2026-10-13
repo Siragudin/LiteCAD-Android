@@ -20,11 +20,11 @@ data class LeaderLayout(
 
 object LeaderGeometry {
 
-    const val BASE_HALF_LENGTH_SCREEN = 6.0
-    const val CHEVRON_HEIGHT_SCREEN = 8.0
-    const val STEM_HEIGHT_SCREEN = 28.0
-    const val SHELF_LENGTH_SCREEN = 36.0
-    const val TEXT_HEIGHT_SCREEN = 12.0
+    const val BASE_HALF_LENGTH_SCREEN = 30.0
+    const val CHEVRON_HEIGHT_SCREEN = 40.0
+    const val STEM_HEIGHT_SCREEN = 140.0
+    const val SHELF_LENGTH_SCREEN = 180.0
+    const val TEXT_HEIGHT_SCREEN = 60.0
 
     /**
      * Собрать геометрию выноски.

@@ -24,14 +24,14 @@ object LeaderService {
             document.elevationBaseY = measurePoint.Y
         }
         val delta = ElevationFormatting.computeDelta(document.elevationBaseY!!, measurePoint.Y)
-        val constrained = LeaderGeometry.constrainHorizontal(measurePoint, graphicOrigin)
-        val side = LeaderGeometry.resolveSide(measurePoint, constrained)
-        val sideHint = Point2(constrained.X + if (side >= 0) 1.0 else -1.0, constrained.Y)
+        // Цель — фиксированная снапнутая точка: шеврон и стойка не двигаются.
+        // Полка — от стойки до X переданной позиции (graphicOrigin) на уровне цели.
+        val landing = LeaderGeometry.constrainHorizontal(measurePoint, graphicOrigin)
 
         val leader = Leader(
             kind = LeaderKind.ELEVATION,
-            target = constrained,
-            textPosition = sideHint,
+            target = measurePoint,
+            textPosition = landing,
             text = ElevationFormatting.format(delta),
             colorArgb = colorArgb
         )

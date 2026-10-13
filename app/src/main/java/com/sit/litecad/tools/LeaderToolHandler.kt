@@ -85,7 +85,8 @@ class LeaderToolHandler(
             // Жест 1 — ставим цель (снап на что угодно, без исключений).
             val snapped = resolveObjectSnap(document, point, zoom, emptySet(), emptySet())
             target = snapped.position
-            dragTextPosition = target
+            // Дефолтное положение полки — вправо от цели на длину полки.
+            dragTextPosition = defaultTextPosition(target, zoom)
             hasTarget = true
             lastSnapKind = snapped.kind
             currentMeasurement = ""

@@ -300,6 +300,12 @@ fun EditorScreen(
                                 onCopyToggle = { settings.mirror.copyMode = !settings.mirror.copyMode },
                             )
                         }
+                        "offset" -> {
+                            OffsetSettingsBar(
+                                exactInputEnabled = settings.offset.exactInputEnabled,
+                                onExactInputToggle = { settings.offset.exactInputEnabled = !settings.offset.exactInputEnabled },
+                            )
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,
@@ -382,6 +388,15 @@ fun EditorScreen(
                             initial = pending.initial,
                             onSubmit = { toolManager.submitRotationAngle(it) },
                             onCancel = { toolManager.cancelRotationAngle() }
+                        )
+                    }
+                }
+                is PendingInput.OffsetDistance -> {
+                    Box(Modifier.align(Alignment.BottomCenter)) {
+                        OffsetInputPanel(
+                            initial = pending.initial,
+                            onSubmit = { toolManager.submitOffsetInput(it) },
+                            onCancel = { toolManager.cancelOffsetInput() }
                         )
                     }
                 }

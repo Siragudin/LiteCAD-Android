@@ -66,6 +66,11 @@ class MirrorSettingsState {
     var copyMode by mutableStateOf(true)
 }
 
+/** Состояние настроек инструмента «Эквидистанта». */
+class OffsetSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+}
+
 /** Состояние настроек инструмента «Ось». */
 class AxisSettingsState {
     var orthoEnabled by mutableStateOf(true)
@@ -107,6 +112,7 @@ class ToolSettings {
     val move = MoveSettingsState()
     val rotate = RotateSettingsState()
     val mirror = MirrorSettingsState()
+    val offset = OffsetSettingsState()
     val select = SelectSettingsState()
     val dim = DimSettingsState()
     val common = CommonSettingsState()

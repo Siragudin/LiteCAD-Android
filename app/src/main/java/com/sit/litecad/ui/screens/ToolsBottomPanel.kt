@@ -120,6 +120,11 @@ fun ToolsBottomPanel(
         ToolBarItem.Single("mirror", Icons.Default.Flip, "Зеркало")
     )
 
+    // Третий ряд — выезжает вместе со вторым.
+    val thirdRow: List<ToolBarItem> = listOf(
+        ToolBarItem.Single("offset", Icons.Default.Straighten, "Эквидистанта")
+    )
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         tonalElevation = 8.dp
@@ -154,6 +159,11 @@ fun ToolsBottomPanel(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ToolRow(
                         items = secondRow,
+                        selectedToolId = selectedToolId,
+                        onToolSelect = onToolSelect
+                    )
+                    ToolRow(
+                        items = thirdRow,
                         selectedToolId = selectedToolId,
                         onToolSelect = onToolSelect
                     )

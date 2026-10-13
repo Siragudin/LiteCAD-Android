@@ -30,6 +30,7 @@ class ToolManager(
         "move" to MoveToolHandler(snapService, historyService, this),
         "rotate" to RotateToolHandler(snapService, historyService, this),
         "mirror" to MirrorToolHandler(snapService, historyService, this),
+        "offset" to OffsetToolHandler(historyService, this),
         "dim" to DimensionToolHandler(snapService, historyService, this)
     )
 
@@ -87,6 +88,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onRotationAngleSubmitted(value, document)
             }
+            is PendingInput.OffsetDistance -> {
+                pendingInput = null
+                activeTool?.onOffsetInputSubmitted(value, document)
+            }
         }
     }
 
@@ -126,6 +131,10 @@ class ToolManager(
             is PendingInput.RotationAngle -> {
                 pendingInput = null
                 activeTool?.onRotationAngleCancelled(document)
+            }
+            is PendingInput.OffsetDistance -> {
+                pendingInput = null
+                activeTool?.onOffsetInputCancelled(document)
             }
         }
     }
@@ -170,6 +179,20 @@ class ToolManager(
         if (pendingInput !is PendingInput.RotationAngle) return
         pendingInput = null
         activeTool?.onRotationAngleCancelled(document)
+    }
+
+    /** Отправка величины смещения из панели точного ввода. */
+    fun submitOffsetInput(value: Double) {
+        if (pendingInput !is PendingInput.OffsetDistance) return
+        pendingInput = null
+        activeTool?.onOffsetInputSubmitted(value, document)
+    }
+
+    /** Отмена ввода смещения — ничего не коммитим. */
+    fun cancelOffsetInput() {
+        if (pendingInput !is PendingInput.OffsetDistance) return
+        pendingInput = null
+        activeTool?.onOffsetInputCancelled(document)
     }
 
     val canUndo: Boolean

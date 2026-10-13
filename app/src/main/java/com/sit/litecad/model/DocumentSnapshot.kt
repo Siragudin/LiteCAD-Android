@@ -13,7 +13,9 @@ class DocumentSnapshot private constructor(
     private val dimensions: List<CadDimension>,
     private val userPolygons: List<Polygon>,
     private val faceFillStyles: Map<String, FaceFillStyle>,
-    private val suppressedFaceGeometryKeys: Set<String>
+    private val suppressedFaceGeometryKeys: Set<String>,
+    private val leaders: List<Leader>,
+    private val elevationBaseY: Double?
 ) {
     companion object {
         fun capture(document: CadDocument): DocumentSnapshot {
@@ -40,6 +42,8 @@ class DocumentSnapshot private constructor(
             val faceFillStylesCopy = document.faceFillStyles
                 .mapValues { (_, style) -> style.clone() }
             val suppressedCopy = document.suppressedFaceGeometryKeys.toSet()
+            val leadersCopy = document.leaders.map { it.clone() }
+            val elevationBaseYCopy = document.elevationBaseY
 
             return DocumentSnapshot(
                 verticesCopy,
@@ -48,7 +52,9 @@ class DocumentSnapshot private constructor(
                 dimensionsCopy,
                 userPolygonsCopy,
                 faceFillStylesCopy,
-                suppressedCopy
+                suppressedCopy,
+                leadersCopy,
+                elevationBaseYCopy
             )
         }
     }
@@ -74,6 +80,11 @@ class DocumentSnapshot private constructor(
 
         document.suppressedFaceGeometryKeys.clear()
         document.suppressedFaceGeometryKeys.addAll(suppressedFaceGeometryKeys)
+
+        // Выноски и база отметки высоты. clearTopology() их не чистит — сбрасываем явно.
+        document.leaders.clear()
+        document.leaders.addAll(leaders.map { it.clone() })
+        document.elevationBaseY = elevationBaseY
 
         document.rebuildIndexes()
         com.sit.litecad.geometry.PolygonBuilder.syncFaces(document)

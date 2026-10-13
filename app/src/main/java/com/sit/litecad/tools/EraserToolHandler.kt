@@ -3,6 +3,7 @@ package com.sit.litecad.tools
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.sit.litecad.geometry.PolygonBuilder
 import com.sit.litecad.geometry.TopologyService
+import com.sit.litecad.leaders.LeaderPickOperations
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.PolygonType
@@ -17,12 +18,13 @@ import java.util.UUID
 /**
  * Инструмент «Ластик». Работает по тапу.
  *
+ *  - Тап по выноске (отметке высоты) — удаляет выноску целиком (приоритет выше ребра/грани).
  *  - Тап по ребру (в пределах допуска ~24px, как в «Выборе») — удаляет сегмент целиком
  *    и перестраивает грани.
  *  - Тап по грани (внутри, не на ребре) — подавляет заливку грани, рёбра не трогает.
  *  - Тап по пустому — ничего.
  *
- * Приоритет: ребро раньше грани (см. [SelectionPickOperations.pickAt]).
+ * Приоритет: выноска раньше ребра, ребро раньше грани (см. [SelectionPickOperations.pickAt]).
  *
  * [Tool.onEnd] не получает zoom, поэтому масштаб сохраняется локально в [onStart]
  * (тот же приём, что в [RectangleToolHandler]) — интерфейс [Tool] не меняется.
@@ -52,6 +54,22 @@ class EraserToolHandler(
 
     override fun onEnd(document: CadDocument) {
         if (!hasStart) {
+            reset()
+            return
+        }
+
+        // 1. Сначала пробуем стереть выноску под пальцем — она поверх чертежа.
+        val leaderTolerance = SelectionPickTolerance.pixelsToWorld(24.0, lastZoom)
+        val pickedLeader = LeaderPickOperations.tryPickAt(
+            document = document,
+            world = lastPoint,
+            tolerance = leaderTolerance,
+            zoom = lastZoom
+        )
+        if (pickedLeader != null) {
+            historyService.record(document)
+            document.leaders.remove(pickedLeader)
+            document.bumpRevision()
             reset()
             return
         }

@@ -70,15 +70,14 @@ class MirrorToolHandler(
 
         lastZoom = zoom
 
-        val excludeEdgeIds = toolManager.selection.selectedEdgeIds.toSet()
-        val excludeVertexIds = collectVertexIds(document, excludeEdgeIds)
-
+        // Якорь оси снапится ко всем вершинам/рёбрам, включая выделенные:
+        // ось симметрии часто проходит через вершину выделенного объекта.
         val snapped = resolveObjectSnap(
             document = document,
             probe = point,
             zoom = zoom,
-            excludeVertexIds = excludeVertexIds,
-            excludeEdgeIds = excludeEdgeIds
+            excludeVertexIds = emptySet(),
+            excludeEdgeIds = emptySet()
         )
 
         axisStart = snapped.position

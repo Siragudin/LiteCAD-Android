@@ -292,6 +292,14 @@ fun EditorScreen(
                                 onExactInputToggle = { settings.rotate.exactInputEnabled = !settings.rotate.exactInputEnabled },
                             )
                         }
+                        "mirror" -> {
+                            MirrorSettingsBar(
+                                orthoEnabled = settings.mirror.orthoEnabled,
+                                onOrthoToggle = { settings.mirror.orthoEnabled = !settings.mirror.orthoEnabled },
+                                copyMode = settings.mirror.copyMode,
+                                onCopyToggle = { settings.mirror.copyMode = !settings.mirror.copyMode },
+                            )
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,

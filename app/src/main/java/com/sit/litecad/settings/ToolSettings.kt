@@ -60,6 +60,12 @@ class RotateSettingsState {
     var exactInputEnabled by mutableStateOf(false)
 }
 
+/** Состояние настроек инструмента «Зеркало». */
+class MirrorSettingsState {
+    var orthoEnabled by mutableStateOf(true)
+    var copyMode by mutableStateOf(true)
+}
+
 /** Состояние настроек инструмента «Ось». */
 class AxisSettingsState {
     var orthoEnabled by mutableStateOf(true)
@@ -100,6 +106,7 @@ class ToolSettings {
     val axis = AxisSettingsState()
     val move = MoveSettingsState()
     val rotate = RotateSettingsState()
+    val mirror = MirrorSettingsState()
     val select = SelectSettingsState()
     val dim = DimSettingsState()
     val common = CommonSettingsState()

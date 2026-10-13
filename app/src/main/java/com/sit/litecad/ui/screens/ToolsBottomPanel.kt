@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.AutoFixOff
 import androidx.compose.material.icons.filled.ChangeHistory
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Flip
 import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -115,7 +116,8 @@ fun ToolsBottomPanel(
         ToolBarItem.Single("erase", Icons.Default.AutoFixOff, "Ластик"),
         ToolBarItem.Single("dim", Icons.Default.Straighten, "Размер"),
         ToolBarItem.Single("rect", Icons.Default.Rectangle, "Прямоуг."),
-        ToolBarItem.Single("rotate", Icons.AutoMirrored.Filled.RotateRight, "Поворот")
+        ToolBarItem.Single("rotate", Icons.AutoMirrored.Filled.RotateRight, "Поворот"),
+        ToolBarItem.Single("mirror", Icons.Default.Flip, "Зеркало")
     )
 
     Surface(

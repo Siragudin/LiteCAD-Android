@@ -162,7 +162,13 @@ class LeaderToolHandler(
     private fun commitLeader(document: CadDocument, position: Point2) {
         historyService.record(document)
         // Позиция выноски: X — как у пальца, Y — от снапнутой цели.
-        LeaderService.createElevation(document, position, position, toolManager.settings.leader.color)
+        val leader = LeaderService.createElevation(
+            document, position, position, toolManager.settings.leader.color
+        )
+        // textPosition хранит сторону полки (пробная точка со стороны протяжки),
+        // иначе при отрисовке resolveSide всегда вернёт +1.
+        val side = if (position.X < snapTarget.X - 1e-9) -1 else 1
+        leader.textPosition = Point2(position.X + side, position.Y)
         document.bumpRevision()
         toolManager.selection.clear()
     }

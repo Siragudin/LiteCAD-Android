@@ -310,6 +310,12 @@ fun EditorScreen(
                             // У Extend нет собственных настроек — пустая тонкая полоса.
                             emptySettingsBar()
                         }
+                        "leader" -> {
+                            LeaderSettingsBar(
+                                color = settings.leader.color,
+                                onColorChange = { settings.leader.color = it },
+                            )
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,

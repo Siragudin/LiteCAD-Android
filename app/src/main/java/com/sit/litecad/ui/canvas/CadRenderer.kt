@@ -18,6 +18,7 @@ import com.sit.litecad.geometry.DimensionGeometry
 import com.sit.litecad.geometry.FaceIdentity
 import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
+import com.sit.litecad.leaders.LeaderGeometry
 import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadDocument
@@ -268,6 +269,41 @@ fun DrawScope.drawCadScene(
             degrees = angleDeg,
             pivot = textCenter
         ) {
+            drawText(
+                textLayoutResult = textLayoutResult,
+                topLeft = topLeft
+            )
+        }
+    }
+
+    // --- ВЫНОСКИ (отметки высоты) ---
+    document.leaders.forEach { leader ->
+        val layout = LeaderGeometry.createLayout(leader.target, leader.textPosition, camera.zoom)
+        val color = Color(leader.colorArgb)
+
+        for ((a, b) in LeaderGeometry.getSegments(layout)) {
+            drawLine(
+                color = color,
+                start = camera.worldToScreen(a),
+                end = camera.worldToScreen(b),
+                strokeWidth = 2f,
+                cap = StrokeCap.Round
+            )
+        }
+
+        // Текст отметки — по центру полки, чуть выше неё.
+        if (leader.text.isNotEmpty()) {
+            val textStyle = TextStyle(
+                color = color,
+                fontSize = (LeaderGeometry.TEXT_HEIGHT_SCREEN * camera.zoom).toFloat().toSp(),
+                fontWeight = FontWeight.Normal
+            )
+            val textLayoutResult = textMeasurer.measure(text = leader.text, style = textStyle)
+            val center = camera.worldToScreen(layout.textPosition)
+            val topLeft = Offset(
+                center.x - textLayoutResult.size.width / 2f,
+                center.y - textLayoutResult.size.height - 2f
+            )
             drawText(
                 textLayoutResult = textLayoutResult,
                 topLeft = topLeft

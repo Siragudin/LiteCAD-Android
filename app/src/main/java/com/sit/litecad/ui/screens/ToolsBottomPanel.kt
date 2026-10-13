@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Flip
 import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.NorthEast
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
@@ -124,7 +125,8 @@ fun ToolsBottomPanel(
     // Третий ряд — выезжает вместе со вторым.
     val thirdRow: List<ToolBarItem> = listOf(
         ToolBarItem.Single("offset", Icons.Default.Straighten, "Эквидистанта"),
-        ToolBarItem.Single("extend", Icons.AutoMirrored.Filled.CallMade, "Удлинить")
+        ToolBarItem.Single("extend", Icons.AutoMirrored.Filled.CallMade, "Удлинить"),
+        ToolBarItem.Single("leader", Icons.Default.NorthEast, "Выноска")
     )
 
     Surface(

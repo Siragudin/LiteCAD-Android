@@ -32,6 +32,7 @@ class ToolManager(
         "mirror" to MirrorToolHandler(snapService, historyService, this),
         "offset" to OffsetToolHandler(historyService, this),
         "extend" to ExtendToolHandler(historyService, this),
+        "leader" to LeaderToolHandler(snapService, historyService, this),
         "dim" to DimensionToolHandler(snapService, historyService, this)
     )
 

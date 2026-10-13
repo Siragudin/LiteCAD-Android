@@ -8,10 +8,13 @@ import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.CadVertex
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.Leader
+import com.sit.litecad.model.LeaderKind
 import com.sit.litecad.model.OrthoAlignment
 import com.sit.litecad.storage.dto.AxisDto
 import com.sit.litecad.storage.dto.DimensionDto
 import com.sit.litecad.storage.dto.EdgeDto
+import com.sit.litecad.storage.dto.LeaderDto
 import com.sit.litecad.storage.dto.ProjectDocumentDto
 import com.sit.litecad.storage.dto.VertexDto
 import java.util.UUID
@@ -77,10 +80,22 @@ object ProjectDocumentSerializer {
                     color = argbToHex(dim.colorArgb),
                     thickness = dim.thickness
                 )
-            }.toMutableList()
-            // Остальные поля (userPolygons, leaders, texts,
-            // elevationBaseY, suppressedFaceGeometryKeys, faceFillStyles)
-            // остаются пустыми, т.к. в Android-версии их пока нет.
+            }.toMutableList(),
+            leaders = document.leaders.map { leader ->
+                LeaderDto(
+                    id = leader.id.toString(),
+                    kind = leader.kind.name.lowercase(),
+                    targetX = leader.target.X,
+                    targetY = leader.target.Y,
+                    textPositionX = leader.textPosition.X,
+                    textPositionY = leader.textPosition.Y,
+                    text = leader.text,
+                    color = argbToHex(leader.colorArgb)
+                )
+            }.toMutableList(),
+            elevationBaseY = document.elevationBaseY
+            // Остальные поля (userPolygons, texts, suppressedFaceGeometryKeys,
+            // faceFillStyles) остаются пустыми, т.к. в Android-версии их пока нет.
         )
     }
 
@@ -161,6 +176,21 @@ object ProjectDocumentSerializer {
             )
         }
 
+        document.leaders.clear()
+        for (l in dto.leaders) {
+            document.leaders.add(
+                Leader(
+                    id = parseUuid(l.id),
+                    kind = parseLeaderKind(l.kind),
+                    target = Point2(l.targetX, l.targetY),
+                    textPosition = Point2(l.textPositionX, l.textPositionY),
+                    text = l.text,
+                    colorArgb = hexToArgb(l.color)
+                )
+            )
+        }
+        document.elevationBaseY = dto.elevationBaseY
+
         document.bumpRevision()
 
         document.rebuildIndexes()
@@ -203,6 +233,13 @@ object ProjectDocumentSerializer {
         return when (value.lowercase()) {
             "short" -> DimensionExtensionStyle.SHORT
             else -> DimensionExtensionStyle.FULL
+        }
+    }
+
+    private fun parseLeaderKind(value: String): LeaderKind {
+        return when (value.lowercase()) {
+            "elevation" -> LeaderKind.ELEVATION
+            else -> LeaderKind.TEXT
         }
     }
 

@@ -94,6 +94,11 @@ class DimSettingsState {
     var textSize by mutableStateOf(8.0)
 }
 
+/** Состояние настроек инструмента «Выноска». */
+class LeaderSettingsState {
+    var color by mutableStateOf(0xFF1565C0.toInt())
+}
+
 /** Общие настройки, не привязанные к конкретному инструменту. */
 class CommonSettingsState {
     var snapEnabled by mutableStateOf(true)
@@ -115,5 +120,6 @@ class ToolSettings {
     val offset = OffsetSettingsState()
     val select = SelectSettingsState()
     val dim = DimSettingsState()
+    val leader = LeaderSettingsState()
     val common = CommonSettingsState()
 }

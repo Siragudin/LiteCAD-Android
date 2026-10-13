@@ -47,7 +47,11 @@ data class CadDocument(
     @SerializedName("FaceFillStyles")
     val faceFillStyles: MutableMap<String, FaceFillStyle> = mutableMapOf(),
     @SerializedName("SuppressedFaceGeometryKeys")
-    val suppressedFaceGeometryKeys: MutableSet<String> = mutableSetOf()
+    val suppressedFaceGeometryKeys: MutableSet<String> = mutableSetOf(),
+    @SerializedName("Leaders")
+    val leaders: MutableList<Leader> = mutableListOf(),
+    @SerializedName("ElevationBaseY")
+    var elevationBaseY: Double? = null
 ) {
     var revision by mutableStateOf(0)
         private set
@@ -130,6 +134,8 @@ data class CadDocument(
         axes.clear()
         dimensions.clear()
         polygons.clear()
+        leaders.clear()
+        elevationBaseY = null
         faceFillStyles.clear()
         suppressedFaceGeometryKeys.clear()
         verticesById.clear()

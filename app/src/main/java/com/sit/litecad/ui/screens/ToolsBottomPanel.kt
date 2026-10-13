@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -122,7 +123,8 @@ fun ToolsBottomPanel(
 
     // Третий ряд — выезжает вместе со вторым.
     val thirdRow: List<ToolBarItem> = listOf(
-        ToolBarItem.Single("offset", Icons.Default.Straighten, "Эквидистанта")
+        ToolBarItem.Single("offset", Icons.Default.Straighten, "Эквидистанта"),
+        ToolBarItem.Single("extend", Icons.AutoMirrored.Filled.CallMade, "Удлинить")
     )
 
     Surface(

@@ -306,6 +306,10 @@ fun EditorScreen(
                                 onExactInputToggle = { settings.offset.exactInputEnabled = !settings.offset.exactInputEnabled },
                             )
                         }
+                        "extend" -> {
+                            // У Extend нет собственных настроек — пустая тонкая полоса.
+                            emptySettingsBar()
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,

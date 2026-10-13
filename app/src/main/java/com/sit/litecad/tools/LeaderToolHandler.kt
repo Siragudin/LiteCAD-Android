@@ -88,7 +88,7 @@ class LeaderToolHandler(
         }
 
         // Жест 2 — проверяем, попал ли тап в саму выноску.
-        val layout = LeaderGeometry.createLayout(target, target, zoom)
+        val layout = LeaderGeometry.createLayout(target, sideProbe(), zoom)
         val tolerance = SelectionPickTolerance.pixelsToWorld(LEADER_PICK_PX, zoom)
         if (!hitTestLeader(layout, point, tolerance)) {
             // Промах — коммитим на текущем месте.
@@ -132,7 +132,7 @@ class LeaderToolHandler(
     override fun drawPreview(scope: DrawScope, camera: Camera) {
         if (!hasTarget) return
 
-        val layout = LeaderGeometry.createLayout(target, target, lastZoom)
+        val layout = LeaderGeometry.createLayout(target, sideProbe(), lastZoom)
         val color = Color(toolManager.settings.leader.color)
 
         for ((a, b) in LeaderGeometry.getSegments(layout)) {
@@ -165,6 +165,15 @@ class LeaderToolHandler(
         LeaderService.createElevation(document, position, position, toolManager.settings.leader.color)
         document.bumpRevision()
         toolManager.selection.clear()
+    }
+
+    /**
+     * Точка-«зонд» для createLayout: задаёт сторону полки по направлению протяжки.
+     * Тянем влево от исходной цели → полка слева (−1), иначе справа (+1).
+     */
+    private fun sideProbe(): Point2 {
+        val side = if (target.X < snapTarget.X - 1e-9) -1 else 1
+        return Point2(target.X + side, target.Y)
     }
 
     /** Попадание пальцем хоть в один отрезок выноски. */

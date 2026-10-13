@@ -28,8 +28,8 @@ object LeaderGeometry {
 
     /**
      * Собрать геометрию выноски.
-     * @param target точка на чертеже (цель) — шеврон и низ стойки, не двигается
-     * @param textPosition X конца полки (палец при протяжке); Y берётся от стойки
+     * @param target позиция выноски (шеврон, стойка, низ полки) — едет за пальцем
+     * @param textPosition задаёт сторону полки (влево/вправо) через [resolveSide]
      * @param zoom масштаб (пиксели → мировые единицы через 1/zoom)
      */
     fun createLayout(target: Point2, textPosition: Point2, zoom: Double): LeaderLayout {
@@ -37,12 +37,12 @@ object LeaderGeometry {
         val baseHalf = BASE_HALF_LENGTH_SCREEN * world
         val chevronHeight = CHEVRON_HEIGHT_SCREEN * world
         val stemHeight = STEM_HEIGHT_SCREEN * world
+        val shelfLength = SHELF_LENGTH_SCREEN * world
         val side = resolveSide(target, textPosition)
 
         // Стойка вверх: в мировых координатах +Y (как в ПК-версии).
         val elbow = Point2(target.X, target.Y + stemHeight)
-        // Полка идёт от стойки до X пальца — едет за протяжкой.
-        val landing = Point2(textPosition.X, elbow.Y)
+        val landing = Point2(target.X + side * shelfLength, elbow.Y)
         val text = Point2((elbow.X + landing.X) * 0.5, elbow.Y)
 
         return LeaderLayout(

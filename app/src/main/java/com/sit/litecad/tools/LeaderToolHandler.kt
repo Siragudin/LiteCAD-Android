@@ -12,9 +12,7 @@ import com.sit.litecad.leaders.LeaderGeometry
 import com.sit.litecad.leaders.LeaderLayout
 import com.sit.litecad.leaders.LeaderService
 import com.sit.litecad.math.Geometry2D
-import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
-import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SelectionPickTolerance
@@ -58,14 +56,11 @@ class LeaderToolHandler(
     /** Цель поставлена (жест 1 выполнен). */
     private var hasTarget by mutableStateOf(false)
 
-    /** Снапнутая цель выноски (точка на чертеже). */
+    /** Исходная снапнутая цель (жест 1) — задаёт уровень Y и сторону полки. */
+    private var snapTarget by mutableStateOf(Point2.Zero)
+
+    /** Текущая позиция выноски (шеврон, стойка, полка). При протяжке едет по X за пальцем. */
     private var target by mutableStateOf(Point2.Zero)
-
-    /** Текущая позиция полки (для превью). */
-    private var dragTextPosition by mutableStateOf(Point2.Zero)
-
-    /** Начало протяжки за выноску (жест 2). */
-    private var dragStart by mutableStateOf<Point2?>(null)
 
     /** Идёт ли протяжка. */
     private var dragging by mutableStateOf(false)
@@ -84,9 +79,8 @@ class LeaderToolHandler(
         if (!hasTarget) {
             // Жест 1 — ставим цель (снап на что угодно, без исключений).
             val snapped = resolveObjectSnap(document, point, zoom, emptySet(), emptySet())
+            snapTarget = snapped.position
             target = snapped.position
-            // Дефолтное положение полки — вправо от цели на длину полки.
-            dragTextPosition = defaultTextPosition(target, zoom)
             hasTarget = true
             lastSnapKind = snapped.kind
             currentMeasurement = ""
@@ -94,16 +88,15 @@ class LeaderToolHandler(
         }
 
         // Жест 2 — проверяем, попал ли тап в саму выноску.
-        val layout = LeaderGeometry.createLayout(target, dragTextPosition, zoom)
+        val layout = LeaderGeometry.createLayout(target, target, zoom)
         val tolerance = SelectionPickTolerance.pixelsToWorld(LEADER_PICK_PX, zoom)
         if (!hitTestLeader(layout, point, tolerance)) {
-            // Промах — коммитим на месте первого тапа (дефолтное положение).
-            commitLeader(document, target, defaultTextPosition(target, zoom))
+            // Промах — коммитим на текущем месте.
+            commitLeader(document, target)
             reset()
             return
         }
 
-        dragStart = point
         dragging = true
         currentMeasurement = "Тяните"
     }
@@ -115,31 +108,23 @@ class LeaderToolHandler(
         lastSnapKind = snapped.kind
 
         if (dragging) {
-            // Полку фиксируем на уровне цели — протяжка строго горизонтальная.
-            dragTextPosition = LeaderGeometry.constrainHorizontal(target, snapped.position)
+            // Вся выноска едет за пальцем по X; Y фиксирован на уровне снапнутой цели.
+            target = Point2(snapped.position.X, snapTarget.Y)
             currentMeasurement = ""
         }
     }
 
     override fun onEnd(document: CadDocument) {
         if (!dragging) return
-
-        val start = dragStart
-        if (start == null || MathUtils.distance(start, dragTextPosition) <= TopologyTolerance.ForMutation) {
-            // Протяжки не было — коммит на месте цели.
-            commitLeader(document, target, defaultTextPosition(target, lastZoom))
-            reset()
-            return
-        }
-
-        commitLeader(document, target, dragTextPosition)
+        // Коммит на текущем месте (X пальца, Y снапнутой цели).
+        commitLeader(document, target)
         reset()
     }
 
     override fun cancel() {
         if (hasTarget) {
-            // Снятие инструмента — выноска коммитится на месте первого тапа.
-            commitLeader(toolManager.document, target, defaultTextPosition(target, lastZoom))
+            // Снятие инструмента — выноска коммитится на текущем месте.
+            commitLeader(toolManager.document, target)
         }
         reset()
     }
@@ -147,7 +132,7 @@ class LeaderToolHandler(
     override fun drawPreview(scope: DrawScope, camera: Camera) {
         if (!hasTarget) return
 
-        val layout = LeaderGeometry.createLayout(target, dragTextPosition, lastZoom)
+        val layout = LeaderGeometry.createLayout(target, target, lastZoom)
         val color = Color(toolManager.settings.leader.color)
 
         for ((a, b) in LeaderGeometry.getSegments(layout)) {
@@ -169,21 +154,18 @@ class LeaderToolHandler(
         scope.drawCircle(color, HANDLE_RADIUS_PX, handleScreen)
         scope.drawCircle(Color.White, HANDLE_RADIUS_PX * 0.45f, handleScreen)
 
-        drawSnapMarker(scope, camera.worldToScreen(dragTextPosition), lastSnapKind)
+        drawSnapMarker(scope, camera.worldToScreen(target), lastSnapKind)
     }
 
     // --- Коммит ---
 
-    private fun commitLeader(document: CadDocument, target: Point2, textPosition: Point2) {
+    private fun commitLeader(document: CadDocument, position: Point2) {
         historyService.record(document)
-        LeaderService.createElevation(document, target, textPosition, toolManager.settings.leader.color)
+        // Позиция выноски: X — как у пальца, Y — от снапнутой цели.
+        LeaderService.createElevation(document, position, position, toolManager.settings.leader.color)
         document.bumpRevision()
         toolManager.selection.clear()
     }
-
-    /** Дефолтное положение полки: справа от цели на длину полки. */
-    private fun defaultTextPosition(target: Point2, zoom: Double): Point2 =
-        Point2(target.X + LeaderGeometry.SHELF_LENGTH_SCREEN / zoom, target.Y)
 
     /** Попадание пальцем хоть в один отрезок выноски. */
     private fun hitTestLeader(layout: LeaderLayout, point: Point2, tolerance: Double): Boolean {
@@ -195,9 +177,8 @@ class LeaderToolHandler(
 
     private fun reset() {
         hasTarget = false
+        snapTarget = Point2.Zero
         target = Point2.Zero
-        dragTextPosition = Point2.Zero
-        dragStart = null
         dragging = false
         lastSnapKind = null
         lastZoom = 1.0

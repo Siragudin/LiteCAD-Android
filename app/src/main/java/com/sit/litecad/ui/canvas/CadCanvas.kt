@@ -125,7 +125,7 @@ fun CadCanvas(
             canvasSize = canvasSize,
             cursorPosition = cursorPosition,
             isGridVisible = isGridVisible,
-            visible = !isHandMode,
+            visible = !isHandMode && toolManager.activeToolId != "leader",
             textMeasurer = textMeasurer
         )
 

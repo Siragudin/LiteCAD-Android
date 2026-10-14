@@ -108,6 +108,11 @@ class LeaderSettingsState {
     var color by mutableStateOf(0xFF1565C0.toInt())
 }
 
+/** Состояние настроек инструмента «Заливка». */
+class FillSettingsState {
+    var color by mutableStateOf(FillColorTable.defaultArgb)
+}
+
 /** Общие настройки, не привязанные к конкретному инструменту. */
 class CommonSettingsState {
     var snapEnabled by mutableStateOf(true)
@@ -130,5 +135,6 @@ class ToolSettings {
     val select = SelectSettingsState()
     val dim = DimSettingsState()
     val leader = LeaderSettingsState()
+    val fill = FillSettingsState()
     val common = CommonSettingsState()
 }

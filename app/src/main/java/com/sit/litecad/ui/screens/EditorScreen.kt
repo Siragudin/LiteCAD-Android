@@ -398,6 +398,12 @@ fun EditorScreen(
                                 onColorChange = { settings.leader.color = it },
                             )
                         }
+                        "fill" -> {
+                            FillSettingsBar(
+                                color = settings.fill.color,
+                                onColorChange = { settings.fill.color = it },
+                            )
+                        }
                         "dim" -> {
                             DimSettingsBar(
                                 orthoEnabled = settings.dim.orthoEnabled,

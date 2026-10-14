@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ChangeHistory
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flip
+import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -126,7 +127,8 @@ fun ToolsBottomPanel(
     val thirdRow: List<ToolBarItem> = listOf(
         ToolBarItem.Single("offset", Icons.Default.Straighten, "Эквидистанта"),
         ToolBarItem.Single("extend", Icons.AutoMirrored.Filled.CallMade, "Удлинить"),
-        ToolBarItem.Single("leader", Icons.Default.NorthEast, "Выноска")
+        ToolBarItem.Single("leader", Icons.Default.NorthEast, "Выноска"),
+        ToolBarItem.Single("fill", Icons.Default.FormatColorFill, "Заливка")
     )
 
     Surface(

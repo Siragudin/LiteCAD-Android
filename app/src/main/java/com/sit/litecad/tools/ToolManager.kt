@@ -33,7 +33,8 @@ class ToolManager(
         "offset" to OffsetToolHandler(historyService, this),
         "extend" to ExtendToolHandler(historyService, this),
         "leader" to LeaderToolHandler(snapService, historyService, this),
-        "dim" to DimensionToolHandler(snapService, historyService, this)
+        "dim" to DimensionToolHandler(snapService, historyService, this),
+        "fill" to FillToolHandler(historyService, this)
     )
 
     var activeToolId by mutableStateOf("hand")

@@ -94,7 +94,7 @@ object PdfExporter {
                 edge.lineType == EdgeLineType.DOTTED -> PenStyle.EDGE_DOTTED
                 else -> PenStyle.EDGE
             }
-            paint.color = edge.colorArgb
+            paint.color = if (edge.isAxis) 0xFF990000.toInt() else edge.colorArgb
             paint.strokeWidth = PdfLineweightTable.toEffectivePoints(style).toFloat()
             paint.pathEffect = edgePathEffect(edge.lineType, paint.strokeWidth)
 
@@ -112,11 +112,22 @@ object PdfExporter {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
-        paint.pathEffect = null
+
+        val strokeWidthPt = PdfLineweightTable.toEffectivePoints(PenStyle.AXIS).toFloat()
+        paint.strokeWidth = strokeWidthPt
+        // Штрих-пунктир «точка-тире», как в CadRenderer; шаг масштабируется от толщины.
+        paint.pathEffect = DashPathEffect(
+            floatArrayOf(
+                12f * strokeWidthPt,
+                4f * strokeWidthPt,
+                2f * strokeWidthPt,
+                4f * strokeWidthPt
+            ),
+            0f
+        )
 
         for (axis in document.axes) {
             paint.color = axis.colorArgb
-            paint.strokeWidth = PdfLineweightTable.toEffectivePoints(PenStyle.AXIS).toFloat()
             val p1 = toPagePt(layout, axis.Start)
             val p2 = toPagePt(layout, axis.End)
             canvas.drawLine(p1[0], p1[1], p2[0], p2[1], paint)

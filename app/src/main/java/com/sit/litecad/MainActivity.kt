@@ -1,5 +1,7 @@
 package com.sit.litecad
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,9 +15,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sit.litecad.ui.screens.EditorScreen
 import com.sit.litecad.ui.screens.HomeScreen
+import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.storage.ProjectStorage
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        val language = LanguagePreferences.getLanguage(newBase)
+        val locale = Locale.forLanguageTag(language)
+        Locale.setDefault(locale)
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -72,6 +72,8 @@ fun HomeScreen(
 
     var importError by remember { mutableStateOf<String?>(null) }
 
+    var showSettings by remember { mutableStateOf(false) }
+
     val headerColor = Color(0xFF383838)
     val bodyColor = Color(0xFF6E6E6E)
 
@@ -140,6 +142,7 @@ fun HomeScreen(
             }
         }
     ) { padding ->
+        Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -249,6 +252,21 @@ fun HomeScreen(
                 }
             }
         }
+
+            // Кнопка "Настройки" (шестерёнка) — слева внизу.
+            FloatingActionButton(
+                onClick = { showSettings = true },
+                containerColor = headerColor,
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+                    .size(56.dp)
+            ) {
+                Icon(Icons.Default.Settings, "Settings", modifier = Modifier.size(28.dp))
+            }
+        }
     }
 
     // --- ДИАЛОГ СОЗДАНИЯ ---
@@ -355,6 +373,11 @@ fun HomeScreen(
                 TextButton(onClick = { importError = null }) { Text("ОК") }
             }
         )
+    }
+
+    // --- ЭКРАН НАСТРОЕК (полноэкранный overlay поверх HomeScreen) ---
+    if (showSettings) {
+        SettingsScreen(onBack = { showSettings = false })
     }
 }
 

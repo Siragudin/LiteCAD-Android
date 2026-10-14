@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- UI Elements -->
+    <string name="ui_header_title">LITE CAD</string>
+    <string name="app_name">LiteCAD</string>
+    <string name="search_projects_placeholder">Поиск проектов...</string>
+
+    <!-- Empty States and Messages -->
+    <string name="empty_project_list_message">Ничего не найдено</string>
+
+    <!-- Project Card Details -->
+    <string name="document_type_litecad">LiteCAD документ</string>
+
+    <!-- Dialog/Input Forms -->
+    <string name="dialog_new_project_title">Новый проект</string>
+    <string name="input_name_label">Название</string>
+    <string name="button_create">Создать</string>
+    <string name="button_cancel">Отмена</string>
+
+    <!-- Fallbacks -->
+    <string name="default_drawing_name">Чертеж</string>
+
+    <!-- Экран настроек -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_back">Назад</string>
+    <string name="settings_language">Язык</string>
+
+    <!-- Названия языков (одинаковы в обоих языках — по стандарту) -->
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+</resources>

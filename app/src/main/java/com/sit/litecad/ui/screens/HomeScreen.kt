@@ -25,12 +25,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
+import com.sit.litecad.R
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.storage.ProjectInfo
@@ -84,7 +86,7 @@ fun HomeScreen(
         if (uri != null) {
             val result = try {
                 val inputStream = context.contentResolver.openInputStream(uri)
-                    ?: throw IllegalStateException("Не удалось открыть файл")
+                    ?: throw IllegalStateException(context.getString(R.string.import_error_open_file))
 
                 val fileName = queryFileName(context, uri) ?: "Imported"
                 val baseName = fileName.removeSuffix(".sit").removeSuffix(".SIT")
@@ -99,7 +101,7 @@ fun HomeScreen(
                 }
                 null
             } catch (e: Exception) {
-                e.message ?: "Ошибка импорта"
+                e.message ?: context.getString(R.string.import_error_generic)
             }
 
             if (result == null) {
@@ -126,7 +128,7 @@ fun HomeScreen(
                     shape = CircleShape,
                     modifier = Modifier.size(56.dp)
                 ) {
-                    Icon(Icons.Default.FolderOpen, "Open", modifier = Modifier.size(28.dp))
+                    Icon(Icons.Default.FolderOpen, stringResource(R.string.fab_open), modifier = Modifier.size(28.dp))
                 }
 
                 // Кнопка "Создать"
@@ -137,7 +139,7 @@ fun HomeScreen(
                     shape = CircleShape,
                     modifier = Modifier.size(64.dp)
                 ) {
-                    Icon(Icons.Default.Add, null, modifier = Modifier.size(32.dp))
+                    Icon(Icons.Default.Add, stringResource(R.string.fab_create), modifier = Modifier.size(32.dp))
                 }
             }
         }
@@ -163,7 +165,7 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "LITE CAD",
+                        text = stringResource(R.string.ui_header_title),
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
@@ -173,7 +175,7 @@ fun HomeScreen(
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Поиск проектов...", color = Color.Gray) },
+                        placeholder = { Text(stringResource(R.string.search_projects_placeholder), color = Color.Gray) },
                         leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Gray) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -208,7 +210,10 @@ fun HomeScreen(
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            text = if (searchQuery.isEmpty()) "Здесь пока пусто" else "Ничего не найдено",
+                            text = stringResource(
+                                if (searchQuery.isEmpty()) R.string.empty_project_list_hint
+                                else R.string.empty_project_list_message
+                            ),
                             color = Color.LightGray
                         )
                     }
@@ -240,8 +245,8 @@ fun HomeScreen(
                                     val result = PdfExporter.exportToDownloads(context, doc, info.name)
                                     Toast.makeText(
                                         context,
-                                        if (result != null) "PDF сохранён: $result"
-                                        else "Не удалось сохранить PDF",
+                                        if (result != null) context.getString(R.string.pdf_saved, result)
+                                        else context.getString(R.string.pdf_save_failed),
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
@@ -264,7 +269,7 @@ fun HomeScreen(
                     .padding(16.dp)
                     .size(56.dp)
             ) {
-                Icon(Icons.Default.Settings, "Settings", modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.Settings, stringResource(R.string.fab_settings), modifier = Modifier.size(28.dp))
             }
         }
     }
@@ -273,12 +278,12 @@ fun HomeScreen(
     if (showCreateDialog) {
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
-            title = { Text("Новый проект") },
+            title = { Text(stringResource(R.string.dialog_new_project_title)) },
             text = {
                 OutlinedTextField(
                     value = newProjectName,
                     onValueChange = { newProjectName = it },
-                    label = { Text("Название") },
+                    label = { Text(stringResource(R.string.input_name_label)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -294,13 +299,13 @@ fun HomeScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = headerColor)
-                ) { Text("Создать") }
+                ) { Text(stringResource(R.string.button_create)) }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showCreateDialog = false; newProjectName = "" },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
-                ) { Text("Отмена") }
+                ) { Text(stringResource(R.string.button_cancel)) }
             }
         )
     }
@@ -309,8 +314,8 @@ fun HomeScreen(
     projectToDelete?.let { name ->
         AlertDialog(
             onDismissRequest = { projectToDelete = null },
-            title = { Text("Удалить проект?") },
-            text = { Text("Проект «$name» будет удалён безвозвратно.") },
+            title = { Text(stringResource(R.string.delete_project_title)) },
+            text = { Text(stringResource(R.string.delete_project_message, name)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -319,10 +324,10 @@ fun HomeScreen(
                         refreshProjects()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020))
-                ) { Text("Удалить") }
+                ) { Text(stringResource(R.string.menu_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { projectToDelete = null }) { Text("Отмена") }
+                TextButton(onClick = { projectToDelete = null }) { Text(stringResource(R.string.button_cancel)) }
             }
         )
     }
@@ -331,12 +336,12 @@ fun HomeScreen(
     projectToRename?.let { oldName ->
         AlertDialog(
             onDismissRequest = { projectToRename = null },
-            title = { Text("Переименовать") },
+            title = { Text(stringResource(R.string.rename_project_title)) },
             text = {
                 OutlinedTextField(
                     value = renameText,
                     onValueChange = { renameText = it },
-                    label = { Text("Новое имя") },
+                    label = { Text(stringResource(R.string.rename_project_label)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -355,10 +360,10 @@ fun HomeScreen(
                         refreshProjects()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = headerColor)
-                ) { Text("ОК") }
+                ) { Text(stringResource(R.string.button_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { projectToRename = null }) { Text("Отмена") }
+                TextButton(onClick = { projectToRename = null }) { Text(stringResource(R.string.button_cancel)) }
             }
         )
     }
@@ -367,10 +372,10 @@ fun HomeScreen(
     importError?.let { msg ->
         AlertDialog(
             onDismissRequest = { importError = null },
-            title = { Text("Ошибка открытия") },
+            title = { Text(stringResource(R.string.import_error_title)) },
             text = { Text(msg) },
             confirmButton = {
-                TextButton(onClick = { importError = null }) { Text("ОК") }
+                TextButton(onClick = { importError = null }) { Text(stringResource(R.string.button_ok)) }
             }
         )
     }
@@ -481,22 +486,22 @@ fun ProjectCard(
                     onDismissRequest = { showMenu = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Экспорт в PDF") },
+                        text = { Text(stringResource(R.string.menu_export_pdf)) },
                         onClick = { onExportPdf(); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.PictureAsPdf, null) }
                     )
                     DropdownMenuItem(
-                        text = { Text("Поделиться") },
+                        text = { Text(stringResource(R.string.menu_share)) },
                         onClick = { onShare(); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.Share, null) }
                     )
                     DropdownMenuItem(
-                        text = { Text("Переименовать") },
+                        text = { Text(stringResource(R.string.menu_rename)) },
                         onClick = { onRename(); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.Edit, null) }
                     )
                     DropdownMenuItem(
-                        text = { Text("Удалить") },
+                        text = { Text(stringResource(R.string.menu_delete)) },
                         onClick = { onDelete(); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.Delete, null) }
                     )
@@ -518,7 +523,7 @@ fun shareFile(context: Context, file: File, mimeType: String) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    val chooser = Intent.createChooser(intent, "Отправить")
+    val chooser = Intent.createChooser(intent, context.getString(R.string.share_chooser_title))
     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(chooser)
 }

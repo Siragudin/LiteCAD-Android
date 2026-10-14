@@ -1,23 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- UI Elements -->
+    <!-- Элементы UI -->
     <string name="ui_header_title">LITE CAD</string>
     <string name="app_name">LiteCAD</string>
     <string name="search_projects_placeholder">Поиск проектов...</string>
 
-    <!-- Empty States and Messages -->
+    <!-- Пустые состояния и сообщения -->
     <string name="empty_project_list_message">Ничего не найдено</string>
+    <string name="empty_project_list_hint">Здесь пока пусто</string>
 
-    <!-- Project Card Details -->
+    <!-- Плавающие кнопки -->
+    <string name="fab_open">Открыть</string>
+    <string name="fab_create">Создать</string>
+    <string name="fab_settings">Настройки</string>
+
+    <!-- Карточка проекта -->
     <string name="document_type_litecad">LiteCAD документ</string>
 
-    <!-- Dialog/Input Forms -->
+    <!-- Диалоги и формы ввода -->
     <string name="dialog_new_project_title">Новый проект</string>
     <string name="input_name_label">Название</string>
     <string name="button_create">Создать</string>
     <string name="button_cancel">Отмена</string>
+    <string name="button_ok">ОК</string>
+    <string name="delete_project_title">Удалить проект?</string>
+    <string name="delete_project_message">Проект «%1$s» будет удалён безвозвратно.</string>
+    <string name="rename_project_title">Переименовать</string>
+    <string name="rename_project_label">Новое имя</string>
 
-    <!-- Fallbacks -->
+    <!-- Контекстное меню карточки -->
+    <string name="menu_export_pdf">Экспорт в PDF</string>
+    <string name="menu_share">Поделиться</string>
+    <string name="menu_rename">Переименовать</string>
+    <string name="menu_delete">Удалить</string>
+
+    <!-- Сообщения импорта и экспорта -->
+    <string name="import_error_title">Ошибка открытия</string>
+    <string name="import_error_open_file">Не удалось открыть файл</string>
+    <string name="import_error_generic">Ошибка импорта</string>
+    <string name="pdf_saved">PDF сохранён: %1$s</string>
+    <string name="pdf_save_failed">Не удалось сохранить PDF</string>
+    <string name="share_chooser_title">Отправить</string>
+
+    <!-- Фолбэки -->
     <string name="default_drawing_name">Чертеж</string>
 
     <!-- Экран настроек -->

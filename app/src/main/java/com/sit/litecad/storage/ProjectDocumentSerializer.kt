@@ -102,9 +102,12 @@ object ProjectDocumentSerializer {
                     fillColor = argbToHex(style.fillColor),
                     fillPattern = enumToCamel(style.fillPattern.name)
                 )
-            }.toMutableMap()
-            // Остальные поля (userPolygons, texts, suppressedFaceGeometryKeys)
-            // остаются пустыми, т.к. в Android-версии их пока нет.
+            }.toMutableMap(),
+            suppressedFaceGeometryKeys = document.suppressedFaceGeometryKeys
+                .map { it.replace("-", "") }
+                .toMutableList()
+            // Остальные поля (userPolygons, texts) остаются пустыми,
+            // т.к. в Android-версии их пока нет.
         )
     }
 
@@ -210,6 +213,14 @@ object ProjectDocumentSerializer {
                 fillColor = hexToArgb(styleDto.fillColor),
                 fillPattern = parseFillPattern(styleDto.fillPattern)
             )
+        }
+
+        // Ключи подавленных граней — тоже в формате "N" (без дефисов).
+        // Важно: восстанавливаем ДО PolygonBuilder.syncFaces, иначе syncFaces
+        // пересоберёт уже подавленные грани заново.
+        document.suppressedFaceGeometryKeys.clear()
+        for (key in dto.suppressedFaceGeometryKeys) {
+            document.suppressedFaceGeometryKeys.add(key.replace("-", ""))
         }
 
         document.bumpRevision()

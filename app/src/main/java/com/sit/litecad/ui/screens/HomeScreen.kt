@@ -2,6 +2,7 @@ package com.sit.litecad.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -30,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
+import com.sit.litecad.model.CadDocument
+import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.storage.ProjectInfo
 import com.sit.litecad.storage.ProjectStorage
 import java.io.File
@@ -227,6 +230,17 @@ fun HomeScreen(
                                 onShare = {
                                     val file = storage.getProjectFile(info.name)
                                     shareFile(context, file, "application/zip")
+                                },
+                                onExportPdf = {
+                                    val doc = CadDocument()
+                                    storage.loadIntoDocument(info.name, doc)
+                                    val result = PdfExporter.exportToDownloads(context, doc, info.name)
+                                    Toast.makeText(
+                                        context,
+                                        if (result != null) "PDF сохранён: $result"
+                                        else "Не удалось сохранить PDF",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             )
                         }
@@ -363,7 +377,8 @@ fun ProjectCard(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onRename: () -> Unit,
-    onShare: () -> Unit
+    onShare: () -> Unit,
+    onExportPdf: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val date = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
@@ -442,6 +457,11 @@ fun ProjectCard(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
+                    DropdownMenuItem(
+                        text = { Text("Экспорт в PDF") },
+                        onClick = { onExportPdf(); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.PictureAsPdf, null) }
+                    )
                     DropdownMenuItem(
                         text = { Text("Поделиться") },
                         onClick = { onShare(); showMenu = false },

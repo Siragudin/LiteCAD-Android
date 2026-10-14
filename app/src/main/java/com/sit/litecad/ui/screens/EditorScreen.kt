@@ -1,5 +1,6 @@
 package com.sit.litecad.ui.screens
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.Selection
+import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
@@ -44,6 +47,8 @@ fun EditorScreen(
     val settings = remember { ToolSettings() }
     val selection = remember { Selection() }
     val toolManager = remember { ToolManager(document, snapService, historyService, settings, selection) }
+
+    val context = LocalContext.current
 
     // Загрузка проекта при открытии
     LaunchedEffect(projectName) {
@@ -117,6 +122,23 @@ fun EditorScreen(
                                 DropdownMenuItem(
                                     text = { Text(if (isGridVisible) "Скрыть сетку" else "Показать сетку") },
                                     onClick = { isGridVisible = !isGridVisible; showMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Экспорт в PDF") },
+                                    onClick = {
+                                        showMenu = false
+                                        val result = PdfExporter.exportToDownloads(
+                                            context = context,
+                                            document = document,
+                                            projectName = projectName
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            if (result != null) "PDF сохранён: $result"
+                                            else "Не удалось сохранить PDF",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
                                 )
                             }
                         }

@@ -29,6 +29,9 @@ data class WorldBounds(
  * Все координаты страницы — в миллиметрах, начало в левом верхнем углу.
  * Мировые координаты чертежа — в единицах модели (обычно мм), Y вверх.
  * При переводе world → page инвертируем Y (page Y растёт вниз).
+ *
+ * [offsetXMm] и [offsetYMm] включают поле [PdfPageSpec.marginMm], то есть
+ * отсчитываются от левого верхнего угла страницы, а не от угла печатной области.
  */
 class PdfExportLayout private constructor(
     val pageSpec: PdfPageSpec,
@@ -76,11 +79,12 @@ class PdfExportLayout private constructor(
             val scaleY = pageSpec.contentHeightMm / worldHeight
             val scale = min(scaleX, scaleY)
 
-            // Центрирование содержимого в печатной области.
+            // Центрирование содержимого в печатной области + отступ от края страницы (marginMm),
+            // чтобы worldToPageMm возвращал координаты в мм от левого верхнего угла страницы.
             val usedWidthMm = worldWidth * scale
             val usedHeightMm = worldHeight * scale
-            val offsetX = (pageSpec.contentWidthMm - usedWidthMm) / 2.0
-            val offsetY = (pageSpec.contentHeightMm - usedHeightMm) / 2.0
+            val offsetX = pageSpec.marginMm + (pageSpec.contentWidthMm - usedWidthMm) / 2.0
+            val offsetY = pageSpec.marginMm + (pageSpec.contentHeightMm - usedHeightMm) / 2.0
 
             return PdfExportLayout(pageSpec, bounds, scale, offsetX, offsetY)
         }

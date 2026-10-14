@@ -1,5 +1,6 @@
 package com.sit.litecad.settings
 
+import com.sit.litecad.R
 import com.sit.litecad.model.EdgeLineType
 
 /**
@@ -7,16 +8,16 @@ import com.sit.litecad.model.EdgeLineType
  */
 object LineTypeTable {
 
-    data class Entry(val name: String, val type: EdgeLineType)
+    data class Entry(val nameRes: Int, val type: EdgeLineType)
 
     val values: List<Entry> = listOf(
-        Entry("Сплошная", EdgeLineType.SOLID),
-        Entry("Штриховая", EdgeLineType.DASHED),
-        Entry("Точечная", EdgeLineType.DOTTED)
+        Entry(R.string.line_type_solid, EdgeLineType.SOLID),
+        Entry(R.string.line_type_dashed, EdgeLineType.DASHED),
+        Entry(R.string.line_type_dotted, EdgeLineType.DOTTED)
     )
 
     val DEFAULT: EdgeLineType = EdgeLineType.SOLID
 
-    fun nameFor(type: EdgeLineType): String =
-        values.firstOrNull { it.type == type }?.name ?: "Сплошная"
+    fun nameResFor(type: EdgeLineType): Int =
+        values.firstOrNull { it.type == type }?.nameRes ?: R.string.line_type_solid
 }

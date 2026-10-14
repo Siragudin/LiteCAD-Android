@@ -1,5 +1,7 @@
 package com.sit.litecad.settings
 
+import com.sit.litecad.R
+
 /**
  * Палитра цветов заливки граней.
  *
@@ -34,22 +36,22 @@ object FillColorTable {
     /** RGB → ARGB (alpha = 0xFF). */
     fun argb(rgb: Int): Int = 0xFF000000.toInt() or (rgb and 0xFFFFFF)
 
-    /** Один элемент палитры: RGB-значение и русское имя. */
-    data class Entry(val rgb: Int, val name: String) {
+    /** Один элемент палитры: RGB-значение и ресурс имени. */
+    data class Entry(val rgb: Int, val nameRes: Int) {
         val argb: Int get() = FillColorTable.argb(rgb)
     }
 
     /** Палитра в порядке отображения. */
     val entries: List<Entry> = listOf(
-        Entry(RGB_LIGHT_GRAY, "Светло-серый"),
-        Entry(RGB_BLACK, "Чёрный"),
-        Entry(RGB_GRAY, "Серый"),
-        Entry(RGB_BLUE, "Синий"),
-        Entry(RGB_RED, "Красный"),
-        Entry(RGB_GREEN, "Зелёный")
+        Entry(RGB_LIGHT_GRAY, R.string.fill_color_light_gray),
+        Entry(RGB_BLACK, R.string.fill_color_black),
+        Entry(RGB_GRAY, R.string.fill_color_gray),
+        Entry(RGB_BLUE, R.string.fill_color_blue),
+        Entry(RGB_RED, R.string.fill_color_red),
+        Entry(RGB_GREEN, R.string.fill_color_green)
     )
 
-    /** Русское имя для ARGB-значения (для кнопки панели). */
-    fun nameFor(argb: Int): String =
-        entries.firstOrNull { it.argb == argb }?.name ?: "Светло-серый"
+    /** Ресурс имени для ARGB-значения (для кнопки панели). */
+    fun nameResFor(argb: Int): Int =
+        entries.firstOrNull { it.argb == argb }?.nameRes ?: R.string.fill_color_light_gray
 }

@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.settings.ColorTable
 
@@ -81,7 +82,7 @@ private fun LeaderColorSelector(
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = ColorTable.nameFor(currentColor),
+                    text = stringResource(ColorTable.nameResFor(currentColor)),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -104,7 +105,7 @@ private fun LeaderColorSelector(
                                     .background(Color(entry.argb), RoundedCornerShape(3.dp))
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(entry.name)
+                            Text(stringResource(entry.nameRes))
                         }
                     },
                     onClick = {

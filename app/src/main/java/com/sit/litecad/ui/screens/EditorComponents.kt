@@ -152,7 +152,7 @@ private fun ColorSelector(
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = ColorTable.nameFor(currentColor),
+                    text = stringResource(ColorTable.nameResFor(currentColor)),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -175,7 +175,7 @@ private fun ColorSelector(
                                     .background(Color(entry.argb), RoundedCornerShape(3.dp))
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(entry.name)
+                            Text(stringResource(entry.nameRes))
                         }
                     },
                     onClick = {
@@ -207,7 +207,7 @@ private fun ThicknessSelector(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = LineWeightTable.display(currentThickness),
+                    text = stringResource(LineWeightTable.displayRes(currentThickness)),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -222,7 +222,7 @@ private fun ThicknessSelector(
         ) {
             LineWeightTable.values.forEach { value ->
                 DropdownMenuItem(
-                    text = { Text(LineWeightTable.display(value)) },
+                    text = { Text(stringResource(LineWeightTable.displayRes(value))) },
                     onClick = {
                         onThicknessChange(value)
                         expanded = false
@@ -252,7 +252,7 @@ private fun LineTypeSelector(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = LineTypeTable.nameFor(currentLineType),
+                    text = stringResource(LineTypeTable.nameResFor(currentLineType)),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -267,7 +267,7 @@ private fun LineTypeSelector(
         ) {
             LineTypeTable.values.forEach { entry ->
                 DropdownMenuItem(
-                    text = { Text(entry.name) },
+                    text = { Text(stringResource(entry.nameRes)) },
                     onClick = {
                         onLineTypeChange(entry.type)
                         expanded = false

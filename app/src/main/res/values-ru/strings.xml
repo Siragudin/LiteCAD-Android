@@ -113,4 +113,33 @@
     <string name="cd_expand">Раскрыть</string>
     <string name="cd_collapse_tools">Свернуть панель инструментов</string>
     <string name="cd_expand_tools">Развернуть панель инструментов</string>
+
+    <!-- Цвета линий -->
+    <string name="color_black">Чёрный</string>
+    <string name="color_gray">Серый</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_red">Красный</string>
+    <string name="color_green">Зелёный</string>
+    <string name="color_dark_blue">Тёмно-синий</string>
+
+    <!-- Цвета заливки -->
+    <string name="fill_color_light_gray">Светло-серый</string>
+    <string name="fill_color_black">Чёрный</string>
+    <string name="fill_color_gray">Серый</string>
+    <string name="fill_color_blue">Синий</string>
+    <string name="fill_color_red">Красный</string>
+    <string name="fill_color_green">Зелёный</string>
+
+    <!-- Толщины линий -->
+    <string name="line_weight_1">1</string>
+    <string name="line_weight_1_5">1.5</string>
+    <string name="line_weight_2">2</string>
+    <string name="line_weight_3">3</string>
+    <string name="line_weight_4">4</string>
+    <string name="line_weight_5">5</string>
+
+    <!-- Типы линий -->
+    <string name="line_type_solid">Сплошная</string>
+    <string name="line_type_dashed">Штриховая</string>
+    <string name="line_type_dotted">Точечная</string>
 </resources>

@@ -20,6 +20,7 @@ import com.sit.litecad.services.SnapKind
 import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.canvas.Camera
+import kotlin.math.roundToLong
 
 class LineToolHandler(
     private val snapService: SnapService,
@@ -67,9 +68,14 @@ class LineToolHandler(
         lastSettings = settings
         if (!hasStart) return
 
-        val resolved = resolveSnap(document, point, startPoint, zoom, settings.line.orthoEnabled)
-        previewEnd = resolved
+        var resolved = resolveSnap(document, point, startPoint, zoom, settings.line.orthoEnabled)
         endSnapKind = querySnapKind(document, point, zoom)
+
+        // Округление длины: не применяем, если палец примагнитился к геометрии.
+        if (endSnapKind == null && settings.line.roundingMm > 0) {
+            resolved = roundByStep(startPoint, resolved, settings.line.roundingMm.toDouble())
+        }
+        previewEnd = resolved
 
         previewLineColor = if (endSnapKind != null) Color.Black else Color.Gray
 
@@ -183,6 +189,17 @@ class LineToolHandler(
         template.orthoAlignment = alignment
 
         EdgeOperations.addSegment(document, startPoint, endPoint, template, mutTolerance)
+    }
+
+    /** Тянет [end] вдоль направления [start]→[end] так, чтобы длина стала кратной [step] (мм). */
+    private fun roundByStep(start: Point2, end: Point2, step: Double): Point2 {
+        if (step <= 0.0) return end
+        val length = MathUtils.distance(start, end)
+        if (length <= TopologyTolerance.ForMutation) return end
+        val rounded = (length / step).roundToLong() * step
+        if (rounded <= TopologyTolerance.ForMutation) return end
+        val k = rounded / length
+        return Point2(start.X + (end.X - start.X) * k, start.Y + (end.Y - start.Y) * k)
     }
 
     private fun reset() {

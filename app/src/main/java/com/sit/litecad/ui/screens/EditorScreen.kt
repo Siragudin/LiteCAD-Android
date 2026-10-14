@@ -247,7 +247,10 @@ fun EditorScreen(
                                 onColorChange = { settings.line.color = it },
                                 currentLineType = settings.line.lineType,
                                 onLineTypeChange = { settings.line.lineType = it },
-                                showControls = true
+                                showControls = true,
+                                roundingMm = settings.line.roundingMm,
+                                onRoundingChange = { settings.line.roundingMm = it },
+                                showRounding = true
                             )
                         }
                         "axis" -> {
@@ -264,6 +267,9 @@ fun EditorScreen(
                                 showOrtho = true,
                                 showExactInput = true,
                                 showLineType = false,
+                                roundingMm = settings.axis.roundingMm,
+                                onRoundingChange = { settings.axis.roundingMm = it },
+                                showRounding = true,
                             )
                         }
                         "rect" -> {
@@ -280,7 +286,10 @@ fun EditorScreen(
                                 onLineTypeChange = { settings.rect.lineType = it },
                                 showControls = true,
                                 // Ortho у прямоугольника не используется — кнопку скрываем.
-                                showOrtho = false
+                                showOrtho = false,
+                                roundingMm = settings.rect.roundingMm,
+                                onRoundingChange = { settings.rect.roundingMm = it },
+                                showRounding = true
                             )
                         }
                         "circle" -> {

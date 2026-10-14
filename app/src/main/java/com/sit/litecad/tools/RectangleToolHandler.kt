@@ -19,6 +19,7 @@ import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.canvas.Camera
 import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * Инструмент «Прямоугольник».
@@ -94,16 +95,30 @@ class RectangleToolHandler(
         lastZoom = zoom
         if (!hasStart) return
 
-        val resolved = resolveSnap(document, point, startCorner, zoom)
-        oppositeCorner = resolved
-        endSnapKind = querySnapKind(document, point, zoom)
+        var resolved = resolveSnap(document, point, startCorner, zoom)
+        val endKind = querySnapKind(document, point, zoom)
 
         // Считаем снап производных углов здесь, чтобы превью сразу показывало
         // примагниченные углы (те же координаты, что уйдут в коммит).
-        val rect = snapRectangle(document, startCorner, resolved, zoom, applyDerivedSnap = true)
+        var rect = snapRectangle(document, startCorner, resolved, zoom, applyDerivedSnap = true)
+
+        // Округление ширины/высоты: если примагнитился хоть один угол — не применяем.
+        val hasAnySnap = endKind != null || rect.kindB != null || rect.kindD != null
+        if (!hasAnySnap && settings.rect.roundingMm > 0) {
+            val step = settings.rect.roundingMm.toDouble()
+            val sx = if (resolved.X - startCorner.X < 0.0) -1.0 else 1.0
+            val sy = if (resolved.Y - startCorner.Y < 0.0) -1.0 else 1.0
+            val wr = (abs(resolved.X - startCorner.X) / step).roundToLong() * step
+            val hr = (abs(resolved.Y - startCorner.Y) / step).roundToLong() * step
+            resolved = Point2(startCorner.X + sx * wr, startCorner.Y + sy * hr)
+            rect = snapRectangle(document, startCorner, resolved, zoom, applyDerivedSnap = true)
+        }
+
+        oppositeCorner = resolved
+        endSnapKind = endKind
         previewRect = rect
 
-        val magnetized = endSnapKind != null || rect.kindB != null || rect.kindD != null
+        val magnetized = endKind != null || rect.kindB != null || rect.kindD != null
         previewColor = if (magnetized) Color.Black else Color.Gray
 
         val w = abs(rect.c.X - rect.a.X)

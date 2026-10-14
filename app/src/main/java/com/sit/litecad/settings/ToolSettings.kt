@@ -13,6 +13,9 @@ class LineSettingsState {
     var thickness by mutableStateOf(LineWeightTable.DEFAULT)
     var color by mutableStateOf(0xFF222222.toInt())
     var lineType by mutableStateOf(EdgeLineType.SOLID)
+
+    /** Округление длины в мм: 0 — выкл, 10 — 1 см, 100 — 10 см, 1000 — 1 м. */
+    var roundingMm by mutableStateOf(0)
 }
 
 /** Состояние настроек инструмента «Прямоугольник». */
@@ -21,6 +24,9 @@ class RectSettingsState {
     var thickness by mutableStateOf(LineWeightTable.DEFAULT)
     var color by mutableStateOf(0xFF222222.toInt())
     var lineType by mutableStateOf(EdgeLineType.SOLID)
+
+    /** Округление размеров в мм: 0 — выкл, 10 — 1 см, 100 — 10 см, 1000 — 1 м. */
+    var roundingMm by mutableStateOf(0)
 }
 
 /** Состояние настроек инструмента «Круг». */
@@ -77,6 +83,9 @@ class AxisSettingsState {
     var exactInputEnabled by mutableStateOf(false)
     var thickness by mutableStateOf(1.5)
     var color by mutableStateOf(0xFF1565C0.toInt())
+
+    /** Округление длины в мм: 0 — выкл, 10 — 1 см, 100 — 10 см, 1000 — 1 м. */
+    var roundingMm by mutableStateOf(0)
 }
 
 /** Состояние настроек инструмента «Выбор». */

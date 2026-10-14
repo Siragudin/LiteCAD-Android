@@ -19,6 +19,7 @@ import com.sit.litecad.services.SnapService
 import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.canvas.Camera
 import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * Инструмент «Ось». Одна ось на две точки (не цепочка): после второй точки — коммит.
@@ -76,7 +77,14 @@ class AxisToolHandler(
         if (!hasStart) return
         lastSettings = settings
 
-        val (resolved, kind) = resolveSnapWithOrtho(document, point, startPoint, zoom, settings.axis.orthoEnabled)
+        val snapResult = resolveSnapWithOrtho(document, point, startPoint, zoom, settings.axis.orthoEnabled)
+        var resolved = snapResult.first
+        val kind = snapResult.second
+
+        // Округление длины: не применяем, если палец примагнитился к геометрии.
+        if (kind == null && settings.axis.roundingMm > 0) {
+            resolved = roundByStep(startPoint, resolved, settings.axis.roundingMm.toDouble())
+        }
         previewEnd = resolved
         endSnapKind = kind
 
@@ -191,6 +199,17 @@ class AxisToolHandler(
         axis.thickness = settings.axis.thickness
 
         document.bumpRevision()
+    }
+
+    /** Тянет [end] вдоль направления [start]→[end] так, чтобы длина стала кратной [step] (мм). */
+    private fun roundByStep(start: Point2, end: Point2, step: Double): Point2 {
+        if (step <= 0.0) return end
+        val length = MathUtils.distance(start, end)
+        if (length <= TopologyTolerance.ForMutation) return end
+        val rounded = (length / step).roundToLong() * step
+        if (rounded <= TopologyTolerance.ForMutation) return end
+        val k = rounded / length
+        return Point2(start.X + (end.X - start.X) * k, start.Y + (end.Y - start.Y) * k)
     }
 
     private fun reset() {

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LinearScale
 import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
@@ -36,6 +38,9 @@ fun TopSettingsBarDummy(
     showOrtho: Boolean = true,
     showExactInput: Boolean = true,
     showLineType: Boolean = true,
+    roundingMm: Int = 0,
+    onRoundingChange: (Int) -> Unit = {},
+    showRounding: Boolean = false,
 ) {
     Row(
         modifier = Modifier
@@ -80,6 +85,13 @@ fun TopSettingsBarDummy(
                 LineTypeSelector(
                     currentLineType = currentLineType,
                     onLineTypeChange = onLineTypeChange
+                )
+            }
+
+            if (showRounding) {
+                RoundingSelector(
+                    roundingMm = roundingMm,
+                    onRoundingChange = onRoundingChange
                 )
             }
         }
@@ -256,6 +268,83 @@ private fun LineTypeSelector(
                     text = { Text(entry.name) },
                     onClick = {
                         onLineTypeChange(entry.type)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+/** Шаги округления длины в мм: 0 — выкл, 10 — 1 см, 100 — 10 см, 1000 — 1 м. */
+private val ROUNDING_STEPS_MM = listOf(0, 10, 100, 1000)
+
+/** Подпись режима округления для кнопки панели. */
+private fun roundingLabel(roundingMm: Int): String = when (roundingMm) {
+    10 -> "1 см"
+    100 -> "10 см"
+    1000 -> "1 м"
+    else -> "выкл"
+}
+
+/** Выпадающий выбор шага округления длины (последний пункт панели свойств). */
+@Composable
+private fun RoundingSelector(
+    roundingMm: Int,
+    onRoundingChange: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(8.dp),
+            color = Color.Transparent,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LinearScale,
+                    contentDescription = "Округление",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Gray
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "≈ " + roundingLabel(roundingMm),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("▾", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ROUNDING_STEPS_MM.forEach { value ->
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(if (value == 0) "Выкл" else roundingLabel(value))
+                            if (value == roundingMm) {
+                                Spacer(Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    },
+                    onClick = {
+                        onRoundingChange(value)
                         expanded = false
                     }
                 )

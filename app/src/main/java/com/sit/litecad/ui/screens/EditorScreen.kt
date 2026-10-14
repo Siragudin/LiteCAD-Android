@@ -19,11 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
+import com.sit.litecad.model.PolygonType
 import com.sit.litecad.model.Selection
 import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.services.DocumentHistoryService
@@ -67,7 +69,7 @@ fun EditorScreen(
     val leftText = toolManager.activeTool?.previewMeasurements
         ?.takeIf { it.isNotEmpty() }
         ?.joinToString("  ") { "${it.label}: ${it.value}" }
-        ?: buildSelectionLengthText(document, selection)
+        ?: buildSelectionSummaryText(document, selection)
 
     val rightText = cursorWorld?.let { "X: ${it.X.toInt()}  Y: ${it.Y.toInt()}" } ?: "X: 0  Y: 0"
 
@@ -487,8 +489,20 @@ fun EditorScreen(
     }
 }
 
-/** Текст длины выделения для второго ряда топбара: одно ребро/ось → «L: N мм», иначе «L: 0 мм». */
-private fun buildSelectionLengthText(document: CadDocument, selection: Selection): String {
+/** Текст сводки выделения для второго ряда топбара: площадь граней, иначе длина ребра/оси. */
+private fun buildSelectionSummaryText(document: CadDocument, selection: Selection): String {
+    // 1. Грани — суммарная площадь (только FACE). Значения в мм² → м².
+    val faceAreaMm2 = selection.selectedPolygonIds
+        .asSequence()
+        .mapNotNull { id -> document.polygons.firstOrNull { p -> p.id == id } }
+        .filter { it.type == PolygonType.FACE }
+        .map { PolygonGeometry.getArea(document, it) }
+        .sum()
+    if (faceAreaMm2 > 0.0) {
+        return String.format(java.util.Locale.US, "S: %.2f м²", faceAreaMm2 / 1_000_000.0)
+    }
+
+    // 2. Одно ребро / одна ось → длина.
     val singleEdge = if (selection.selectedEdgeIds.size == 1 &&
         selection.selectedAxisIds.isEmpty() && selection.selectedPolygonIds.isEmpty()
     ) {

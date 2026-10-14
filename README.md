@@ -11,6 +11,18 @@
 This project is a deep architectural redesign and official mobile port of the desktop version [LiteCAD for Windows (.NET 10 / WPF)](https://github.com). The graphics engine has been completely rewritten from scratch in **Kotlin**, utilizing a highly optimized custom **Android Canvas** to deliver buttery-smooth panning, zooming, and strict adherence to ESKD/GOST engineering drawing standards.
 
 ---
+---
+
+## 🛠 Project Status & Tablet Support 📱🖥️
+
+> [!NOTE]
+> **Current Phase: Active Beta**  
+> LiteCAD for Android is currently in its active beta phase. While the core geometry and topology rendering engine are fully stable, the UI is primarily optimized for **smartphones**.
+> 
+> * **Tablet Compatibility:** Layout stability on tablets is currently **not guaranteed**, as development is conducted without physical tablet testing hardware. 
+> * **Future Tablet UI Architecture:** A dedicated tablet-native interface is on the roadmap. Future releases will feature a split lateral layout—moving toolbars and property panels from the top/bottom to the **left and right sides of the screen** to maximize the usable widescreen drafting canvas.
+
+---
 
 ## 📜 License
 

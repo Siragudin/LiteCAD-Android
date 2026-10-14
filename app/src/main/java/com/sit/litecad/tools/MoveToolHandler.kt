@@ -84,6 +84,13 @@ class MoveToolHandler(
     override var currentMeasurement by mutableStateOf("")
         private set
 
+    override val previewMeasurements: List<PreviewMeasurement>
+        get() = if (hasStart) {
+            listOf(PreviewMeasurement("Δ", "${MathUtils.distance(startWorld, currentWorld).toInt()} мм"))
+        } else {
+            emptyList()
+        }
+
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastZoom = zoom
 

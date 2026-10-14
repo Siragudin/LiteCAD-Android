@@ -84,6 +84,13 @@ class SectorToolHandler(
     override var currentMeasurement by mutableStateOf("")
         private set
 
+    override val previewMeasurements: List<PreviewMeasurement>
+        get() = if (phase == Phase.SECOND_DRAG) {
+            listOf(PreviewMeasurement("θ", "${previewAngleAbs.toInt()}°"))
+        } else {
+            emptyList()
+        }
+
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
         lastZoom = zoom

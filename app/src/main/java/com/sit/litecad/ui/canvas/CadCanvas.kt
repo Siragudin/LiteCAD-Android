@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.tools.ToolManager
 
@@ -34,6 +35,7 @@ fun CadCanvas(
     toolManager: ToolManager,
     isGridVisible: Boolean,
     isOrthoEnabled: Boolean,
+    onCursorWorldChanged: (Point2?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -85,20 +87,24 @@ fun CadCanvas(
                             onDragStart = { offset ->
                                 cursorPosition = offset
                                 val worldPoint = viewport.screenToWorld(offset)
+                                onCursorWorldChanged(worldPoint)
                                 toolManager.handleStart(worldPoint, viewport.zoom)
                             },
                             onDrag = { change, _ ->
                                 change.consume()
                                 cursorPosition = change.position
                                 val worldPoint = viewport.screenToWorld(change.position)
+                                onCursorWorldChanged(worldPoint)
                                 toolManager.handleMove(worldPoint, viewport.zoom)
                             },
                             onDragEnd = {
                                 cursorPosition = Offset.Unspecified
+                                onCursorWorldChanged(null)
                                 toolManager.handleEnd()
                             },
                             onDragCancel = {
                                 cursorPosition = Offset.Unspecified
+                                onCursorWorldChanged(null)
                                 toolManager.activeTool?.cancel()
                             }
                         )

@@ -10,6 +10,11 @@ interface Tool {
 
     val currentMeasurement: String
         get() = ""
+
+    /** Значения превью для второго ряда топбара. Пусто — инструмент ничего не показывает. */
+    val previewMeasurements: List<PreviewMeasurement>
+        get() = emptyList()
+
     fun onInputSubmitted(value: Double, document: CadDocument) {}
     fun onInputCancelled(document: CadDocument) {}
     fun onRectangleInputSubmitted(width: Double, height: Double, document: CadDocument) {}

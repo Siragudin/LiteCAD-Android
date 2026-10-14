@@ -51,6 +51,13 @@ class AxisToolHandler(
     override var currentMeasurement by mutableStateOf("")
         private set
 
+    override val previewMeasurements: List<PreviewMeasurement>
+        get() = if (hasStart) {
+            listOf(PreviewMeasurement("L", "${MathUtils.distance(startPoint, previewEnd).toInt()} мм"))
+        } else {
+            emptyList()
+        }
+
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
         val tolerance = 60.0 / zoom

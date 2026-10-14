@@ -18,6 +18,10 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.sit.litecad.geometry.TopologyService
+import com.sit.litecad.math.MathUtils
+import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.Selection
@@ -49,6 +53,23 @@ fun EditorScreen(
     val toolManager = remember { ToolManager(document, snapService, historyService, settings, selection) }
 
     val context = LocalContext.current
+
+    // Координаты пальца в мировых мм — приходят из CadCanvas (null, когда палец не на экране).
+    var cursorWorld by remember { mutableStateOf<Point2?>(null) }
+
+    // Второй ряд топбара: слева — длина/значения превью, справа — координаты пальца.
+    // Ревизии читаем явно, чтобы ряд пересчитывался при изменениях документа/выделения.
+    @Suppress("UNUSED_EXPRESSION")
+    document.revision
+    @Suppress("UNUSED_EXPRESSION")
+    selection.revision
+
+    val leftText = toolManager.activeTool?.previewMeasurements
+        ?.takeIf { it.isNotEmpty() }
+        ?.joinToString("  ") { "${it.label}: ${it.value}" }
+        ?: buildSelectionLengthText(document, selection)
+
+    val rightText = cursorWorld?.let { "X: ${it.X.toInt()}  Y: ${it.Y.toInt()}" } ?: "X: 0  Y: 0"
 
     // Загрузка проекта при открытии
     LaunchedEffect(projectName) {
@@ -93,14 +114,27 @@ fun EditorScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                    title = { Text(projectName, style = MaterialTheme.typography.titleMedium) },
-                    navigationIcon = {
+            Column(modifier = Modifier.statusBarsPadding()) {
+                // Верхний ряд: собственные размеры (≤44 dp) вместо штатных 64 dp топбара.
+                Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 3.dp) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                            .padding(horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         IconButton(onClick = { saveAndExit() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                         }
-                    },
-                    actions = {
+                        Text(
+                            text = projectName,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 4.dp)
+                        )
                         IconButton(onClick = { saveAndExit() }) {
                             Icon(Icons.Default.Save, "Save")
                         }
@@ -143,7 +177,21 @@ fun EditorScreen(
                             }
                         }
                     }
-            )
+                }
+
+                // Второй ряд: слева — длина/значения превью инструмента, справа — координаты пальца.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(leftText, fontSize = 12.sp)
+                    Text(rightText, fontSize = 12.sp)
+                }
+            }
         }
     ) { padding ->
         Box(
@@ -167,6 +215,7 @@ fun EditorScreen(
                     toolManager = toolManager,
                     isGridVisible = isGridVisible,
                     isOrthoEnabled = settings.line.orthoEnabled,
+                    onCursorWorldChanged = { cursorWorld = it },
                 )
 
                 // Выдвижная панель инструментов — overlay поверх холста внизу рамки.
@@ -436,4 +485,29 @@ fun EditorScreen(
             }
         }
     }
+}
+
+/** Текст длины выделения для второго ряда топбара: одно ребро/ось → «L: N мм», иначе «L: 0 мм». */
+private fun buildSelectionLengthText(document: CadDocument, selection: Selection): String {
+    val singleEdge = if (selection.selectedEdgeIds.size == 1 &&
+        selection.selectedAxisIds.isEmpty() && selection.selectedPolygonIds.isEmpty()
+    ) {
+        document.edgeById(selection.selectedEdgeIds.first())
+    } else null
+    val singleAxis = if (singleEdge == null && selection.selectedAxisIds.size == 1 &&
+        selection.selectedEdgeIds.isEmpty() && selection.selectedPolygonIds.isEmpty()
+    ) {
+        document.axisById(selection.selectedAxisIds.first())
+    } else null
+
+    val length = when {
+        singleEdge != null -> {
+            val s = TopologyService.getEdgeStartPoint(document, singleEdge)
+            val e = TopologyService.getEdgeEndPoint(document, singleEdge)
+            MathUtils.distance(s, e)
+        }
+        singleAxis != null -> MathUtils.distance(singleAxis.Start, singleAxis.End)
+        else -> 0.0
+    }
+    return "L: ${length.toInt()} мм"
 }

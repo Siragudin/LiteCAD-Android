@@ -62,6 +62,18 @@ class RectangleToolHandler(
     override var currentMeasurement by mutableStateOf("")
         private set
 
+    override val previewMeasurements: List<PreviewMeasurement>
+        get() {
+            val rect = previewRect
+            if (!hasStart || rect == null) return emptyList()
+            val w = abs(rect.c.X - rect.a.X)
+            val h = abs(rect.d.Y - rect.a.Y)
+            return listOf(
+                PreviewMeasurement("Ш", "${w.toInt()} мм"),
+                PreviewMeasurement("В", "${h.toInt()} мм")
+            )
+        }
+
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
         lastZoom = zoom

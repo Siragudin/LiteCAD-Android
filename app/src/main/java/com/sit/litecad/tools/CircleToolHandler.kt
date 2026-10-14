@@ -55,6 +55,13 @@ class CircleToolHandler(
     override var currentMeasurement by mutableStateOf("")
         private set
 
+    override val previewMeasurements: List<PreviewMeasurement>
+        get() = if (hasStart) {
+            listOf(PreviewMeasurement("R", "${MathUtils.distance(center, radiusPoint).toInt()} мм"))
+        } else {
+            emptyList()
+        }
+
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastSettings = settings
         val resolved = resolveSnap(document, point, null, zoom, false)

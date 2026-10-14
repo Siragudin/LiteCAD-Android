@@ -55,11 +55,22 @@ object PdfExporter {
         val widthPt = (layout.pageSpec.pageWidthMm * POINTS_PER_INCH / MM_PER_INCH).toInt()
         val heightPt = (layout.pageSpec.pageHeightMm * POINTS_PER_INCH / MM_PER_INCH).toInt()
 
+        // Zoom для выносок: чтобы стойка занимала ≈ 8 мм на листе, сохраняя пропорции редактора.
+        // leaderZoom = STEM_HEIGHT_SCREEN * scaleMmPerUnit / desiredStemMm,
+        // тогда в мировых единицах стойка = desiredStemMm / scaleMmPerUnit, на листе = desiredStemMm мм.
+        val desiredStemMm = 8.0
+        val leaderZoom = if (layout.scaleMmPerUnit > 0.0) {
+            LeaderGeometry.STEM_HEIGHT_SCREEN *
+                layout.scaleMmPerUnit / desiredStemMm
+        } else {
+            1.0
+        }
+
         val pdf = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(widthPt, heightPt, 1).create()
         val page = pdf.startPage(pageInfo)
         try {
-            drawPage(page.canvas, document, layout)
+            drawPage(page.canvas, document, layout, leaderZoom)
             pdf.finishPage(page)
         } catch (t: Throwable) {
             pdf.finishPage(page)
@@ -72,12 +83,17 @@ object PdfExporter {
         return if (saved) fileName else null
     }
 
-    private fun drawPage(canvas: Canvas, document: CadDocument, layout: PdfExportLayout) {
+    private fun drawPage(
+        canvas: Canvas,
+        document: CadDocument,
+        layout: PdfExportLayout,
+        leaderZoom: Double
+    ) {
         canvas.drawColor(Color.WHITE)
         drawEdges(canvas, document, layout)
         drawAxes(canvas, document, layout)
         drawDimensions(canvas, document, layout)
-        drawLeaders(canvas, document, layout)
+        drawLeaders(canvas, document, layout, leaderZoom)
     }
 
     // --- Рёбра ---
@@ -253,7 +269,12 @@ object PdfExporter {
 
     // --- Выноски ---
 
-    private fun drawLeaders(canvas: Canvas, document: CadDocument, layout: PdfExportLayout) {
+    private fun drawLeaders(
+        canvas: Canvas,
+        document: CadDocument,
+        layout: PdfExportLayout,
+        leaderZoom: Double
+    ) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
@@ -267,7 +288,7 @@ object PdfExporter {
 
         for (leader in document.leaders) {
             if (leader.text.isBlank()) continue
-            val ll = LeaderGeometry.createLayout(leader.target, leader.textPosition, 1.0)
+            val ll = LeaderGeometry.createLayout(leader.target, leader.textPosition, leaderZoom)
             paint.color = leader.colorArgb
             textPaint.color = leader.colorArgb
 

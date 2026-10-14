@@ -8,12 +8,15 @@ import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.CadVertex
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.FaceFillPattern
+import com.sit.litecad.model.FaceFillStyle
 import com.sit.litecad.model.Leader
 import com.sit.litecad.model.LeaderKind
 import com.sit.litecad.model.OrthoAlignment
 import com.sit.litecad.storage.dto.AxisDto
 import com.sit.litecad.storage.dto.DimensionDto
 import com.sit.litecad.storage.dto.EdgeDto
+import com.sit.litecad.storage.dto.FaceFillStyleDto
 import com.sit.litecad.storage.dto.LeaderDto
 import com.sit.litecad.storage.dto.ProjectDocumentDto
 import com.sit.litecad.storage.dto.VertexDto
@@ -93,9 +96,15 @@ object ProjectDocumentSerializer {
                     color = argbToHex(leader.colorArgb)
                 )
             }.toMutableList(),
-            elevationBaseY = document.elevationBaseY
-            // Остальные поля (userPolygons, texts, suppressedFaceGeometryKeys,
-            // faceFillStyles) остаются пустыми, т.к. в Android-версии их пока нет.
+            elevationBaseY = document.elevationBaseY,
+            faceFillStyles = document.faceFillStyles.mapValues { (_, style) ->
+                FaceFillStyleDto(
+                    fillColor = argbToHex(style.fillColor),
+                    fillPattern = enumToCamel(style.fillPattern.name)
+                )
+            }.toMutableMap()
+            // Остальные поля (userPolygons, texts, suppressedFaceGeometryKeys)
+            // остаются пустыми, т.к. в Android-версии их пока нет.
         )
     }
 
@@ -191,6 +200,14 @@ object ProjectDocumentSerializer {
         }
         document.elevationBaseY = dto.elevationBaseY
 
+        document.faceFillStyles.clear()
+        for ((key, styleDto) in dto.faceFillStyles) {
+            document.faceFillStyles[key] = FaceFillStyle(
+                fillColor = hexToArgb(styleDto.fillColor),
+                fillPattern = parseFillPattern(styleDto.fillPattern)
+            )
+        }
+
         document.bumpRevision()
 
         document.rebuildIndexes()
@@ -218,6 +235,14 @@ object ProjectDocumentSerializer {
             "dashed" -> EdgeLineType.DASHED
             "dotted" -> EdgeLineType.DOTTED
             else -> EdgeLineType.SOLID
+        }
+    }
+
+    private fun parseFillPattern(value: String): FaceFillPattern {
+        return when (value.lowercase()) {
+            "diagonal" -> FaceFillPattern.DIAGONAL
+            "diagonalwide" -> FaceFillPattern.DIAGONAL_WIDE
+            else -> FaceFillPattern.SOLID
         }
     }
 

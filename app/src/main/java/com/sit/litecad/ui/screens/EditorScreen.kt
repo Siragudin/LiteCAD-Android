@@ -17,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sit.litecad.R
 import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.math.MathUtils
@@ -127,7 +129,7 @@ fun EditorScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { saveAndExit() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.cd_back))
                         }
                         Text(
                             text = projectName,
@@ -138,29 +140,29 @@ fun EditorScreen(
                                 .padding(horizontal = 4.dp)
                         )
                         IconButton(onClick = { saveAndExit() }) {
-                            Icon(Icons.Default.Save, "Save")
+                            Icon(Icons.Default.Save, stringResource(R.string.cd_save))
                         }
                         IconButton(
                             onClick = { toolManager.undo() },
                             enabled = toolManager.canUndo
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.Undo, "Undo")
+                            Icon(Icons.AutoMirrored.Filled.Undo, stringResource(R.string.cd_undo))
                         }
                         IconButton(
                             onClick = { toolManager.redo() },
                             enabled = toolManager.canRedo
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.Redo, "Redo")
+                            Icon(Icons.AutoMirrored.Filled.Redo, stringResource(R.string.cd_redo))
                         }
                         Box {
-                            IconButton(onClick = { showMenu = true }) { Icon(Icons.Default.MoreVert, "Menu") }
+                            IconButton(onClick = { showMenu = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.cd_menu)) }
                             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                                 DropdownMenuItem(
-                                    text = { Text(if (isGridVisible) "Скрыть сетку" else "Показать сетку") },
+                                    text = { Text(if (isGridVisible) stringResource(R.string.menu_hide_grid) else stringResource(R.string.menu_show_grid)) },
                                     onClick = { isGridVisible = !isGridVisible; showMenu = false }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Экспорт в PDF") },
+                                    text = { Text(stringResource(R.string.menu_export_pdf)) },
                                     onClick = {
                                         showMenu = false
                                         val result = PdfExporter.exportToDownloads(
@@ -170,8 +172,8 @@ fun EditorScreen(
                                         )
                                         Toast.makeText(
                                             context,
-                                            if (result != null) "PDF сохранён: $result"
-                                            else "Не удалось сохранить PDF",
+                                            if (result != null) context.getString(R.string.pdf_saved, result)
+                                            else context.getString(R.string.pdf_save_failed),
                                             Toast.LENGTH_LONG
                                         ).show()
                                     }
@@ -438,9 +440,9 @@ fun EditorScreen(
                 is PendingInput.Length -> {
                     // У дуги «длина» — это высота (sagitta), у размера — отступ.
                     val label = when (toolManager.activeToolId) {
-                        "arc" -> "Высота:"
-                        "dim" -> "Отступ:"
-                        else -> "Длина:"
+                        "arc" -> stringResource(R.string.label_height)
+                        "dim" -> stringResource(R.string.label_dim_offset)
+                        else -> stringResource(R.string.label_length)
                     }
                     Box(Modifier.align(Alignment.BottomCenter)) {
                         LengthInputPanel(

@@ -32,7 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.R
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.settings.ColorTable
 import com.sit.litecad.settings.LineWeightTable
@@ -66,14 +68,14 @@ fun DimSettingsBar(
     ) {
         DimIconButton(
             icon = Icons.Default.RoundedCorner,
-            label = "Ortho",
+            label = stringResource(R.string.label_ortho),
             isActive = orthoEnabled,
             onClick = onOrthoToggle
         )
 
         DimIconButton(
             icon = Icons.Default.Straighten,
-            label = "Точный",
+            label = stringResource(R.string.label_exact),
             isActive = exactInputEnabled,
             onClick = onExactInputToggle
         )
@@ -81,7 +83,7 @@ fun DimSettingsBar(
         // Тумблер стиля выносных линий: Полные (FULL) / Короткие (SHORT).
         DimIconButton(
             icon = Icons.Default.Height,
-            label = if (extensionStyle == DimensionExtensionStyle.FULL) "Полные" else "Короткие",
+            label = if (extensionStyle == DimensionExtensionStyle.FULL) stringResource(R.string.label_dim_full) else stringResource(R.string.label_dim_short),
             isActive = extensionStyle == DimensionExtensionStyle.FULL,
             onClick = onExtensionStyleToggle
         )

@@ -22,17 +22,19 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.R
 
 @Composable
 fun LengthInputPanel(
     hint: Double,
     onSubmit: (Double) -> Unit,
     onCancel: () -> Unit,
-    label: String = "Длина:"
+    label: String? = null
 ) {
     var text by remember { mutableStateOf("") }
 
@@ -67,7 +69,7 @@ fun LengthInputPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = label,
+                text = label ?: stringResource(R.string.label_length),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -112,10 +114,10 @@ fun LengthInputPanel(
             }
 
             IconButton(onClick = { submit() }) {
-                Icon(Icons.Default.Check, contentDescription = "Применить", tint = Color(0xFF2E7D32))
+                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.cd_apply), tint = Color(0xFF2E7D32))
             }
             IconButton(onClick = onCancel) {
-                Icon(Icons.Default.Close, contentDescription = "Отмена", tint = Color(0xFFC62828))
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_cancel), tint = Color(0xFFC62828))
             }
         }
     }

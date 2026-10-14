@@ -53,4 +53,64 @@
     <!-- Названия языков (одинаковы в обоих языках — по стандарту) -->
     <string name="language_english">English</string>
     <string name="language_russian">Русский</string>
+
+    <!-- Инструменты -->
+    <string name="tool_hand">Рука</string>
+    <string name="tool_line">Линия</string>
+    <string name="tool_axis">Ось</string>
+    <string name="tool_move">Переместить</string>
+    <string name="tool_circle">Круг</string>
+    <string name="tool_sector">Сектор</string>
+    <string name="tool_arc">Дуга</string>
+    <string name="tool_select">Выбор</string>
+    <string name="tool_eraser">Ластик</string>
+    <string name="tool_dim">Размер</string>
+    <string name="tool_rect">Прямоуг.</string>
+    <string name="tool_rotate">Поворот</string>
+    <string name="tool_mirror">Зеркало</string>
+    <string name="tool_offset">Эквидистанта</string>
+    <string name="tool_extend">Удлинить</string>
+    <string name="tool_leader">Выноска</string>
+    <string name="tool_fill">Заливка</string>
+
+    <!-- Панели свойств -->
+    <string name="label_ortho">Ortho</string>
+    <string name="label_exact">Точный</string>
+    <string name="label_copy">Копия</string>
+    <string name="label_multi">Мульти</string>
+    <string name="label_clear_all">Снять всё</string>
+    <string name="label_dim_full">Полные</string>
+    <string name="label_dim_short">Короткие</string>
+    <string name="label_rounding_off">Выкл</string>
+    <string name="label_rounding_1cm">1 см</string>
+    <string name="label_rounding_10cm">10 см</string>
+    <string name="label_rounding_1m">1 м</string>
+
+    <!-- Полупрозрачные панели ввода -->
+    <string name="label_height">Высота:</string>
+    <string name="label_dim_offset">Отступ:</string>
+    <string name="label_length">Длина:</string>
+    <string name="label_offset">Смещение:</string>
+    <string name="label_offset_x">Смещение X:</string>
+    <string name="label_offset_y">Смещение Y:</string>
+    <string name="label_size">Размер:</string>
+    <string name="label_angle">Угол:</string>
+    <string name="label_angle_deg">Угол, °:</string>
+
+    <!-- Меню редактора -->
+    <string name="menu_hide_grid">Скрыть сетку</string>
+    <string name="menu_show_grid">Показать сетку</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_back">Назад</string>
+    <string name="cd_save">Сохранить</string>
+    <string name="cd_undo">Отменить</string>
+    <string name="cd_redo">Повторить</string>
+    <string name="cd_menu">Меню</string>
+    <string name="cd_apply">Применить</string>
+    <string name="cd_cancel">Отмена</string>
+    <string name="cd_rounding">Округление</string>
+    <string name="cd_expand">Раскрыть</string>
+    <string name="cd_collapse_tools">Свернуть панель инструментов</string>
+    <string name="cd_expand_tools">Развернуть панель инструментов</string>
 </resources>

@@ -23,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.R
 
 /**
  * Панель свойств инструмента «Поворот».
@@ -48,14 +50,14 @@ fun RotateSettingsBar(
     ) {
         RotateIconButton(
             icon = Icons.Default.Straighten,
-            label = "Точный",
+            label = stringResource(R.string.label_exact),
             isActive = exactInputEnabled,
             onClick = onExactInputToggle
         )
 
         RotateIconButton(
             icon = Icons.Default.ContentCopy,
-            label = "Копия",
+            label = stringResource(R.string.label_copy),
             isActive = copyMode,
             onClick = onCopyToggle
         )

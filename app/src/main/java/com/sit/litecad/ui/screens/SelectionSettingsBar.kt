@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.BorderStroke
+import com.sit.litecad.R
 
 /**
  * Панель свойств инструмента Select.
@@ -46,21 +48,21 @@ fun SelectionSettingsBar(
     ) {
         SelectionIconButton(
             icon = Icons.Default.Layers,
-            label = "Мульти",
+            label = stringResource(R.string.label_multi),
             isActive = multiMode,
             onClick = onMultiToggle
         )
 
         SelectionIconButton(
             icon = Icons.Default.Delete,
-            label = "Удалить",
+            label = stringResource(R.string.menu_delete),
             isActive = false,
             onClick = onDelete
         )
 
         SelectionIconButton(
             icon = Icons.Default.Cancel,
-            label = "Снять всё",
+            label = stringResource(R.string.label_clear_all),
             isActive = false,
             onClick = onClear
         )

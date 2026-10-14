@@ -16,7 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.R
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.settings.ColorTable
 import com.sit.litecad.settings.LineTypeTable
@@ -56,7 +58,7 @@ fun TopSettingsBarDummy(
             if (showOrtho) {
                 SettingsButtonDummy(
                     icon = Icons.Default.RoundedCorner,
-                    label = "Ortho",
+                    label = stringResource(R.string.label_ortho),
                     isActive = isOrthoEnabled,
                     onClick = onOrthoToggle
                 )
@@ -65,7 +67,7 @@ fun TopSettingsBarDummy(
             if (showExactInput) {
                 SettingsButtonDummy(
                     icon = Icons.Default.Straighten,
-                    label = "Точный",
+                    label = stringResource(R.string.label_exact),
                     isActive = exactInputEnabled,
                     onClick = onExactInputToggle
                 )
@@ -280,11 +282,12 @@ private fun LineTypeSelector(
 private val ROUNDING_STEPS_MM = listOf(0, 10, 100, 1000)
 
 /** Подпись режима округления для кнопки панели. */
+@Composable
 private fun roundingLabel(roundingMm: Int): String = when (roundingMm) {
-    10 -> "1 см"
-    100 -> "10 см"
-    1000 -> "1 м"
-    else -> "выкл"
+    10 -> stringResource(R.string.label_rounding_1cm)
+    100 -> stringResource(R.string.label_rounding_10cm)
+    1000 -> stringResource(R.string.label_rounding_1m)
+    else -> stringResource(R.string.label_rounding_off)
 }
 
 /** Выпадающий выбор шага округления длины (последний пункт панели свойств). */
@@ -308,7 +311,7 @@ private fun RoundingSelector(
             ) {
                 Icon(
                     imageVector = Icons.Default.LinearScale,
-                    contentDescription = "Округление",
+                    contentDescription = stringResource(R.string.cd_rounding),
                     modifier = Modifier.size(18.dp),
                     tint = Color.Gray
                 )
@@ -331,7 +334,7 @@ private fun RoundingSelector(
                 DropdownMenuItem(
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (value == 0) "Выкл" else roundingLabel(value))
+                            Text(if (value == 0) stringResource(R.string.label_rounding_off) else roundingLabel(value))
                             if (value == roundingMm) {
                                 Spacer(Modifier.width(8.dp))
                                 Icon(

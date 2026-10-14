@@ -24,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sit.litecad.R
 
 /**
  * Панель свойств инструмента «Перемещение».
@@ -51,7 +53,7 @@ fun MoveSettingsBar(
     ) {
         MoveIconButton(
             icon = Icons.Default.RoundedCorner,
-            label = "Ortho",
+            label = stringResource(R.string.label_ortho),
             isActive = orthoEnabled,
             onClick = onOrthoToggle
         )
@@ -60,7 +62,7 @@ fun MoveSettingsBar(
         if (orthoEnabled) {
             MoveIconButton(
                 icon = Icons.Default.Straighten,
-                label = "Точный",
+                label = stringResource(R.string.label_exact),
                 isActive = exactInputEnabled,
                 onClick = onExactInputToggle
             )
@@ -68,7 +70,7 @@ fun MoveSettingsBar(
 
         MoveIconButton(
             icon = Icons.Default.ContentCopy,
-            label = "Копия",
+            label = stringResource(R.string.label_copy),
             isActive = copyMode,
             onClick = onCopyToggle
         )

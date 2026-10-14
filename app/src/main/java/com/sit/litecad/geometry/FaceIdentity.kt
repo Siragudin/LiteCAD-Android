@@ -83,7 +83,9 @@ object FaceIdentity {
         val n = sequence.size
         if (n == 0) return ""
 
-        val tokens = Array(n) { sequence[it].toString() }
+        // Формат "N" (без дефисов) — как в ПК-версии (Guid.ToString("N")).
+        // Так ключи FaceIdentity в Android и на ПК совпадают для одной и той же грани.
+        val tokens = Array(n) { sequence[it].toString().replace("-", "") }
 
         // Поиск начала минимальной ротации (алгоритм Боута).
         var i = 0

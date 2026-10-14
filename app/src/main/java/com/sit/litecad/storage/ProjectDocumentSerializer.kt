@@ -90,8 +90,8 @@ object ProjectDocumentSerializer {
                     kind = leader.kind.name.lowercase(),
                     targetX = leader.target.X,
                     targetY = leader.target.Y,
-                    textPositionX = leader.textPosition.X,
-                    textPositionY = leader.textPosition.Y,
+                    textX = leader.textPosition.X,
+                    textY = leader.textPosition.Y,
                     text = leader.text,
                     color = argbToHex(leader.colorArgb)
                 )
@@ -192,7 +192,7 @@ object ProjectDocumentSerializer {
                     id = parseUuid(l.id),
                     kind = parseLeaderKind(l.kind),
                     target = Point2(l.targetX, l.targetY),
-                    textPosition = Point2(l.textPositionX, l.textPositionY),
+                    textPosition = Point2(l.textX, l.textY),
                     text = l.text,
                     colorArgb = hexToArgb(l.color)
                 )
@@ -202,7 +202,11 @@ object ProjectDocumentSerializer {
 
         document.faceFillStyles.clear()
         for ((key, styleDto) in dto.faceFillStyles) {
-            document.faceFillStyles[key] = FaceFillStyle(
+            // Ключ ПК-формата — UUID без дефисов (Guid.ToString("N")).
+            // Старые Android-ключи содержали дефисы — нормализуем, чтобы старые
+            // проекты продолжали открываться и заливки находили свои грани.
+            val normalizedKey = key.replace("-", "")
+            document.faceFillStyles[normalizedKey] = FaceFillStyle(
                 fillColor = hexToArgb(styleDto.fillColor),
                 fillPattern = parseFillPattern(styleDto.fillPattern)
             )

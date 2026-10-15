@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.NorthEast
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
@@ -50,6 +48,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.R
 import com.sit.litecad.settings.ToolSettings
+import com.sit.litecad.ui.icons.ArrowMenuOpen
+import com.sit.litecad.ui.icons.ArrowTopLeft
+import com.sit.litecad.ui.icons.LineEnd
 
 /**
  * Элемент панели инструментов: одиночная кнопка либо слот-группа.
@@ -127,9 +128,9 @@ fun ToolsBottomPanel(
 
     // Третий ряд — выезжает вместе со вторым.
     val thirdRow: List<ToolBarItem> = listOf(
-        ToolBarItem.Single("offset", Icons.Default.Straighten, stringResource(R.string.tool_offset)),
-        ToolBarItem.Single("extend", Icons.AutoMirrored.Filled.CallMade, stringResource(R.string.tool_extend)),
-        ToolBarItem.Single("leader", Icons.Default.NorthEast, stringResource(R.string.tool_leader)),
+        ToolBarItem.Single("offset", ArrowMenuOpen, stringResource(R.string.tool_offset)),
+        ToolBarItem.Single("extend", LineEnd, stringResource(R.string.tool_extend)),
+        ToolBarItem.Single("leader", ArrowTopLeft, stringResource(R.string.tool_leader)),
         ToolBarItem.Single("fill", Icons.Default.FormatColorFill, stringResource(R.string.tool_fill))
     )
 

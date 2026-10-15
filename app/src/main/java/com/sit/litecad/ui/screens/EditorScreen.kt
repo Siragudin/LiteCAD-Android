@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sit.litecad.R
+import com.sit.litecad.dxf.DxfExporter
 import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.math.MathUtils
@@ -174,6 +175,23 @@ fun EditorScreen(
                                             context,
                                             if (result != null) context.getString(R.string.pdf_saved, result)
                                             else context.getString(R.string.pdf_save_failed),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.menu_export_dxf)) },
+                                    onClick = {
+                                        showMenu = false
+                                        val result = DxfExporter.exportToDownloads(
+                                            context = context,
+                                            document = document,
+                                            projectName = projectName
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            if (result != null) context.getString(R.string.dxf_saved, result)
+                                            else context.getString(R.string.dxf_save_failed),
                                             Toast.LENGTH_LONG
                                         ).show()
                                     }

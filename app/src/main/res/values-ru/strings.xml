@@ -30,6 +30,7 @@
 
     <!-- Контекстное меню карточки -->
     <string name="menu_export_pdf">Экспорт в PDF</string>
+    <string name="menu_export_dxf">Экспорт в DXF</string>
     <string name="menu_share">Поделиться</string>
     <string name="menu_rename">Переименовать</string>
     <string name="menu_delete">Удалить</string>
@@ -40,6 +41,8 @@
     <string name="import_error_generic">Ошибка импорта</string>
     <string name="pdf_saved">PDF сохранён: %1$s</string>
     <string name="pdf_save_failed">Не удалось сохранить PDF</string>
+    <string name="dxf_saved">DXF сохранён: %1$s</string>
+    <string name="dxf_save_failed">Не удалось сохранить DXF</string>
     <string name="share_chooser_title">Отправить</string>
 
     <!-- Фолбэки -->

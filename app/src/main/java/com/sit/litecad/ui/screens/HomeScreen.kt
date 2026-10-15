@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.sit.litecad.R
+import com.sit.litecad.dxf.DxfExporter
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.storage.ProjectInfo
@@ -249,6 +250,17 @@ fun HomeScreen(
                                         else context.getString(R.string.pdf_save_failed),
                                         Toast.LENGTH_LONG
                                     ).show()
+                                },
+                                onExportDxf = {
+                                    val doc = CadDocument()
+                                    storage.loadIntoDocument(info.name, doc)
+                                    val result = DxfExporter.exportToDownloads(context, doc, info.name)
+                                    Toast.makeText(
+                                        context,
+                                        if (result != null) context.getString(R.string.dxf_saved, result)
+                                        else context.getString(R.string.dxf_save_failed),
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             )
                         }
@@ -406,7 +418,8 @@ fun ProjectCard(
     onDelete: () -> Unit,
     onRename: () -> Unit,
     onShare: () -> Unit,
-    onExportPdf: () -> Unit
+    onExportPdf: () -> Unit,
+    onExportDxf: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val date = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
@@ -489,6 +502,11 @@ fun ProjectCard(
                         text = { Text(stringResource(R.string.menu_export_pdf)) },
                         onClick = { onExportPdf(); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.PictureAsPdf, null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_export_dxf)) },
+                        onClick = { onExportDxf(); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.Description, null) }
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.menu_share)) },

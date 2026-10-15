@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PathEffect
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
@@ -13,6 +14,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import com.sit.litecad.geometry.DimensionGeometry
+import com.sit.litecad.geometry.FaceIdentity
+import com.sit.litecad.geometry.PolygonGeometry
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.leaders.LeaderGeometry
 import com.sit.litecad.math.Point2
@@ -20,6 +23,7 @@ import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.PolygonType
 import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -90,10 +94,65 @@ object PdfExporter {
         leaderZoom: Double
     ) {
         canvas.drawColor(Color.WHITE)
+        drawFaceFills(canvas, document, layout)
         drawEdges(canvas, document, layout)
         drawAxes(canvas, document, layout)
         drawDimensions(canvas, document, layout)
         drawLeaders(canvas, document, layout, leaderZoom)
+    }
+
+    // --- Заливки граней ---
+
+    /**
+     * Заливки явно закрашенных граней ([com.sit.litecad.model.FaceFillStyle]).
+     * Рисуются ДО рёбер, чтобы контуры оставались поверх заливки.
+     * Грани без явной записи в [CadDocument.faceFillStyles] пропускаются
+     * (дефолтную серую заливку не рисуем).
+     */
+    private fun drawFaceFills(canvas: Canvas, document: CadDocument, layout: PdfExportLayout) {
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.style = Paint.Style.FILL
+
+        for (polygon in document.polygons) {
+            if (polygon.type != PolygonType.FACE) continue
+
+            val fillKey = FaceIdentity.create(document, polygon)
+            if (fillKey.isEmpty()) continue
+
+            // Только явно залитые грани: нет записи в карте — пропускаем.
+            val fillStyle = document.faceFillStyles[fillKey] ?: continue
+
+            val outerPoints = PolygonGeometry.getOuterBoundaryPoints(document, polygon)
+            if (outerPoints.size < 3) continue
+
+            val path = Path()
+            path.fillType = Path.FillType.EVEN_ODD
+
+            val first = toPagePt(layout, outerPoints[0])
+            path.moveTo(first[0], first[1])
+            for (i in 1 until outerPoints.size) {
+                val p = toPagePt(layout, outerPoints[i])
+                path.lineTo(p[0], p[1])
+            }
+            path.close()
+
+            // Дырки — в тот же Path (EvenOdd вырежет их).
+            for (hole in polygon.innerLoops) {
+                val holePoints = PolygonGeometry.getBoundaryPoints(document, hole)
+                if (holePoints.size < 3) continue
+
+                val holeFirst = toPagePt(layout, holePoints[0])
+                path.moveTo(holeFirst[0], holeFirst[1])
+                for (i in 1 until holePoints.size) {
+                    val p = toPagePt(layout, holePoints[i])
+                    path.lineTo(p[0], p[1])
+                }
+                path.close()
+            }
+
+            paint.color = fillStyle.fillColor
+            canvas.drawPath(path, paint)
+        }
     }
 
     // --- Рёбра ---

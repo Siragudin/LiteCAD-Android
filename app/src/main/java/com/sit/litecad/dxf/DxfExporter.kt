@@ -40,13 +40,13 @@ object DxfExporter {
     private const val LAYER_LEADERS = "LEADERS"
 
     /** Минимальная высота текста аннотации, мм (нижний порог). */
-    private const val MIN_ANNOTATION_HEIGHT_MM = 50.0
+    private const val MIN_ANNOTATION_HEIGHT_MM = 25.0
 
     /** Максимальная высота текста аннотации, мм (верхний порог). */
-    private const val MAX_ANNOTATION_HEIGHT_MM = 400.0
+    private const val MAX_ANNOTATION_HEIGHT_MM = 200.0
 
-    /** Доля от характерного размера чертежа (6%). */
-    private const val ANNOTATION_HEIGHT_RATIO = 0.06
+    /** Доля от характерного размера чертежа (3%). */
+    private const val ANNOTATION_HEIGHT_RATIO = 0.03
 
     /**
      * Параметры аннотации, вычисленные под конкретный чертёж.

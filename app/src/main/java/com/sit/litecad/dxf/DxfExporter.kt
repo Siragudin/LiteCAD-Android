@@ -39,17 +39,26 @@ object DxfExporter {
     private const val LAYER_DIMENSIONS = "DIMENSIONS"
     private const val LAYER_LEADERS = "LEADERS"
 
-    /** Высота текста размеров/выносок в мм (ГОСТ 2.5 мм), как в PDF. */
-    private const val ANNOTATION_TEXT_MM = 2.5
+    /** Минимальная высота текста аннотации, мм (нижний порог). */
+    private const val MIN_ANNOTATION_HEIGHT_MM = 50.0
 
-    /** Половина длины засечки под 45°: 10 pt ≈ 3.53 мм (как в PDF). */
-    private const val TICK_HALF_MM = 3.53
+    /** Максимальная высота текста аннотации, мм (верхний порог). */
+    private const val MAX_ANNOTATION_HEIGHT_MM = 400.0
 
-    /** Сдвиг текста размера по нормали: 6 pt ≈ 2.12 мм (как в PDF). */
-    private const val TEXT_NORMAL_OFFSET_MM = 2.12
+    /** Доля от характерного размера чертежа (6%). */
+    private const val ANNOTATION_HEIGHT_RATIO = 0.06
 
-    /** Желаемая высота стойки выноски на выгрузке, мм. */
-    private const val LEADER_STEM_TARGET_MM = 8.0
+    /**
+     * Параметры аннотации, вычисленные под конкретный чертёж.
+     * Держат текст размеров/выносок читаемым на чертежах любого масштаба.
+     */
+    private data class AnnotationScale(
+        val textHeight: Double,          // h
+        val tickHalf: Double,            // h × 1.4
+        val textNormalOffset: Double,    // h × 0.85
+        val leaderStemTarget: Double,    // h × 3.2
+        val centerPattern: List<Double>  // [h×0.4, -h×0.08, +h×0.08, -h×0.08]
+    )
 
     /**
      * Экспортировать документ в DXF R12 и сохранить в Downloads.
@@ -61,6 +70,7 @@ object DxfExporter {
         projectName: String
     ): String? {
         val fileName = sanitizeFileName(projectName) + ".dxf"
+        val scale = computeAnnotationScale(document)
 
         val writer = DxfWriter()
         writer.beginDocument()
@@ -68,7 +78,7 @@ object DxfExporter {
         // Таблицы: типы линий и слои.
         writer.beginTables()
         writer.addLineType("CONTINUOUS", "Solid line", emptyList())
-        writer.addLineType("CENTER", "Center ____ _ ____ _ ___", listOf(20.0, -4.0, 4.0, -4.0))
+        writer.addLineType("CENTER", "Center ____ _ ____ _ ___", scale.centerPattern)
         writer.addLayer(LAYER_EDGES, 7, "CONTINUOUS")
         writer.addLayer(LAYER_AXES, 1, "CENTER")
         writer.addLayer(LAYER_DIMENSIONS, 7, "CONTINUOUS")
@@ -79,8 +89,8 @@ object DxfExporter {
         writer.beginEntities()
         writeEdges(writer, document)
         writeAxes(writer, document)
-        writeDimensions(writer, document)
-        writeLeaders(writer, document)
+        writeDimensions(writer, document, scale)
+        writeLeaders(writer, document, scale)
         writer.endEntities()
 
         writer.endDocument()
@@ -112,7 +122,7 @@ object DxfExporter {
 
     // --- Размеры ---
 
-    private fun writeDimensions(writer: DxfWriter, document: CadDocument) {
+    private fun writeDimensions(writer: DxfWriter, document: CadDocument, scale: AnnotationScale) {
         for (dim in document.dimensions) {
             val first = document.vertexById(dim.FirstVertexId) ?: continue
             val second = document.vertexById(dim.SecondVertexId) ?: continue
@@ -141,11 +151,11 @@ object DxfExporter {
 
             // Засечки под 45° к размерной линии.
             val tickAngleRad = dl.textAngleRadians + PI / 4.0
-            addTick(writer, dl.firstExtensionEnd, tickAngleRad)
-            addTick(writer, dl.secondExtensionEnd, tickAngleRad)
+            addTick(writer, dl.firstExtensionEnd, tickAngleRad, scale.tickHalf)
+            addTick(writer, dl.secondExtensionEnd, tickAngleRad, scale.tickHalf)
 
             // Текст значения размера.
-            writeDimensionText(writer, dl)
+            writeDimensionText(writer, dl, scale)
         }
     }
 
@@ -153,9 +163,9 @@ object DxfExporter {
         writer.addLine(a.X, a.Y, b.X, b.Y, LAYER_DIMENSIONS)
     }
 
-    private fun addTick(writer: DxfWriter, center: Point2, angleRad: Double) {
-        val dx = cos(angleRad) * TICK_HALF_MM
-        val dy = sin(angleRad) * TICK_HALF_MM
+    private fun addTick(writer: DxfWriter, center: Point2, angleRad: Double, tickHalf: Double) {
+        val dx = cos(angleRad) * tickHalf
+        val dy = sin(angleRad) * tickHalf
         writer.addLine(
             center.X - dx, center.Y - dy,
             center.X + dx, center.Y + dy,
@@ -163,7 +173,7 @@ object DxfExporter {
         )
     }
 
-    private fun writeDimensionText(writer: DxfWriter, dl: DimensionLayout) {
+    private fun writeDimensionText(writer: DxfWriter, dl: DimensionLayout, scale: AnnotationScale) {
         val midX = (dl.dimensionLineStart.X + dl.dimensionLineEnd.X) / 2.0
         val midY = (dl.dimensionLineStart.Y + dl.dimensionLineEnd.Y) / 2.0
 
@@ -183,13 +193,13 @@ object DxfExporter {
             }
         }
 
-        val tx = midX + nx * TEXT_NORMAL_OFFSET_MM
-        val ty = midY + ny * TEXT_NORMAL_OFFSET_MM
+        val tx = midX + nx * scale.textNormalOffset
+        val ty = midY + ny * scale.textNormalOffset
         val angleDeg = dimensionTextAngleDegrees(dl)
 
         writer.addText(
             tx, ty,
-            ANNOTATION_TEXT_MM,
+            scale.textHeight,
             formatDimensionValue(dl.measuredDistance),
             LAYER_DIMENSIONS,
             angleDeg
@@ -213,9 +223,9 @@ object DxfExporter {
 
     // --- Выноски ---
 
-    private fun writeLeaders(writer: DxfWriter, document: CadDocument) {
-        // Подбираем zoom так, чтобы стойка занимала ≈ 8 мм на выгрузке (как в PDF).
-        val leaderZoom = LeaderGeometry.STEM_HEIGHT_SCREEN / LEADER_STEM_TARGET_MM
+    private fun writeLeaders(writer: DxfWriter, document: CadDocument, scale: AnnotationScale) {
+        // Подбираем zoom так, чтобы стойка занимала желаемую высоту (scale.leaderStemTarget).
+        val leaderZoom = LeaderGeometry.STEM_HEIGHT_SCREEN / scale.leaderStemTarget
         for (leader in document.leaders) {
             if (leader.text.isBlank()) continue
             val ll = LeaderGeometry.createLayout(leader.target, leader.textPosition, leaderZoom)
@@ -226,8 +236,80 @@ object DxfExporter {
             // Текст — по центру полки.
             val midX = (ll.elbow.X + ll.landingEnd.X) / 2.0
             val midY = (ll.elbow.Y + ll.landingEnd.Y) / 2.0
-            writer.addText(midX, midY, ANNOTATION_TEXT_MM, leader.text, LAYER_LEADERS)
+            writer.addText(midX, midY, scale.textHeight, leader.text, LAYER_LEADERS)
         }
+    }
+
+    // --- Масштаб аннотаций ---
+
+    /** Параметры аннотации под конкретный чертёж: высота текста и производные. */
+    private fun computeAnnotationScale(document: CadDocument): AnnotationScale {
+        val characteristic = characteristicSize(document)
+        val h = (characteristic * ANNOTATION_HEIGHT_RATIO)
+            .coerceIn(MIN_ANNOTATION_HEIGHT_MM, MAX_ANNOTATION_HEIGHT_MM)
+        return AnnotationScale(
+            textHeight = h,
+            tickHalf = h * 1.4,
+            textNormalOffset = h * 0.85,
+            leaderStemTarget = h * 3.2,
+            centerPattern = listOf(h * 0.4, -h * 0.08, h * 0.08, -h * 0.08)
+        )
+    }
+
+    /**
+     * Характерный размер чертежа: max(ширина, высота) габаритов содержимого
+     * (вершины, оси, размеры, выноски). Пустой чертёж → 0.0.
+     * Дублирует логику PdfExportLayout.computeWorldBounds, чтобы dxf/ оставался изолированным.
+     */
+    private fun characteristicSize(document: CadDocument): Double {
+        var minX = Double.MAX_VALUE
+        var minY = Double.MAX_VALUE
+        var maxX = -Double.MAX_VALUE
+        var maxY = -Double.MAX_VALUE
+        var hasAny = false
+
+        fun expand(x: Double, y: Double) {
+            if (x < minX) minX = x
+            if (y < minY) minY = y
+            if (x > maxX) maxX = x
+            if (y > maxY) maxY = y
+            hasAny = true
+        }
+
+        for (v in document.vertices) expand(v.X, v.Y)
+
+        for (axis in document.axes) {
+            expand(axis.Start.X, axis.Start.Y)
+            expand(axis.End.X, axis.End.Y)
+        }
+
+        for (dim in document.dimensions) {
+            val first = document.vertexById(dim.FirstVertexId) ?: continue
+            val second = document.vertexById(dim.SecondVertexId) ?: continue
+            val layout = DimensionGeometry.tryCreateLayout(
+                first.position, second.position, dim.Offset,
+                TopologyTolerance.ForMutation,
+                dim.IsOrthogonal, dim.OrthogonalIsHorizontal
+            ) ?: continue
+            expand(layout.firstAnchor.X, layout.firstAnchor.Y)
+            expand(layout.secondAnchor.X, layout.secondAnchor.Y)
+            expand(layout.firstExtensionEnd.X, layout.firstExtensionEnd.Y)
+            expand(layout.secondExtensionEnd.X, layout.secondExtensionEnd.Y)
+            expand(layout.dimensionLineStart.X, layout.dimensionLineStart.Y)
+            expand(layout.dimensionLineEnd.X, layout.dimensionLineEnd.Y)
+        }
+
+        for (leader in document.leaders) {
+            val layout = LeaderGeometry.createLayout(leader.target, leader.textPosition, 1.0)
+            expand(layout.target.X, layout.target.Y)
+            expand(layout.elbow.X, layout.elbow.Y)
+            expand(layout.landingEnd.X, layout.landingEnd.Y)
+            expand(layout.chevronLeft.X, layout.chevronLeft.Y)
+            expand(layout.chevronRight.X, layout.chevronRight.Y)
+        }
+
+        if (!hasAny) return 0.0
+        return maxOf(maxX - minX, maxY - minY)
     }
 
     // --- Хелперы ---

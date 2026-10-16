@@ -279,6 +279,8 @@ fun HomeScreen(
                 shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
+                    // Поднимаем над системной навигацией — на один уровень с кнопкой «Создать».
+                    .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(16.dp)
                     .size(56.dp)
             ) {

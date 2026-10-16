@@ -77,7 +77,7 @@ fun DrawScope.drawCadScene(
             val startY = (camera.panY % step).toFloat()
 
             // На светлой теме сетка едва заметна на белом, на тёмной — чуть светлее чёрного холста.
-            val gridColor = if (isDarkTheme) Color(0xFF2A2A2A) else Color(0xFFE5E5E5)
+            val gridColor = if (isDarkTheme) Color(0xFF3A3A3A) else Color(0xFFE5E5E5)
 
             var x = startX
             while (x <= size.width) {
@@ -128,8 +128,15 @@ fun DrawScope.drawCadScene(
         }
 
         val fillKey = cachedFaceFillKey(document, polygon)
-        val fillStyle = document.faceFillStyles[fillKey] ?: com.sit.litecad.model.FaceFillStyle.Default
-        val fillColor = Color(fillStyle.fillColor)
+        val explicitFill = document.faceFillStyles[fillKey]
+        val fillColor = when {
+            // Явно заданная заливка — как выбрал пользователь, тема не влияет.
+            explicitFill != null -> Color(explicitFill.fillColor)
+            // Фолбэк: на тёмной теме — средне-серый (виден на чёрном холсте и контрастирует с белыми линиями).
+            isDarkTheme -> Color(0xFF4A4A4A)
+            // Фолбэк на светлой теме — дефолтный светло-серый.
+            else -> Color(com.sit.litecad.model.FaceFillStyle.Default.fillColor)
+        }
 
         drawPath(
             path = path,

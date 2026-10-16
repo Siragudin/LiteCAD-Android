@@ -90,9 +90,9 @@ fun HomeScreen(
                 val inputStream = context.contentResolver.openInputStream(uri)
                     ?: throw IllegalStateException(context.getString(R.string.import_error_open_file))
 
-                val fileName = queryFileName(context, uri) ?: "Imported"
+                val fileName = queryFileName(context, uri) ?: context.getString(R.string.default_imported_name)
                 val baseName = fileName.removeSuffix(".sit").removeSuffix(".SIT")
-                    .ifEmpty { "Imported" }
+                    .ifEmpty { context.getString(R.string.default_imported_name) }
 
                 val targetFile = storage.getUniqueFile(baseName)
 
@@ -401,7 +401,7 @@ fun HomeScreen(
             // встроенный скрываем, чтобы не было двух ручек.
             dragHandle = null
         ) {
-            SettingsScreen(onBack = { showSettings = false })
+            SettingsScreen()
         }
     }
 }

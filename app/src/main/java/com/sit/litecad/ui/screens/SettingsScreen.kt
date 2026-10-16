@@ -24,12 +24,10 @@ import com.sit.litecad.settings.ThemePreferences
 /**
  * Содержимое панели настроек приложения (bottom sheet).
  * Показывает выбор языка и темы редактора.
- * Вызывается внутри ModalBottomSheet из HomeScreen; onBack — закрытие панели.
+ * Вызывается внутри ModalBottomSheet из HomeScreen (закрытие — через onDismissRequest).
  */
 @Composable
-fun SettingsScreen(
-    onBack: () -> Unit
-) {
+fun SettingsScreen() {
     val context = LocalContext.current
     var currentLanguage by remember { mutableStateOf(LanguagePreferences.getLanguage(context)) }
     var currentTheme by remember { mutableStateOf(ThemePreferences.getTheme(context)) }

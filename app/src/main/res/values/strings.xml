@@ -47,6 +47,7 @@
 
     <!-- Фолбэки -->
     <string name="default_drawing_name">Drawing</string>
+    <string name="default_imported_name">Imported</string>
 
     <!-- Экран настроек -->
     <string name="settings_title">Settings</string>

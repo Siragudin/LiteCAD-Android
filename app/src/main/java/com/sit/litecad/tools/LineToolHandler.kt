@@ -61,7 +61,7 @@ class LineToolHandler(
         startSnapKind = querySnapKind(document, point, zoom)
         endSnapKind = startSnapKind
         previewLineColor = Color.Gray
-        currentMeasurement = "Ведите до конечной точки"
+        currentMeasurement = toolManager.settings.promptDragToEndpoint
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -222,7 +222,7 @@ class LineToolHandler(
 
         val isSolid = previewLineColor != Color.Gray
         scope.drawLine(
-            color = previewLineColor,
+            color = toolManager.previewStrokeColor(previewLineColor),
             start = p1,
             end = p2,
             strokeWidth = if (isSolid) 6f else 4f,

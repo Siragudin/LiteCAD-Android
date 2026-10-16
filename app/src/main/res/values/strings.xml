@@ -76,6 +76,7 @@
     <string name="tool_rect">Rect.</string>
     <string name="tool_rotate">Rotate</string>
     <string name="tool_mirror">Mirror</string>
+    <string name="tool_stretch">Stretch</string>
     <string name="tool_offset">Offset</string>
     <string name="tool_extend">Extend</string>
     <string name="tool_leader">Leader</string>
@@ -98,6 +99,7 @@
     <string name="label_height">Height:</string>
     <string name="label_dim_offset">Offset:</string>
     <string name="label_length">Length:</string>
+    <string name="label_stretch">Stretch:</string>
     <string name="label_offset">Offset:</string>
     <string name="label_offset_x">Offset X:</string>
     <string name="label_offset_y">Offset Y:</string>
@@ -150,4 +152,23 @@
     <string name="line_type_solid">Solid</string>
     <string name="line_type_dashed">Dashed</string>
     <string name="line_type_dotted">Dotted</string>
+
+    <!-- Шаблоны текущих измерений и подсказок инструментов (currentMeasurement) -->
+    <string name="measurement_offset">Offset: %1$d</string>
+    <string name="measurement_stretch">Stretch: %1$d</string>
+    <string name="measurement_dim_offset">Offset: %1$d</string>
+    <string name="measurement_mirror_length">Length: %1$d</string>
+    <string name="measurement_sector_angle">Angle: %1$d°</string>
+    <string name="prompt_drag">Drag</string>
+    <string name="prompt_drag_height">Drag height</string>
+    <string name="prompt_pick_arc_end">Pick arc end</string>
+    <string name="prompt_drag_to_endpoint">Drag to endpoint</string>
+    <string name="prompt_drag_to_radius">Drag to radius</string>
+    <string name="prompt_drag_to_dimension_end">Drag to end</string>
+    <string name="prompt_drag_dimension_offset">Drag offset</string>
+    <string name="prompt_drag_axis">Drag axis</string>
+    <string name="prompt_drag_to_corner">Drag to opposite corner</string>
+    <string name="prompt_drag_for_reference">Drag for reference</string>
+    <string name="prompt_drag_to_rotate">Drag to rotate</string>
+    <string name="prompt_drag_sector_vertex">Drag vertex to set angle</string>
 </resources>

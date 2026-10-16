@@ -98,7 +98,7 @@ class LeaderToolHandler(
         }
 
         dragging = true
-        currentMeasurement = "Тяните"
+        currentMeasurement = toolManager.settings.promptDrag
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {

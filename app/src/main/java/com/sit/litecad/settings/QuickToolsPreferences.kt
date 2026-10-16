@@ -20,7 +20,9 @@ object QuickToolsPreferences {
     fun getTools(context: Context): List<String> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val raw = prefs.getString(KEY_QUICK_TOOLS, "") ?: ""
-        return raw.split(SEPARATOR).filter { it.isNotBlank() }
+        return raw.split(SEPARATOR)
+            .filter { it.isNotBlank() }
+            .distinct()
     }
 
     /**

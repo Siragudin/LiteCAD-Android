@@ -55,6 +55,7 @@ import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.ui.icons.ArrowMenuOpen
 import com.sit.litecad.ui.icons.ArrowTopLeft
 import com.sit.litecad.ui.icons.LineEnd
+import com.sit.litecad.ui.icons.TabDuplicate
 
 /**
  * Элемент панели инструментов: одиночная кнопка либо слот-группа.
@@ -133,7 +134,8 @@ fun ToolsBottomPanel(
 
     // Третий ряд — выезжает вместе со вторым.
     val thirdRow: List<ToolBarItem> = listOf(
-        ToolBarItem.Single("offset", ArrowMenuOpen, stringResource(R.string.tool_offset)),
+        ToolBarItem.Single("stretch", ArrowMenuOpen, stringResource(R.string.tool_stretch)),
+        ToolBarItem.Single("offset", TabDuplicate, stringResource(R.string.tool_offset)),
         ToolBarItem.Single("extend", LineEnd, stringResource(R.string.tool_extend)),
         ToolBarItem.Single("leader", ArrowTopLeft, stringResource(R.string.tool_leader)),
         ToolBarItem.Single("fill", Icons.Default.FormatColorFill, stringResource(R.string.tool_fill))

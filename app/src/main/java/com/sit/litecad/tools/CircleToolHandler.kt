@@ -71,7 +71,7 @@ class CircleToolHandler(
         startSnapKind = querySnapKind(document, point, zoom)
         radiusSnapKind = startSnapKind
         previewColor = Color.Gray
-        currentMeasurement = "Ведите до радиуса"
+        currentMeasurement = toolManager.settings.promptDragToRadius
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -230,7 +230,7 @@ class CircleToolHandler(
 
         // «Резиновая» линия радиуса (центр → текущий радиус).
         scope.drawLine(
-            color = previewColor,
+            color = toolManager.previewStrokeColor(previewColor),
             start = p1,
             end = p2,
             strokeWidth = stroke,
@@ -246,7 +246,7 @@ class CircleToolHandler(
             for (i in 1..segments) {
                 val next = camera.worldToScreen(pointOnCircle(center, radius, stepRad * i))
                 scope.drawLine(
-                    color = previewColor,
+                    color = toolManager.previewStrokeColor(previewColor),
                     start = prev,
                     end = next,
                     strokeWidth = stroke,

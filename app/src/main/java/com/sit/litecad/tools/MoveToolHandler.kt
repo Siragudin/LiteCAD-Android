@@ -16,6 +16,7 @@ import com.sit.litecad.math.Geometry2D
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
+import com.sit.litecad.model.CadAxis
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.EdgeLineType
@@ -39,10 +40,11 @@ private const val VERTEX_PICK_PX = 30.0
 
 /**
  * Инструмент «Перемещение». Тянет либо вершину «за точку» (если старт рядом с вершиной),
- * либо выделенные рёбра. В режиме «Копия» оригиналы не трогаются — создаются сдвинутые дубли.
+ * либо выделенные рёбра и/или оси. В режиме «Копия» оригиналы не трогаются — создаются
+ * сдвинутые дубли (и для рёбер, и для осей).
  *
- * Точный ввод включается флагом «Точный» и доступен только при включённом Ortho
- * (протяжка зафиксирована по оси, поэтому смещение однозначно задаёт одну координату).
+ * Точный ввод включается флагом «Точный»: после протяжки открывается панель ввода
+ * расстояния (ось определяется по доминирующей составляющей протяжки).
  */
 class MoveToolHandler(
     private val snapService: SnapService,
@@ -61,6 +63,9 @@ class MoveToolHandler(
     private var movingVertexStart: Point2? = null
     private var movingEdgeIds: Set<UUID> = emptySet()
 
+    /** Выделенные оси на момент старта — едут вместе с delta. */
+    private var movingAxisIds: Set<UUID> = emptySet()
+
     /** Позиция якоря группы на старте (для перетаскивания рёбер) — ortho и probe идут от неё. */
     private var movingAnchorStart: Point2? = null
 
@@ -78,6 +83,7 @@ class MoveToolHandler(
     private var draftCurrent: Point2? = null
     private var draftMovingVertexId: UUID? = null
     private var draftMovingEdgeIds: Set<UUID> = emptySet()
+    private var draftMovingAxisIds: Set<UUID> = emptySet()
     private var draftCopy = false
     private var draftAxis: MoveAxis? = null
 
@@ -94,18 +100,22 @@ class MoveToolHandler(
     override fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
         lastZoom = zoom
 
-        // Приоритет: вершина «за точку», затем выделенные рёбра.
+        // Приоритет: вершина «за точку», затем выделенные рёбра и/или оси.
         val vertex = TopologyService.findVertex(document, point, VERTEX_PICK_PX / zoom)
         if (vertex != null) {
             movingVertexId = vertex.id
             movingVertexStart = vertex.position
             movingEdgeIds = emptySet()
+            movingAxisIds = emptySet()
             movingVertexIds = emptySet()
             movingAnchorStart = null
-        } else if (toolManager.selection.selectedEdgeIds.isNotEmpty()) {
+        } else if (toolManager.selection.selectedEdgeIds.isNotEmpty() ||
+            toolManager.selection.selectedAxisIds.isNotEmpty()
+        ) {
             movingVertexId = null
             movingVertexStart = null
             movingEdgeIds = toolManager.selection.selectedEdgeIds.toSet()
+            movingAxisIds = toolManager.selection.selectedAxisIds.toSet()
             // Снапим сам объект — собираем все перемещаемые вершины выделенных рёбер.
             val vids = linkedSetOf<UUID>()
             for (edgeId in movingEdgeIds) {
@@ -114,9 +124,11 @@ class MoveToolHandler(
                 vids.add(edge.endVertexId)
             }
             movingVertexIds = vids
-            // Фиксируем якорь группы на старте — ortho и probe идут от него.
+            // Якорь группы на старте (ortho/probe идут от него): ближайшая перемещаемая
+            // вершина, а если рёбер нет — ближайший конец выделенной оси.
             val anchorId = findNearestMovingVertex(document, point)
             movingAnchorStart = anchorId?.let { document.vertexById(it)?.position }
+                ?: findNearestAxisPoint(document, point)
         } else {
             // Тянуть нечего.
             hasStart = false
@@ -128,7 +140,7 @@ class MoveToolHandler(
         dragCopy = settings.move.copyMode
         lastSnapKind = null
         hasStart = true
-        currentMeasurement = "Тяните"
+        currentMeasurement = toolManager.settings.promptDrag
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -210,7 +222,7 @@ class MoveToolHandler(
         }
 
         val move = toolManager.settings.move
-        if (move.exactInputEnabled && move.orthoEnabled) {
+        if (move.exactInputEnabled) {
             // Протяжка по оси → открываем панель точного ввода, коммит откладываем.
             val axis = if (abs(delta.X) >= abs(delta.Y)) MoveAxis.X else MoveAxis.Y
             val initial = if (axis == MoveAxis.X) abs(delta.X) else abs(delta.Y)
@@ -219,6 +231,7 @@ class MoveToolHandler(
             draftCurrent = currentWorld
             draftMovingVertexId = movingVertexId
             draftMovingEdgeIds = movingEdgeIds
+            draftMovingAxisIds = movingAxisIds
             draftCopy = dragCopy
             draftAxis = axis
 
@@ -257,6 +270,7 @@ class MoveToolHandler(
         val hasDraft = draftStart != null
         val vertexId = if (hasDraft) draftMovingVertexId else movingVertexId
         val edgeIds = if (hasDraft) draftMovingEdgeIds else movingEdgeIds
+        val axisIds = if (hasDraft) draftMovingAxisIds else movingAxisIds
         val copy = if (hasDraft) draftCopy else dragCopy
 
         historyService.record(document)
@@ -338,6 +352,30 @@ class MoveToolHandler(
             }
         }
 
+        // Оси — отдельная сущность (вне топологии граней): сдвигаем обе точки напрямую.
+        // В режиме «Копия», как и для рёбер, оригинал оси сохраняется, а добавляется сдвинутая копия.
+        if (axisIds.isNotEmpty()) {
+            for (axisId in axisIds) {
+                val axis = document.axisById(axisId) ?: continue
+                val newStart = Point2(axis.Start.X + delta.X, axis.Start.Y + delta.Y)
+                val newEnd = Point2(axis.End.X + delta.X, axis.End.Y + delta.Y)
+                if (copy) {
+                    // Новый id — CadAxis создаёт его по умолчанию; переносим только стиль.
+                    document.addAxis(
+                        CadAxis(
+                            Start = newStart,
+                            End = newEnd,
+                            colorArgb = axis.colorArgb,
+                            thickness = axis.thickness
+                        )
+                    )
+                } else {
+                    axis.Start = newStart
+                    axis.End = newEnd
+                }
+            }
+        }
+
         document.bumpRevision()
         reset()
     }
@@ -355,6 +393,26 @@ class MoveToolHandler(
             }
         }
         return bestId
+    }
+
+    /** Ближайший к курсору конец перемещаемой оси — якорь группы, когда рёбер нет. */
+    private fun findNearestAxisPoint(document: CadDocument, cursor: Point2): Point2? {
+        var best: Point2? = null
+        var bestDist = Double.MAX_VALUE
+        for (axisId in movingAxisIds) {
+            val axis = document.axisById(axisId) ?: continue
+            val dStart = MathUtils.distance(axis.Start, cursor)
+            if (dStart < bestDist) {
+                bestDist = dStart
+                best = axis.Start
+            }
+            val dEnd = MathUtils.distance(axis.End, cursor)
+            if (dEnd < bestDist) {
+                bestDist = dEnd
+                best = axis.End
+            }
+        }
+        return best
     }
 
     /**
@@ -418,6 +476,7 @@ class MoveToolHandler(
         draftCurrent = null
         draftMovingVertexId = null
         draftMovingEdgeIds = emptySet()
+        draftMovingAxisIds = emptySet()
         draftCopy = false
         draftAxis = null
     }
@@ -429,6 +488,7 @@ class MoveToolHandler(
         movingVertexId = null
         movingVertexStart = null
         movingEdgeIds = emptySet()
+        movingAxisIds = emptySet()
         movingVertexIds = emptySet()
         movingAnchorStart = null
         dragCopy = false
@@ -473,6 +533,22 @@ class MoveToolHandler(
             }
         }
 
+        // Превью перемещения выделенных осей — серый пунктир.
+        if (movingAxisIds.isNotEmpty()) {
+            val effect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f), 0f)
+            for (axisId in movingAxisIds) {
+                val axis = document.axisById(axisId) ?: continue
+                scope.drawLine(
+                    color = toolManager.previewStrokeColor(Color.Gray),
+                    start = camera.worldToScreen(shift(axis.Start, delta)),
+                    end = camera.worldToScreen(shift(axis.End, delta)),
+                    strokeWidth = 2f,
+                    cap = StrokeCap.Round,
+                    pathEffect = effect
+                )
+            }
+        }
+
         drawSnapMarker(scope, camera.worldToScreen(currentWorld), lastSnapKind)
     }
 
@@ -490,7 +566,7 @@ class MoveToolHandler(
             EdgeLineType.SOLID -> null
         }
         scope.drawLine(
-            color = Color(edge.colorArgb),
+            color = toolManager.previewStrokeColor(Color(edge.colorArgb)),
             start = p1,
             end = p2,
             strokeWidth = t,

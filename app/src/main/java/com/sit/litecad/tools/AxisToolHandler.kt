@@ -70,7 +70,7 @@ class AxisToolHandler(
         startSnapKind = query.Best.Snap?.Kind
         endSnapKind = startSnapKind
         previewColor = Color.Gray
-        currentMeasurement = "Ведите до конечной точки"
+        currentMeasurement = toolManager.settings.promptDragToEndpoint
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -235,7 +235,7 @@ class AxisToolHandler(
         val t = if (isSnapped) 6f else 4f
         val effect = PathEffect.dashPathEffect(floatArrayOf(12f * t, 4f * t, 2f * t, 4f * t), 0f)
         scope.drawLine(
-            color = previewColor,
+            color = toolManager.previewStrokeColor(previewColor),
             start = p1,
             end = p2,
             strokeWidth = t,

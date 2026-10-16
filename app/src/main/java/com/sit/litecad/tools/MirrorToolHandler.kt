@@ -84,7 +84,7 @@ class MirrorToolHandler(
         axisEnd = axisStart
         lastSnapKind = snapped.kind
         active = true
-        currentMeasurement = "Тяните ось"
+        currentMeasurement = toolManager.settings.promptDragAxis
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -111,7 +111,7 @@ class MirrorToolHandler(
 
         axisEnd = resolved
         lastSnapKind = snapped.kind
-        currentMeasurement = "Длина: ${MathUtils.distance(axisStart, axisEnd).toInt()}"
+        currentMeasurement = toolManager.settings.measurementMirrorLength.format(MathUtils.distance(axisStart, axisEnd).toInt())
     }
 
     override fun onEnd(document: CadDocument) {
@@ -137,7 +137,7 @@ class MirrorToolHandler(
 
         // Линия оси отражения — тонкая, серая, пунктиром.
         scope.drawLine(
-            color = Color.Gray,
+            color = toolManager.previewStrokeColor(Color.Gray),
             start = camera.worldToScreen(axisStart),
             end = camera.worldToScreen(axisEnd),
             strokeWidth = 2f,
@@ -153,7 +153,7 @@ class MirrorToolHandler(
             val s = TopologyService.getEdgeStartPoint(document, edge)
             val e = TopologyService.getEdgeEndPoint(document, edge)
             scope.drawLine(
-                color = Color.Gray,
+                color = toolManager.previewStrokeColor(Color.Gray),
                 start = camera.worldToScreen(mirrorPoint(s, axisStart, axisEnd)),
                 end = camera.worldToScreen(mirrorPoint(e, axisStart, axisEnd)),
                 strokeWidth = 2f,

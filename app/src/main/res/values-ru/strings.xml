@@ -76,6 +76,7 @@
     <string name="tool_rect">Прямоуг.</string>
     <string name="tool_rotate">Поворот</string>
     <string name="tool_mirror">Зеркало</string>
+    <string name="tool_stretch">Растянуть</string>
     <string name="tool_offset">Эквидистанта</string>
     <string name="tool_extend">Удлинить</string>
     <string name="tool_leader">Выноска</string>
@@ -98,6 +99,7 @@
     <string name="label_height">Высота:</string>
     <string name="label_dim_offset">Отступ:</string>
     <string name="label_length">Длина:</string>
+    <string name="label_stretch">Растянуть:</string>
     <string name="label_offset">Смещение:</string>
     <string name="label_offset_x">Смещение X:</string>
     <string name="label_offset_y">Смещение Y:</string>
@@ -150,4 +152,23 @@
     <string name="line_type_solid">Сплошная</string>
     <string name="line_type_dashed">Штриховая</string>
     <string name="line_type_dotted">Точечная</string>
+
+    <!-- Шаблоны текущих измерений и подсказок инструментов (currentMeasurement) -->
+    <string name="measurement_offset">Смещение: %1$d</string>
+    <string name="measurement_stretch">Растянуть: %1$d</string>
+    <string name="measurement_dim_offset">Отступ: %1$d</string>
+    <string name="measurement_mirror_length">Длина: %1$d</string>
+    <string name="measurement_sector_angle">Угол: %1$d°</string>
+    <string name="prompt_drag">Тяните</string>
+    <string name="prompt_drag_height">Тяните высоту</string>
+    <string name="prompt_pick_arc_end">Выберите конец дуги</string>
+    <string name="prompt_drag_to_endpoint">Ведите до конечной точки</string>
+    <string name="prompt_drag_to_radius">Ведите до радиуса</string>
+    <string name="prompt_drag_to_dimension_end">Тяните до конца</string>
+    <string name="prompt_drag_dimension_offset">Тяните отступ</string>
+    <string name="prompt_drag_axis">Тяните ось</string>
+    <string name="prompt_drag_to_corner">Ведите до противоположного угла</string>
+    <string name="prompt_drag_for_reference">Тяните для отсчёта</string>
+    <string name="prompt_drag_to_rotate">Тяните для поворота</string>
+    <string name="prompt_drag_sector_vertex">Тяните вершину, чтобы задать угол</string>
 </resources>

@@ -3,6 +3,7 @@ package com.sit.litecad.tools
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.Selection
@@ -30,6 +31,7 @@ class ToolManager(
         "move" to MoveToolHandler(snapService, historyService, this),
         "rotate" to RotateToolHandler(snapService, historyService, this),
         "mirror" to MirrorToolHandler(snapService, historyService, this),
+        "stretch" to StretchToolHandler(historyService, this),
         "offset" to OffsetToolHandler(historyService, this),
         "extend" to ExtendToolHandler(historyService, this),
         "leader" to LeaderToolHandler(snapService, historyService, this),
@@ -39,6 +41,9 @@ class ToolManager(
 
     var activeToolId by mutableStateOf("hand")
         private set
+
+    /** Тёмная тема редактора — превью инструментов рисуются белым (см. [previewStrokeColor]). */
+    var isDarkTheme: Boolean = false
 
     var pendingInput by mutableStateOf<PendingInput?>(null)
         private set
@@ -91,6 +96,10 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onRotationAngleSubmitted(value, document)
             }
+            is PendingInput.StretchDistance -> {
+                pendingInput = null
+                activeTool?.onStretchInputSubmitted(value, document)
+            }
             is PendingInput.OffsetDistance -> {
                 pendingInput = null
                 activeTool?.onOffsetInputSubmitted(value, document)
@@ -134,6 +143,10 @@ class ToolManager(
             is PendingInput.RotationAngle -> {
                 pendingInput = null
                 activeTool?.onRotationAngleCancelled(document)
+            }
+            is PendingInput.StretchDistance -> {
+                pendingInput = null
+                activeTool?.onStretchInputCancelled(document)
             }
             is PendingInput.OffsetDistance -> {
                 pendingInput = null
@@ -184,19 +197,36 @@ class ToolManager(
         activeTool?.onRotationAngleCancelled(document)
     }
 
-    /** Отправка величины смещения из панели точного ввода. */
+    /** Отправка величины растяжения из панели точного ввода. */
+    fun submitStretchInput(value: Double) {
+        if (pendingInput !is PendingInput.StretchDistance) return
+        pendingInput = null
+        activeTool?.onStretchInputSubmitted(value, document)
+    }
+
+    /** Отмена ввода растяжения — ничего не коммитим. */
+    fun cancelStretchInput() {
+        if (pendingInput !is PendingInput.StretchDistance) return
+        pendingInput = null
+        activeTool?.onStretchInputCancelled(document)
+    }
+
+    /** Отправка величины смещения (эквидистанты) из панели точного ввода. */
     fun submitOffsetInput(value: Double) {
         if (pendingInput !is PendingInput.OffsetDistance) return
         pendingInput = null
         activeTool?.onOffsetInputSubmitted(value, document)
     }
 
-    /** Отмена ввода смещения — ничего не коммитим. */
+    /** Отмена ввода эквидистанты — ничего не коммитим. */
     fun cancelOffsetInput() {
         if (pendingInput !is PendingInput.OffsetDistance) return
         pendingInput = null
         activeTool?.onOffsetInputCancelled(document)
     }
+
+    /** Цвет превью-линии под текущую тему: на тёмной — белый, на светлой — исходный. */
+    fun previewStrokeColor(base: Color): Color = if (isDarkTheme) Color.White else base
 
     val canUndo: Boolean
         get() = historyService.canUndo

@@ -30,7 +30,7 @@ import com.sit.litecad.ui.icons.OrthoIcon
 
 /**
  * Панель свойств инструмента «Перемещение».
- * Порядок: Ortho, «Точный» (только при включённом Ortho), «Копия».
+ * Порядок: Ortho, «Точный», «Копия».
  */
 @Composable
 fun MoveSettingsBar(
@@ -58,15 +58,12 @@ fun MoveSettingsBar(
             onClick = onOrthoToggle
         )
 
-        // Точный ввод имеет смысл только при зафиксированной по оси протяжке.
-        if (orthoEnabled) {
-            MoveIconButton(
-                icon = Icons.Default.Straighten,
-                label = stringResource(R.string.label_exact),
-                isActive = exactInputEnabled,
-                onClick = onExactInputToggle
-            )
-        }
+        MoveIconButton(
+            icon = Icons.Default.Straighten,
+            label = stringResource(R.string.label_exact),
+            isActive = exactInputEnabled,
+            onClick = onExactInputToggle
+        )
 
         MoveIconButton(
             icon = Icons.Default.ContentCopy,

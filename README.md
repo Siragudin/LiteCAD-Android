@@ -54,7 +54,7 @@ Unlike basic mobile sketching apps, LiteCAD-Android is built on a legitimate eng
 * **Move** — Structural shifting of selected vertices and edges, featuring an interactive **"Copy"** toggle.
 * **Rotate** — Dual-phase rotation with 90° Ortho-snapping and exact numeric angular input.
 * **Mirror** — Reflection of selected components across any user-defined reflection axis.
-* **Offset (Equidistant)** — Shifts a chosen edge outwards while automatically computing intersection paths along adjacent vectors.
+* **Stretch** — Shifts a chosen edge outwards while automatically computing intersection paths along adjacent vectors.
 * **Extend** — Smart edge projection stretching vectors to the nearest boundary intersection, utilizing visual error flashes for invalid paths.
 * **Eraser** — Fast geometry purging that automatically suppresses and updates corresponding boundary faces.
 

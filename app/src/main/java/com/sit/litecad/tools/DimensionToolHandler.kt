@@ -76,7 +76,7 @@ class DimensionToolHandler(
                 firstVertexId = materializeVertex(document, snap)
                 firstAnchor = snap.position
                 phase = Phase.FIRST_SET
-                currentMeasurement = "Тяните до конца"
+                currentMeasurement = toolManager.settings.promptDragToDimensionEnd
             }
             Phase.FIRST_SET -> {
                 // Начало протяжки к B — фаза перейдёт в DRAGGING_END на первом onMove.
@@ -112,7 +112,7 @@ class DimensionToolHandler(
                         DimensionGeometry.resolveOrthogonalIsHorizontal(firstAnchor, secondAnchor, point)
                 }
                 offset = computeOffset(point, settings)
-                currentMeasurement = "Отступ: ${abs(offset).toInt()}"
+                currentMeasurement = toolManager.settings.measurementDimOffset.format(abs(offset).toInt())
             }
             Phase.IDLE -> {}
         }
@@ -139,7 +139,7 @@ class DimensionToolHandler(
                 secondAnchor = snap.position
                 phase = Phase.END_SET
                 offset = 0.0
-                currentMeasurement = "Тяните отступ"
+                currentMeasurement = toolManager.settings.promptDragDimensionOffset
             }
             Phase.END_SET -> {
                 // Отпустил без протяжки манипулятора — сброс.
@@ -276,17 +276,17 @@ class DimensionToolHandler(
             Phase.IDLE -> {}
             Phase.FIRST_SET -> {
                 // Маркер A.
-                scope.drawCircle(previewColor, 6f, camera.worldToScreen(firstAnchor))
+                scope.drawCircle(toolManager.previewStrokeColor(previewColor), 6f, camera.worldToScreen(firstAnchor))
             }
             Phase.DRAGGING_END -> {
                 // Линия A→палец + маркер A + маркер снапа.
                 scope.drawLine(
-                    color = previewColor,
+                    color = toolManager.previewStrokeColor(previewColor),
                     start = camera.worldToScreen(firstAnchor),
                     end = camera.worldToScreen(cursorPoint),
                     strokeWidth = 4f
                 )
-                scope.drawCircle(previewColor, 6f, camera.worldToScreen(firstAnchor))
+                scope.drawCircle(toolManager.previewStrokeColor(previewColor), 6f, camera.worldToScreen(firstAnchor))
                 if (hoverSnapKind != null) {
                     drawSnapMarker(scope, camera.worldToScreen(hoverSnapPoint), hoverSnapKind)
                 }
@@ -300,7 +300,7 @@ class DimensionToolHandler(
                     ortho, orthogonalIsHorizontal
                 )
                 if (layout != null) {
-                    val c = previewColor
+                    val c = toolManager.previewStrokeColor(previewColor)
                     val t = 2f
                     scope.drawLine(c, camera.worldToScreen(layout.firstAnchor), camera.worldToScreen(layout.firstExtensionEnd), strokeWidth = t)
                     scope.drawLine(c, camera.worldToScreen(layout.secondAnchor), camera.worldToScreen(layout.secondExtensionEnd), strokeWidth = t)

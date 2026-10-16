@@ -72,9 +72,14 @@ class MirrorSettingsState {
     var copyMode by mutableStateOf(true)
 }
 
+/** Состояние настроек инструмента «Растянуть». */
+class StretchSettingsState {
+    var exactInputEnabled by mutableStateOf(false)
+}
+
 /** Состояние настроек инструмента «Эквидистанта». */
 class OffsetSettingsState {
-    var exactInputEnabled by mutableStateOf(false)
+    var exactInputEnabled by mutableStateOf(true)
 }
 
 /** Состояние настроек инструмента «Ось». */
@@ -131,10 +136,30 @@ class ToolSettings {
     val move = MoveSettingsState()
     val rotate = RotateSettingsState()
     val mirror = MirrorSettingsState()
+    val stretch = StretchSettingsState()
     val offset = OffsetSettingsState()
     val select = SelectSettingsState()
     val dim = DimSettingsState()
     val leader = LeaderSettingsState()
     val fill = FillSettingsState()
     val common = CommonSettingsState()
+
+    // Шаблоны строк currentMeasurement (у хендлеров нет Context — заполняются из ресурсов в EditorScreen).
+    var measurementOffset: String = "Offset: %d"
+    var measurementStretch: String = "Stretch: %d"
+    var measurementDimOffset: String = "Offset: %d"
+    var measurementMirrorLength: String = "Length: %d"
+    var measurementSectorAngle: String = "Angle: %d°"
+    var promptDrag: String = "Drag"
+    var promptDragHeight: String = "Drag height"
+    var promptPickArcEnd: String = "Pick arc end"
+    var promptDragToEndpoint: String = "Drag to endpoint"
+    var promptDragToRadius: String = "Drag to radius"
+    var promptDragToDimensionEnd: String = "Drag to end"
+    var promptDragDimensionOffset: String = "Drag offset"
+    var promptDragAxis: String = "Drag axis"
+    var promptDragToCorner: String = "Drag to opposite corner"
+    var promptDragForReference: String = "Drag for reference"
+    var promptDragToRotate: String = "Drag to rotate"
+    var promptDragSectorVertex: String = "Drag vertex to set angle"
 }

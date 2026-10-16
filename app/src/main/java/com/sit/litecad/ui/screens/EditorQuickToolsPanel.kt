@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.sit.litecad.ui.icons.ArrowMenuOpen
 import com.sit.litecad.ui.icons.ArrowTopLeft
 import com.sit.litecad.ui.icons.LineEnd
+import com.sit.litecad.ui.icons.TabDuplicate
 
 /**
  * Боковой блок быстрого доступа к инструментам редактора.
@@ -114,7 +115,8 @@ private fun iconFor(toolId: String): ImageVector = when (toolId) {
     "rect" -> Icons.Default.Rectangle
     "rotate" -> Icons.AutoMirrored.Filled.RotateRight
     "mirror" -> Icons.Default.Flip
-    "offset" -> ArrowMenuOpen
+    "stretch" -> ArrowMenuOpen
+    "offset" -> TabDuplicate
     "extend" -> LineEnd
     "leader" -> ArrowTopLeft
     "fill" -> Icons.Default.FormatColorFill

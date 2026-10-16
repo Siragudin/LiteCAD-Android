@@ -121,7 +121,7 @@ class RotateToolHandler(
                 currentWorld = snapped.position
                 lastSnapKind = snapped.kind
                 phase = 1
-                currentMeasurement = "Тяните для отсчёта"
+                currentMeasurement = toolManager.settings.promptDragForReference
             }
 
             1 -> {
@@ -155,7 +155,7 @@ class RotateToolHandler(
         lastSnapKind = snapped.kind
 
         when (phase) {
-            1 -> currentMeasurement = "Тяните"
+            1 -> currentMeasurement = toolManager.settings.promptDrag
             2 -> currentMeasurement = "θ: ${Math.toDegrees(currentAngleRad()).toInt()}°"
             else -> {}
         }
@@ -175,7 +175,7 @@ class RotateToolHandler(
                 }
                 reference = currentWorld
                 phase = 2
-                currentMeasurement = "Тяните для поворота"
+                currentMeasurement = toolManager.settings.promptDragToRotate
             }
 
             2 -> {
@@ -268,7 +268,7 @@ class RotateToolHandler(
         if (phase >= 1 && p != null) {
             // Линия от якоря к пальцу — тонкая, серая.
             scope.drawLine(
-                color = Color.Gray,
+                color = toolManager.previewStrokeColor(Color.Gray),
                 start = camera.worldToScreen(p),
                 end = camera.worldToScreen(currentWorld),
                 strokeWidth = 2f,
@@ -426,7 +426,7 @@ class RotateToolHandler(
             EdgeLineType.SOLID -> null
         }
         scope.drawLine(
-            color = Color(edge.colorArgb),
+            color = toolManager.previewStrokeColor(Color(edge.colorArgb)),
             start = p1,
             end = p2,
             strokeWidth = t,

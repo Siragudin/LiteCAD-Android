@@ -16,6 +16,9 @@ sealed interface PendingInput {
     /** Ожидание ввода угла поворота (в градусах). */
     data class RotationAngle(val initial: Double) : PendingInput
 
+    /** Ожидание ввода величины растяжения. */
+    data class StretchDistance(val initial: Double) : PendingInput
+
     /** Ожидание ввода величины смещения при эквидистанте. */
     data class OffsetDistance(val initial: Double) : PendingInput
 }

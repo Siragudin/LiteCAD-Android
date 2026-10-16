@@ -58,6 +58,24 @@ fun EditorScreen(
     val snapService = remember { SnapService() }
     val historyService = remember { DocumentHistoryService() }
     val settings = remember { ToolSettings() }
+    // Строковые шаблоны currentMeasurement (у хендлеров нет Context — прокидываем из ресурсов).
+    settings.measurementOffset = stringResource(R.string.measurement_offset)
+    settings.measurementStretch = stringResource(R.string.measurement_stretch)
+    settings.measurementDimOffset = stringResource(R.string.measurement_dim_offset)
+    settings.measurementMirrorLength = stringResource(R.string.measurement_mirror_length)
+    settings.measurementSectorAngle = stringResource(R.string.measurement_sector_angle)
+    settings.promptDrag = stringResource(R.string.prompt_drag)
+    settings.promptDragHeight = stringResource(R.string.prompt_drag_height)
+    settings.promptPickArcEnd = stringResource(R.string.prompt_pick_arc_end)
+    settings.promptDragToEndpoint = stringResource(R.string.prompt_drag_to_endpoint)
+    settings.promptDragToRadius = stringResource(R.string.prompt_drag_to_radius)
+    settings.promptDragToDimensionEnd = stringResource(R.string.prompt_drag_to_dimension_end)
+    settings.promptDragDimensionOffset = stringResource(R.string.prompt_drag_dimension_offset)
+    settings.promptDragAxis = stringResource(R.string.prompt_drag_axis)
+    settings.promptDragToCorner = stringResource(R.string.prompt_drag_to_corner)
+    settings.promptDragForReference = stringResource(R.string.prompt_drag_for_reference)
+    settings.promptDragToRotate = stringResource(R.string.prompt_drag_to_rotate)
+    settings.promptDragSectorVertex = stringResource(R.string.prompt_drag_sector_vertex)
     val selection = remember { Selection() }
     val toolManager = remember { ToolManager(document, snapService, historyService, settings, selection) }
 
@@ -73,6 +91,9 @@ fun EditorScreen(
 
     // Цвет холста задаётся отдельно от схемы: в тёмной теме — чёрный, в светлой — белый.
     val canvasColor = if (editorTheme == "dark") Color.Black else Color.White
+
+    // Тема для превью инструментов: на тёмной теме превью рисуются белым.
+    toolManager.isDarkTheme = (editorTheme == "dark")
 
     // Координаты пальца в мировых мм — приходят из CadCanvas (null, когда палец не на экране).
     var cursorWorld by remember { mutableStateOf<Point2?>(null) }
@@ -444,6 +465,12 @@ fun EditorScreen(
                                     onCopyToggle = { settings.mirror.copyMode = !settings.mirror.copyMode },
                                 )
                             }
+                            "stretch" -> {
+                                StretchSettingsBar(
+                                    exactInputEnabled = settings.stretch.exactInputEnabled,
+                                    onExactInputToggle = { settings.stretch.exactInputEnabled = !settings.stretch.exactInputEnabled },
+                                )
+                            }
                             "offset" -> {
                                 OffsetSettingsBar(
                                     exactInputEnabled = settings.offset.exactInputEnabled,
@@ -548,6 +575,15 @@ fun EditorScreen(
                                 initial = pending.initial,
                                 onSubmit = { toolManager.submitRotationAngle(it) },
                                 onCancel = { toolManager.cancelRotationAngle() }
+                            )
+                        }
+                    }
+                    is PendingInput.StretchDistance -> {
+                        Box(Modifier.align(Alignment.BottomCenter)) {
+                            StretchInputPanel(
+                                initial = pending.initial,
+                                onSubmit = { toolManager.submitStretchInput(it) },
+                                onCancel = { toolManager.cancelStretchInput() }
                             )
                         }
                     }

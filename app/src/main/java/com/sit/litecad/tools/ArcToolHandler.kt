@@ -76,7 +76,7 @@ class ArcToolHandler(
                 endSnapKind = null
                 previewColor = Color.Gray
                 phase = Phase.START_SET
-                currentMeasurement = "Выберите конец дуги"
+                currentMeasurement = toolManager.settings.promptPickArcEnd
             }
 
             Phase.START_SET -> {
@@ -88,7 +88,7 @@ class ArcToolHandler(
                 endPoint = snapped
                 endSnapKind = kind
                 phase = Phase.END_SET
-                currentMeasurement = "Тяните высоту"
+                currentMeasurement = toolManager.settings.promptDragHeight
             }
 
             Phase.END_SET, Phase.BENDING -> {
@@ -141,7 +141,7 @@ class ArcToolHandler(
                     endPoint = cursorPoint
                     // endSnapKind уже установлен в onMove (снап вокруг cursorPoint).
                     phase = Phase.END_SET
-                    currentMeasurement = "Тяните высоту"
+                    currentMeasurement = toolManager.settings.promptDragHeight
                 }
             }
 
@@ -270,7 +270,7 @@ class ArcToolHandler(
                 val p1 = camera.worldToScreen(startPoint)
                 val p2 = camera.worldToScreen(cursorPoint)
                 scope.drawLine(
-                    color = if (endSnapKind != null) Color.Black else Color.Gray,
+                    color = toolManager.previewStrokeColor(if (endSnapKind != null) Color.Black else Color.Gray),
                     start = p1,
                     end = p2,
                     strokeWidth = 4f,
@@ -294,7 +294,7 @@ class ArcToolHandler(
                     )
                     for (i in 0 until points.size - 1) {
                         scope.drawLine(
-                            color = previewColor,
+                            color = toolManager.previewStrokeColor(previewColor),
                             start = camera.worldToScreen(points[i]),
                             end = camera.worldToScreen(points[i + 1]),
                             strokeWidth = 6f
@@ -314,7 +314,7 @@ class ArcToolHandler(
         val p1 = camera.worldToScreen(startPoint)
         val p2 = camera.worldToScreen(endPoint)
         scope.drawLine(
-            color = Color.Gray,
+            color = toolManager.previewStrokeColor(Color.Gray),
             start = p1,
             end = p2,
             strokeWidth = 3f,

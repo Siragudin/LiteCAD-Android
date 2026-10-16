@@ -87,7 +87,7 @@ class RectangleToolHandler(
         previewColor = Color.Gray
         // Пока второй угол не выбран — прямоугольник вырожден (нулевой), превью пустое.
         previewRect = snapRectangle(document, resolved, resolved, zoom, applyDerivedSnap = false)
-        currentMeasurement = "Ведите до противоположного угла"
+        currentMeasurement = toolManager.settings.promptDragToCorner
     }
 
     override fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings) {
@@ -360,10 +360,10 @@ class RectangleToolHandler(
         val stroke = if (isSolid) 6f else 4f
         val effect = if (isSolid) null else PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
 
-        scope.drawLine(color = previewColor, start = p1, end = p2, strokeWidth = stroke, pathEffect = effect)
-        scope.drawLine(color = previewColor, start = p2, end = p3, strokeWidth = stroke, pathEffect = effect)
-        scope.drawLine(color = previewColor, start = p3, end = p4, strokeWidth = stroke, pathEffect = effect)
-        scope.drawLine(color = previewColor, start = p4, end = p1, strokeWidth = stroke, pathEffect = effect)
+        scope.drawLine(color = toolManager.previewStrokeColor(previewColor), start = p1, end = p2, strokeWidth = stroke, pathEffect = effect)
+        scope.drawLine(color = toolManager.previewStrokeColor(previewColor), start = p2, end = p3, strokeWidth = stroke, pathEffect = effect)
+        scope.drawLine(color = toolManager.previewStrokeColor(previewColor), start = p3, end = p4, strokeWidth = stroke, pathEffect = effect)
+        scope.drawLine(color = toolManager.previewStrokeColor(previewColor), start = p4, end = p1, strokeWidth = stroke, pathEffect = effect)
 
         // Маркеры для всех 4 углов (ведущие + производные).
         drawSnapMarker(scope, p1, startSnapKind)

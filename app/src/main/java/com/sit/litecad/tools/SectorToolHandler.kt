@@ -117,7 +117,7 @@ class SectorToolHandler(
                     angleSnapKind = querySnapKind(document, point, zoom)
                     previewSign = 1
                     previewAngleAbs = 0.0
-                    currentMeasurement = "Угол: 0°"
+                    currentMeasurement = toolManager.settings.measurementSectorAngle.format(0)
                 } else {
                     reset()
                 }
@@ -147,7 +147,7 @@ class SectorToolHandler(
                 currentAnglePoint = resolved
                 angleSnapKind = querySnapKind(document, point, zoom)
                 updatePreviewAngle()
-                currentMeasurement = "Угол: ${previewAngleAbs.toInt()}°"
+                currentMeasurement = toolManager.settings.measurementSectorAngle.format(previewAngleAbs.toInt())
             }
 
             else -> {}
@@ -162,7 +162,7 @@ class SectorToolHandler(
                     reset()
                 } else {
                     phase = Phase.RADIUS_SET
-                    currentMeasurement = "Тяните вершину, чтобы задать угол"
+                    currentMeasurement = toolManager.settings.promptDragSectorVertex
                 }
             }
 
@@ -199,7 +199,7 @@ class SectorToolHandler(
             draftSign = previewSign
             toolManager.requestInput(PendingInput.SectorAngle(previewAngleAbs))
             // Превью сектора остаётся видимым поверх панели.
-            currentMeasurement = "Угол: ${previewAngleAbs.toInt()}°"
+            currentMeasurement = toolManager.settings.measurementSectorAngle.format(previewAngleAbs.toInt())
         } else {
             commitSector(document, center, radius, directionRad, previewSign, previewAngleAbs.roundToInt().coerceIn(1, 360), s)
             returnToRadiusSet()
@@ -352,7 +352,7 @@ class SectorToolHandler(
         previewAngleAbs = 0.0
         previewSign = 1
         angleSnapKind = null
-        currentMeasurement = "Тяните вершину, чтобы задать угол"
+        currentMeasurement = toolManager.settings.promptDragSectorVertex
     }
 
     private fun clearDraft() {
@@ -390,7 +390,7 @@ class SectorToolHandler(
         val lineColor = if (phase == Phase.FIRST_DRAG) previewColor else Color.Black
         val isDashed = lineColor == Color.Gray
         scope.drawLine(
-            color = lineColor,
+            color = toolManager.previewStrokeColor(lineColor),
             start = centerOffset,
             end = vertexOffset,
             strokeWidth = if (isDashed) 4f else 6f,
@@ -404,7 +404,7 @@ class SectorToolHandler(
             val arc = arcPoints(center, radius, directionRad, previewSign, previewAngleAbs)
             for (i in 0 until arc.size - 1) {
                 scope.drawLine(
-                    color = Color.Black,
+                    color = toolManager.previewStrokeColor(Color.Black),
                     start = camera.worldToScreen(arc[i]),
                     end = camera.worldToScreen(arc[i + 1]),
                     strokeWidth = 6f
@@ -412,7 +412,7 @@ class SectorToolHandler(
             }
             if (arc.isNotEmpty()) {
                 scope.drawLine(
-                    color = Color.Black,
+                    color = toolManager.previewStrokeColor(Color.Black),
                     start = centerOffset,
                     end = camera.worldToScreen(arc.last()),
                     strokeWidth = 6f

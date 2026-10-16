@@ -41,6 +41,7 @@ import com.sit.litecad.tools.PendingInput
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.ui.canvas.CadCanvas
 import com.sit.litecad.ui.canvas.Viewport
+import com.sit.litecad.ui.theme.EditorDarkColorScheme
 import com.sit.litecad.ui.theme.EditorLightColorScheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,15 +62,16 @@ fun EditorScreen(
 
     val context = LocalContext.current
 
-    // Тема редактора читается один раз при входе в экран. На Этапе 1 тёмная
-    // тема ещё не реализована — рендер использует светлую (см. ветку ниже).
+    // Тема редактора читается один раз при входе в экран.
     val editorTheme = remember { ThemePreferences.getTheme(context) }
     val editorColorScheme = if (editorTheme == "dark") {
-        // Этап 2 — тёмная тема ещё не реализована, используем светлую как fallback.
-        EditorLightColorScheme
+        EditorDarkColorScheme
     } else {
         EditorLightColorScheme
     }
+
+    // Цвет холста задаётся отдельно от схемы: в тёмной теме — чёрный, в светлой — белый.
+    val canvasColor = if (editorTheme == "dark") Color.Black else Color.White
 
     // Координаты пальца в мировых мм — приходят из CadCanvas (null, когда палец не на экране).
     var cursorWorld by remember { mutableStateOf<Point2?>(null) }
@@ -241,7 +243,7 @@ fun EditorScreen(
                         .fillMaxSize()
                         .padding(12.dp)
                         .border(1.dp, MaterialTheme.colorScheme.outline)
-                        .background(Color.White)
+                        .background(canvasColor)
                         .clipToBounds()
                 ) {
                     CadCanvas(

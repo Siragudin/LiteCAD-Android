@@ -30,5 +30,23 @@ val EditorLightColorScheme = lightColorScheme(
     onSurfaceVariant = EditorLightOnSurface,
 )
 
-// --- Тёмная тема (заглушка на Этап 1; будет доработана на Этапе 2) ---
-val EditorDarkColorScheme = darkColorScheme()
+// --- Тёмная тема ---
+private val EditorDarkPrimary = Color(0xFFCCCCCC)
+private val EditorDarkOnPrimary = Color(0xFF111111)
+private val EditorDarkSurface = Color(0xFF1F1F1F)          // верхний топбар
+private val EditorDarkSurfaceVariant = Color(0xFF2C2C2C)   // панели (инструментов, свойств, второй ряд топбара)
+private val EditorDarkBackground = Color(0xFF1A1A1A)       // фон вокруг холста
+private val EditorDarkOutline = Color(0xFF505050)          // рамка холста
+private val EditorDarkOnSurface = Color(0xFFEEEEEE)        // текст/иконки на тёмном
+
+/** Тёмная тема редактора. */
+val EditorDarkColorScheme = darkColorScheme(
+    primary = EditorDarkPrimary,
+    onPrimary = EditorDarkOnPrimary,
+    surface = EditorDarkSurface,
+    surfaceVariant = EditorDarkSurfaceVariant,
+    background = EditorDarkBackground,
+    outline = EditorDarkOutline,
+    onSurface = EditorDarkOnSurface,
+    onSurfaceVariant = EditorDarkOnSurface,
+)

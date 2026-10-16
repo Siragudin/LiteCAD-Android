@@ -1,8 +1,8 @@
 package com.sit.litecad
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
@@ -18,7 +18,7 @@ import com.sit.litecad.ui.screens.HomeScreen
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.storage.ProjectStorage
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

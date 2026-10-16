@@ -35,6 +35,7 @@ fun CadCanvas(
     toolManager: ToolManager,
     isGridVisible: Boolean,
     isOrthoEnabled: Boolean,
+    isDarkTheme: Boolean,
     onCursorWorldChanged: (Point2?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -120,6 +121,7 @@ fun CadCanvas(
                 document = document,
                 toolManager = toolManager,
                 isGridVisible = isGridVisible,
+                isDarkTheme = isDarkTheme,
                 textMeasurer = textMeasurer
             )
         }
@@ -131,6 +133,7 @@ fun CadCanvas(
             canvasSize = canvasSize,
             cursorPosition = cursorPosition,
             isGridVisible = isGridVisible,
+            isDarkTheme = isDarkTheme,
             visible = !isHandMode && toolManager.activeToolId != "leader",
             textMeasurer = textMeasurer
         )

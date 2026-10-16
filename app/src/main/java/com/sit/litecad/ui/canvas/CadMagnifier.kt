@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ fun CadMagnifier(
     canvasSize: IntSize,
     cursorPosition: Offset,
     isGridVisible: Boolean,
+    isDarkTheme: Boolean,
     visible: Boolean,
     textMeasurer: TextMeasurer
 ) {
@@ -66,7 +68,7 @@ fun CadMagnifier(
             )
             .size(magSizeDp)
             .clip(CircleShape)
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .border(2.dp, Color(0xFF2196F3), CircleShape)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -83,6 +85,7 @@ fun CadMagnifier(
                 document = document,
                 toolManager = toolManager,
                 isGridVisible = isGridVisible,
+                isDarkTheme = isDarkTheme,
                 textMeasurer = textMeasurer
             )
 

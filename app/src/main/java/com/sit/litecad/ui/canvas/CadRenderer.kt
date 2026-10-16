@@ -66,6 +66,7 @@ fun DrawScope.drawCadScene(
     document: CadDocument,
     toolManager: ToolManager,
     isGridVisible: Boolean,
+    isDarkTheme: Boolean,
     textMeasurer: TextMeasurer
 ) {
     // --- СЕТКА ---
@@ -75,15 +76,18 @@ fun DrawScope.drawCadScene(
             val startX = (camera.panX % step).toFloat()
             val startY = (camera.panY % step).toFloat()
 
+            // На светлой теме сетка едва заметна на белом, на тёмной — чуть светлее чёрного холста.
+            val gridColor = if (isDarkTheme) Color(0xFF2A2A2A) else Color(0xFFE5E5E5)
+
             var x = startX
             while (x <= size.width) {
-                drawLine(Color(0xFFEEEEEE), Offset(x, 0f), Offset(x, size.height))
+                drawLine(gridColor, Offset(x, 0f), Offset(x, size.height))
                 x += step
             }
 
             var y = startY
             while (y <= size.height) {
-                drawLine(Color(0xFFEEEEEE), Offset(0f, y), Offset(size.width, y))
+                drawLine(gridColor, Offset(0f, y), Offset(size.width, y))
                 y += step
             }
         }
@@ -143,7 +147,7 @@ fun DrawScope.drawCadScene(
         val p1 = camera.worldToScreen(start)
         val p2 = camera.worldToScreen(end)
 
-        val drawColor = if (edge.isAxis) Color(0xFF990000) else Color(edge.colorArgb)
+        val drawColor = if (edge.isAxis) Color(0xFF990000) else visualLineColor(edge.colorArgb, isDarkTheme)
 
         val t = edge.thickness.toFloat()
         val pathEffect = when (edge.lineType) {
@@ -169,7 +173,7 @@ fun DrawScope.drawCadScene(
         val t = axis.thickness.toFloat()
         val effect = PathEffect.dashPathEffect(floatArrayOf(12f * t, 4f * t, 2f * t, 4f * t), 0f)
         drawLine(
-            color = Color(axis.colorArgb),
+            color = visualLineColor(axis.colorArgb, isDarkTheme),
             start = p1,
             end = p2,
             strokeWidth = t,
@@ -188,7 +192,7 @@ fun DrawScope.drawCadScene(
             dim.IsOrthogonal, dim.OrthogonalIsHorizontal
         ) ?: return@forEach
 
-        val color = Color(dim.colorArgb)
+        val color = visualLineColor(dim.colorArgb, isDarkTheme)
         val t = dim.thickness.toFloat()
 
         // Выносные линии: Full — от anchor, Short — 25% длины от конца.
@@ -279,7 +283,7 @@ fun DrawScope.drawCadScene(
     // --- ВЫНОСКИ (отметки высоты) ---
     document.leaders.forEach { leader ->
         val layout = LeaderGeometry.createLayout(leader.target, leader.textPosition, camera.zoom)
-        val color = Color(leader.colorArgb)
+        val color = visualLineColor(leader.colorArgb, isDarkTheme)
 
         for ((a, b) in LeaderGeometry.getSegments(layout)) {
             drawLine(
@@ -310,15 +314,6 @@ fun DrawScope.drawCadScene(
             )
         }
     }
-
-    // --- МИРОВОЙ НОЛЬ (оси) ---
-    val zeroScreen = camera.worldToScreen(Point2.Zero)
-    val axisSize = 100.0
-    val xAxisEnd = camera.worldToScreen(Point2(axisSize, 0.0))
-    val yAxisEnd = camera.worldToScreen(Point2(0.0, axisSize))
-
-    drawLine(Color.Red, zeroScreen, xAxisEnd, strokeWidth = 2f)
-    drawLine(Color.Green, zeroScreen, yAxisEnd, strokeWidth = 2f)
 
     // --- ВЫДЕЛЕНИЕ ---
     val selection = toolManager.selection
@@ -387,6 +382,20 @@ fun DrawScope.drawCadScene(
 
     // --- ПРЕВЬЮ АКТИВНОГО ИНСТРУМЕНТА ---
     toolManager.activeTool?.drawPreview(this, camera)
+}
+
+/**
+ * Визуальная инверсия чёрного цвета для тёмной темы.
+ * Модель не меняется — только отрисовка. Если цвет — «чёрный» из палитры
+ * (0xFF000000) или дефолтный чёрный ребра (0xFF222222), на тёмной теме
+ * возвращаем белый. Остальные цвета — как есть.
+ */
+private fun visualLineColor(argb: Int, isDarkTheme: Boolean): Color {
+    if (!isDarkTheme) return Color(argb)
+    return when (argb) {
+        0xFF000000.toInt(), 0xFF222222.toInt() -> Color(0xFFFFFFFF)
+        else -> Color(argb)
+    }
 }
 
 /** Значение размера для отображения: мм, 1 знак после запятой; целое — без десятых. */

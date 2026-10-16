@@ -252,6 +252,7 @@ fun EditorScreen(
                         toolManager = toolManager,
                         isGridVisible = isGridVisible,
                         isOrthoEnabled = settings.line.orthoEnabled,
+                        isDarkTheme = (editorTheme == "dark"),
                         onCursorWorldChanged = { cursorWorld = it },
                     )
 

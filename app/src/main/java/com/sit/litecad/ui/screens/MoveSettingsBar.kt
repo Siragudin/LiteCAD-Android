@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.R
+import com.sit.litecad.ui.icons.OrthoIcon
 
 /**
  * Панель свойств инструмента «Перемещение».
@@ -52,7 +52,7 @@ fun MoveSettingsBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         MoveIconButton(
-            icon = Icons.Default.RoundedCorner,
+            icon = OrthoIcon,
             label = stringResource(R.string.label_ortho),
             isActive = orthoEnabled,
             onClick = onOrthoToggle

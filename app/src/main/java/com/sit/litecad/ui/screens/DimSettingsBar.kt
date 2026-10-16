@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -38,6 +37,7 @@ import com.sit.litecad.R
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.settings.ColorTable
 import com.sit.litecad.settings.LineWeightTable
+import com.sit.litecad.ui.icons.OrthoIcon
 
 /**
  * Панель свойств инструмента «Размер».
@@ -67,7 +67,7 @@ fun DimSettingsBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         DimIconButton(
-            icon = Icons.Default.RoundedCorner,
+            icon = OrthoIcon,
             label = stringResource(R.string.label_ortho),
             isActive = orthoEnabled,
             onClick = onOrthoToggle

@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -35,6 +36,9 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+
+/** Радиус «ручки» вершины на экране (в пикселях) — общий для всего холста. */
+private const val VERTEX_HANDLE_PX = 6f
 
 /**
  * Кэш ключей заливки граней.
@@ -385,6 +389,16 @@ fun DrawScope.drawCadScene(
             strokeWidth = selectedEdgeStroke,
             cap = StrokeCap.Round
         )
+    }
+
+    // --- РУЧКИ ВЕРШИН (общий рендер, переключается кнопкой в Quick Tools) ---
+    // Рисуем ДО превью активного инструмента, чтобы инструмент мог рисовать поверх.
+    if (toolManager.settings.common.showVertices) {
+        document.vertices.forEach { vertex ->
+            val center = camera.worldToScreen(vertex.position)
+            drawCircle(Color.Red, VERTEX_HANDLE_PX, center)
+            drawCircle(Color.Black, VERTEX_HANDLE_PX + 2f, center, style = Stroke(width = 2f))
+        }
     }
 
     // --- ПРЕВЬЮ АКТИВНОГО ИНСТРУМЕНТА ---

@@ -1,6 +1,7 @@
 package com.sit.litecad.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,11 +38,16 @@ import com.sit.litecad.ui.icons.ArrowMenuOpen
 import com.sit.litecad.ui.icons.ArrowTopLeft
 import com.sit.litecad.ui.icons.LineEnd
 import com.sit.litecad.ui.icons.TabDuplicate
+import com.sit.litecad.ui.icons.Visibility
+import com.sit.litecad.ui.icons.VisibilityOff
 
 /**
  * Боковой блок быстрого доступа к инструментам редактора.
- * Пуст, пока пользователь не «закрепит» инструменты long-press-ом на нижней панели.
- * Инструменты идут снизу вверх: первый добавленный — внизу, последний — вверху.
+ * Инструменты появляются, когда пользователь «закрепит» их long-press-ом на нижней панели,
+ * и идут снизу вверх: первый добавленный — внизу, последний — вверху.
+ *
+ * В самом низу столбца всегда нарисована фиксированная кнопка-переключатель
+ * видимости вершин (не является Quick Tool, long-press на ней ничего не делает).
  */
 @Composable
 fun EditorQuickToolsPanel(
@@ -49,11 +55,11 @@ fun EditorQuickToolsPanel(
     onToolSelect: (String) -> Unit,
     onToolLongPress: (String) -> Unit,
     toolIds: List<String>,
+    showVertices: Boolean,
+    onVerticesToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val haptics = LocalHapticFeedback.current
-
-    if (toolIds.isEmpty()) return
 
     Column(
         modifier = modifier,
@@ -96,6 +102,35 @@ fun EditorQuickToolsPanel(
                     tint = contentColor
                 )
             }
+        }
+
+        // Фиксированная кнопка-переключатель видимости вершин — всегда внизу столбца.
+        val verticesContainerColor = if (showVertices) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
+        val verticesContentColor = if (showVertices) {
+            Color.White
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(verticesContainerColor)
+                // Long-press здесь ничего не делает — это не Quick Tool, а переключатель.
+                .clickable(onClick = onVerticesToggle),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (showVertices) Visibility else VisibilityOff,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = verticesContentColor
+            )
         }
     }
 }

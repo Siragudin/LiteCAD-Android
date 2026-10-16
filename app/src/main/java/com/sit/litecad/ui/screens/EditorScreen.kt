@@ -289,16 +289,21 @@ fun EditorScreen(
 
                     // Боковой блок быстрого доступа — над свёрнутой нижней панелью.
                     // Идёт в композиции ДО нижней панели, чтобы при раскрытии панель рисовалась поверх.
+                    // bottom = 168.dp (было 128.dp): внизу столбца появилась фиксированная кнопка
+                    // видимости вершин (~40dp), блок поднят вверх, чтобы её нижняя граница осталась
+                    // на прежнем месте (там, где раньше заканчивались Quick Tools).
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(end = 12.dp, bottom = 128.dp)
+                            .padding(end = 12.dp, bottom = 168.dp)
                     ) {
                         EditorQuickToolsPanel(
                             selectedToolId = toolManager.activeToolId,
                             onToolSelect = { id -> toolManager.selectTool(id) },
                             onToolLongPress = onQuickToolToggle,
                             toolIds = quickTools,
+                            showVertices = settings.common.showVertices,
+                            onVerticesToggle = { settings.common.showVertices = !settings.common.showVertices },
                         )
                     }
 

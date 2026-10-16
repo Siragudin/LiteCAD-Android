@@ -31,8 +31,12 @@ import kotlin.math.hypot
 /** Пиксельный допуск попадания по границе грани при выборе. */
 private const val OFFSET_PICK_PX = 24.0
 
-/** Радиус ручки-кружка в середине ребра (в пикселях). */
-private const val HANDLE_RADIUS_PX = 9f
+/** Визуальный радиус ручки-кружка в середине ребра (в пикселях). */
+private const val HANDLE_DRAW_RADIUS_PX = 9f
+
+/** Радиус зоны попадания пальцем по ручке (в пикселях). Крупнее
+ *  визуального кружка — чтобы пальцем было легко попасть. */
+private const val HANDLE_PICK_RADIUS_PX = 24f
 
 /** Минимальная допустимая площадь контура после смещения (как в PolygonBuilder). */
 private const val MIN_FACE_AREA = 1e-10
@@ -193,8 +197,8 @@ class OffsetToolHandler(
         for (edgeId in selectedOuterEdgeIds) {
             val edge = document.edgeById(edgeId) ?: continue
             val screen = camera.worldToScreen(midpointOf(document, edge))
-            scope.drawCircle(Color(0xFF1565C0), HANDLE_RADIUS_PX, screen)
-            scope.drawCircle(Color.White, HANDLE_RADIUS_PX - 3f, screen)
+            scope.drawCircle(Color(0xFF1565C0), HANDLE_DRAW_RADIUS_PX, screen)
+            scope.drawCircle(Color.White, HANDLE_DRAW_RADIUS_PX - 3f, screen)
         }
 
         // --- Превью нового внешнего контура во время протяжки (серый пунктир) ---
@@ -259,7 +263,7 @@ class OffsetToolHandler(
      * Палец должен попасть именно в ручку — иначе протяжка не начинается.
      */
     private fun pickHandleEdge(document: CadDocument, point: Point2, zoom: Double): CadEdge? {
-        val radius = HANDLE_RADIUS_PX.toDouble() / zoom
+        val radius = HANDLE_PICK_RADIUS_PX.toDouble() / zoom
         var best: CadEdge? = null
         var bestDistance = radius
         for (edgeId in selectedOuterEdgeIds) {

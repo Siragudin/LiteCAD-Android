@@ -123,6 +123,9 @@ class CommonSettingsState {
     var snapEnabled by mutableStateOf(true)
     var activeLineTool by mutableStateOf("line")     // "line" | "axis"
     var activeCurveTool by mutableStateOf("circle")  // "circle" | "sector" | "arc"
+
+    /** Показывать вершины документа на холсте. */
+    var showVertices by mutableStateOf(false)
 }
 
 /** Общий контейнер состояний всех инструментов. */

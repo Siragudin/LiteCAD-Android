@@ -32,9 +32,6 @@ import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.sign
 
-/** Радиус «ручки» вершины на экране (в пикселях). */
-private const val VERTEX_HANDLE_PX = 6f
-
 /** Пиксельный допуск попадания в вершину при старте протяжки. */
 private const val VERTEX_PICK_PX = 30.0
 
@@ -501,13 +498,8 @@ class MoveToolHandler(
     override fun drawPreview(scope: DrawScope, camera: Camera) {
         val document = toolManager.document
 
-        // Ручки всех вершин — чтобы было видно, за что можно тянуть.
-        for (vertex in document.vertices) {
-            val center = camera.worldToScreen(vertex.position)
-            scope.drawCircle(Color.Red, VERTEX_HANDLE_PX, center)
-            scope.drawCircle(Color.Black, VERTEX_HANDLE_PX + 2f, center, style = Stroke(width = 2f))
-        }
-
+        // Ручки вершин теперь рисует общий рендер (CadRenderer.drawCadScene) —
+        // здесь остаётся только превью перемещения.
         if (!hasStart) return
 
         val delta = currentWorld - startWorld

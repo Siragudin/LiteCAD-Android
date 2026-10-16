@@ -33,6 +33,7 @@ import com.sit.litecad.model.Selection
 import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.settings.QuickToolsPreferences
 import com.sit.litecad.settings.ThemePreferences
 import com.sit.litecad.settings.ToolSettings
 import com.sit.litecad.storage.ProjectStorage
@@ -112,6 +113,15 @@ fun EditorScreen(
     var isGridVisible by remember { mutableStateOf(true) }
 
     var showMenu by remember { mutableStateOf(false) }
+
+    // Список инструментов быстрого доступа (боковой блок); читается из prefs.
+    var quickTools by remember { mutableStateOf(QuickToolsPreferences.getTools(context)) }
+
+    // Переключение инструмента в боковом блоке (long-press): добавить/убрать.
+    val onQuickToolToggle: (String) -> Unit = { id ->
+        QuickToolsPreferences.toggle(context, id)
+        quickTools = QuickToolsPreferences.getTools(context)
+    }
 
     // Пустая тонкая полоса панели свойств (для «hand», «dim», «erase» и прочих
     // инструментов без собственных настроек).
@@ -256,11 +266,27 @@ fun EditorScreen(
                         onCursorWorldChanged = { cursorWorld = it },
                     )
 
+                    // Боковой блок быстрого доступа — над свёрнутой нижней панелью.
+                    // Идёт в композиции ДО нижней панели, чтобы при раскрытии панель рисовалась поверх.
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 12.dp, bottom = 96.dp)
+                    ) {
+                        EditorQuickToolsPanel(
+                            selectedToolId = toolManager.activeToolId,
+                            onToolSelect = { id -> toolManager.selectTool(id) },
+                            onToolLongPress = onQuickToolToggle,
+                            toolIds = quickTools,
+                        )
+                    }
+
                     // Выдвижная панель инструментов — overlay поверх холста внизу рамки.
                     Box(modifier = Modifier.align(Alignment.BottomCenter)) {
                         ToolsBottomPanel(
                             selectedToolId = toolManager.activeToolId,
                             onToolSelect = { id -> toolManager.selectTool(id) },
+                            onToolLongPress = onQuickToolToggle,
                             settings = settings
                         )
                     }

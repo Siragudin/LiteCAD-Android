@@ -136,7 +136,8 @@ fun ToolsBottomPanel(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        tonalElevation = 8.dp
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier

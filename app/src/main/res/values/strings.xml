@@ -52,6 +52,11 @@
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
     <string name="settings_language">Language</string>
+    <string name="settings_theme">Theme</string>
+
+    <!-- Названия тем редактора -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Названия языков (одинаковы в обоих языках — по стандарту) -->
     <string name="language_english">English</string>

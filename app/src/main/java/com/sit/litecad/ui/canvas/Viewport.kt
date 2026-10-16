@@ -8,7 +8,8 @@ import com.sit.litecad.math.Point2
 
 class Viewport {
     // Реактивные стейты — Compose автоматически перерисует холст, если они изменятся
-    var zoom by mutableStateOf(1.0)
+    // Дефолтный зум 0.2: при ширине экрана ~1000px видно ~5000 единиц мира (~5 м).
+    var zoom by mutableStateOf(0.2)
     var panX by mutableStateOf(0.0)
     var panY by mutableStateOf(0.0)
 
@@ -41,6 +42,15 @@ class Viewport {
     fun addPan(delta: Offset) {
         panX += delta.x
         panY += delta.y
+    }
+
+    /**
+     * Поставить мировую точку (0,0) в геометрический центр экрана.
+     * Вызывается один раз при первом получении размера канваса.
+     */
+    fun centerOn(sizeWidthPx: Int, sizeHeightPx: Int) {
+        panX = sizeWidthPx / 2.0
+        panY = sizeHeightPx / 2.0
     }
 
     fun toCamera(): Camera = Camera(zoom, panX, panY)

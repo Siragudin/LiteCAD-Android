@@ -94,6 +94,17 @@ fun DrawScope.drawCadScene(
                 drawLine(gridColor, Offset(0f, y), Offset(size.width, y))
                 y += step
             }
+
+            // Оси мира: вертикаль на worldX = 0, горизонталь на worldY = 0.
+            // Толще обычных линий сетки (2f против 1f), цвет — как у сетки.
+            val axisColor = gridColor
+            val zeroScreen = camera.worldToScreen(Point2(0.0, 0.0))
+            if (zeroScreen.x >= 0f && zeroScreen.x <= size.width) {
+                drawLine(axisColor, Offset(zeroScreen.x, 0f), Offset(zeroScreen.x, size.height), strokeWidth = 2f)
+            }
+            if (zeroScreen.y >= 0f && zeroScreen.y <= size.height) {
+                drawLine(axisColor, Offset(0f, zeroScreen.y), Offset(size.width, zeroScreen.y), strokeWidth = 2f)
+            }
         }
     }
 

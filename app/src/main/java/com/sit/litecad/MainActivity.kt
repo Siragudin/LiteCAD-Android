@@ -1,14 +1,14 @@
 package com.sit.litecad
 
-import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,20 +17,18 @@ import com.sit.litecad.ui.screens.EditorScreen
 import com.sit.litecad.ui.screens.HomeScreen
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.storage.ProjectStorage
-import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    override fun attachBaseContext(newBase: Context) {
-        val language = LanguagePreferences.getLanguage(newBase)
-        val locale = Locale.forLanguageTag(language)
-        Locale.setDefault(locale)
-        val config = Configuration(newBase.resources.configuration)
-        config.setLocale(locale)
-        super.attachBaseContext(newBase.createConfigurationContext(config))
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Применяем сохранённый язык на холодном старте (до первой композиции).
+        // Дальше смена языка идёт через AppCompatDelegate без пересоздания Activity.
+        val savedLanguage = LanguagePreferences.getLanguage(this)
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(savedLanguage)
+        )
 
         setContent {
             val navController = rememberNavController()

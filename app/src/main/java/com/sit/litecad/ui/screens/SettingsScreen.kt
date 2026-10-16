@@ -1,5 +1,6 @@
 package com.sit.litecad.ui.screens
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
 import com.sit.litecad.R
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.settings.ThemePreferences
@@ -29,8 +31,8 @@ fun SettingsScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val currentLanguage = remember { LanguagePreferences.getLanguage(context) }
-    val currentTheme = remember { ThemePreferences.getTheme(context) }
+    var currentLanguage by remember { mutableStateOf(LanguagePreferences.getLanguage(context)) }
+    var currentTheme by remember { mutableStateOf(ThemePreferences.getTheme(context)) }
     var languageDialogOpen by remember { mutableStateOf(false) }
     var themeDialogOpen by remember { mutableStateOf(false) }
 
@@ -124,9 +126,14 @@ fun SettingsScreen(
                                 .clickable {
                                     languageDialogOpen = false
                                     if (code != currentLanguage) {
+                                        // Наша копия — для холодного старта (fallback, если система не сохранит локаль).
                                         LanguagePreferences.setLanguage(context, code)
-                                        // Пересоздаём Activity — Compose подхватит новую локаль.
-                                        (context as? android.app.Activity)?.recreate()
+                                        // Мгновенно обновляем UI панели.
+                                        currentLanguage = code
+                                        // Система применяет язык ко всему приложению без recreate().
+                                        AppCompatDelegate.setApplicationLocales(
+                                            LocaleListCompat.forLanguageTags(code)
+                                        )
                                     }
                                 }
                                 .padding(vertical = 12.dp),
@@ -164,8 +171,8 @@ fun SettingsScreen(
                                     themeDialogOpen = false
                                     if (code != currentTheme) {
                                         ThemePreferences.setTheme(context, code)
-                                        // Пересоздаём Activity — при следующем входе в редактор тема применится.
-                                        (context as? android.app.Activity)?.recreate()
+                                        // Мгновенно обновляем UI панели; тема редактора применится при следующем входе.
+                                        currentTheme = code
                                     }
                                 }
                                 .padding(vertical = 12.dp),

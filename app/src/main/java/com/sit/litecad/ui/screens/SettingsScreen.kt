@@ -1,25 +1,29 @@
 package com.sit.litecad.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.R
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.settings.ThemePreferences
 
 /**
- * Экран настроек приложения (полноэкранный overlay).
- * Пока содержит выбор языка и темы редактора.
+ * Содержимое панели настроек приложения (bottom sheet).
+ * Показывает выбор языка и темы редактора.
+ * Вызывается внутри ModalBottomSheet из HomeScreen; onBack — закрытие панели.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit
@@ -30,62 +34,80 @@ fun SettingsScreen(
     var languageDialogOpen by remember { mutableStateOf(false) }
     var themeDialogOpen by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_back))
-                    }
-                }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+    ) {
+        // Визуальная ручка drag-handle.
+        Box(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .size(width = 32.dp, height = 4.dp)
+                .background(Color.Gray, RoundedCornerShape(2.dp))
+                .align(Alignment.CenterHorizontally)
+        )
+        Spacer(Modifier.height(12.dp))
+
+        // Заголовок: иконка шестерёнки + «Настройки» — чтобы сразу было понятно, что это.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = stringResource(R.string.settings_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Пункт «Language» / «Язык» — тап открывает выбор.
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { languageDialogOpen = true }
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_language),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = languageLabel(currentLanguage),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
 
-            // Пункт «Theme» / «Тема» — тап открывает выбор.
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { themeDialogOpen = true }
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_theme),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = themeLabel(currentTheme),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        // Пункт «Language» / «Язык» — тап открывает выбор.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { languageDialogOpen = true }
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings_language),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = languageLabel(currentLanguage),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Пункт «Theme» / «Тема» — тап открывает выбор.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { themeDialogOpen = true }
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings_theme),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = themeLabel(currentTheme),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 

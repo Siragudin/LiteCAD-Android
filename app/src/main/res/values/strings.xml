@@ -50,7 +50,6 @@
 
     <!-- Экран настроек -->
     <string name="settings_title">Settings</string>
-    <string name="settings_back">Back</string>
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
 

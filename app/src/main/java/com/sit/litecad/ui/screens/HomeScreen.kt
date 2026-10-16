@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     storage: ProjectStorage,
@@ -392,9 +393,16 @@ fun HomeScreen(
         )
     }
 
-    // --- ЭКРАН НАСТРОЕК (полноэкранный overlay поверх HomeScreen) ---
+    // --- ЭКРАН НАСТРОЕК (bottom sheet поверх HomeScreen) ---
     if (showSettings) {
-        SettingsScreen(onBack = { showSettings = false })
+        ModalBottomSheet(
+            onDismissRequest = { showSettings = false },
+            // Свой drag-handle внутри контента (шапка с иконкой и текстом),
+            // встроенный скрываем, чтобы не было двух ручек.
+            dragHandle = null
+        ) {
+            SettingsScreen(onBack = { showSettings = false })
+        }
     }
 }
 

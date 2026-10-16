@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LinearScale
-import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +22,7 @@ import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.settings.ColorTable
 import com.sit.litecad.settings.LineTypeTable
 import com.sit.litecad.settings.LineWeightTable
+import com.sit.litecad.ui.icons.OrthoIcon
 
 @Composable
 fun TopSettingsBarDummy(
@@ -57,7 +57,7 @@ fun TopSettingsBarDummy(
         if (showControls) {
             if (showOrtho) {
                 SettingsButtonDummy(
-                    icon = Icons.Default.RoundedCorner,
+                    icon = OrthoIcon,
                     label = stringResource(R.string.label_ortho),
                     isActive = isOrthoEnabled,
                     onClick = onOrthoToggle

@@ -271,7 +271,7 @@ fun EditorScreen(
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(end = 12.dp, bottom = 96.dp)
+                            .padding(end = 12.dp, bottom = 128.dp)
                     ) {
                         EditorQuickToolsPanel(
                             selectedToolId = toolManager.activeToolId,

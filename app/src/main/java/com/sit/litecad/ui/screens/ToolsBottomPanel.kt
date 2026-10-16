@@ -46,6 +46,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.R
@@ -221,6 +223,7 @@ private fun SingleToolButton(
     onToolSelect: (String) -> Unit,
     onToolLongPress: (String) -> Unit
 ) {
+    val haptics = LocalHapticFeedback.current
     val isActive = selectedToolId == item.id
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
@@ -230,7 +233,11 @@ private fun SingleToolButton(
                 .background(if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .combinedClickable(
                     onClick = { onToolSelect(item.id) },
-                    onLongClick = { onToolLongPress(item.id) }
+                    onLongClick = {
+                        // Мгновенный вибро-отклик до изменения списка.
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onToolLongPress(item.id)
+                    }
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -265,6 +272,8 @@ private fun GroupToolButton(
 
     val isActive = selectedToolId == current.id
 
+    val haptics = LocalHapticFeedback.current
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             // Основная иконка — тап активирует ТЕКУЩИЙ инструмент слота.
@@ -275,7 +284,11 @@ private fun GroupToolButton(
                     .background(if (isActive) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .combinedClickable(
                         onClick = { onToolSelect(current.id) },
-                        onLongClick = { onToolLongPress(current.id) }
+                        onLongClick = {
+                            // Мгновенный вибро-отклик до изменения списка.
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onToolLongPress(current.id)
+                        }
                     ),
                 contentAlignment = Alignment.Center
             ) {

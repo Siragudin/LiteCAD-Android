@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.sit.litecad.ui.icons.ArrowMenuOpen
 import com.sit.litecad.ui.icons.ArrowTopLeft
@@ -48,6 +50,8 @@ fun EditorQuickToolsPanel(
     toolIds: List<String>,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalHapticFeedback.current
+
     if (toolIds.isEmpty()) return
 
     Column(
@@ -76,7 +80,11 @@ fun EditorQuickToolsPanel(
                     .background(containerColor)
                     .combinedClickable(
                         onClick = { onToolSelect(id) },
-                        onLongClick = { onToolLongPress(id) }
+                        onLongClick = {
+                            // Мгновенный вибро-отклик до изменения списка.
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onToolLongPress(id)
+                        }
                     ),
                 contentAlignment = Alignment.Center
             ) {

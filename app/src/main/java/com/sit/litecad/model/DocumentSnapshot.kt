@@ -16,6 +16,7 @@ class DocumentSnapshot private constructor(
     private val faceFillStyles: Map<String, FaceFillStyle>,
     private val suppressedFaceGeometryKeys: Set<String>,
     private val leaders: List<Leader>,
+    private val texts: List<CadText>,
     private val elevationBaseY: Double?
 ) {
     companion object {
@@ -45,6 +46,8 @@ class DocumentSnapshot private constructor(
                 .mapValues { (_, style) -> style.clone() }
             val suppressedCopy = document.suppressedFaceGeometryKeys.toSet()
             val leadersCopy = document.leaders.map { it.clone() }
+            // Тексты — не часть топологии, копируются как есть (без syncFaces).
+            val textsCopy = document.texts.map { it.clone() }
             val elevationBaseYCopy = document.elevationBaseY
 
             return DocumentSnapshot(
@@ -57,6 +60,7 @@ class DocumentSnapshot private constructor(
                 faceFillStylesCopy,
                 suppressedCopy,
                 leadersCopy,
+                textsCopy,
                 elevationBaseYCopy
             )
         }
@@ -90,6 +94,12 @@ class DocumentSnapshot private constructor(
         // Выноски и база отметки высоты. clearTopology() их не чистит — сбрасываем явно.
         document.leaders.clear()
         document.leaders.addAll(leaders.map { it.clone() })
+
+        // Тексты: id сохраняются, позиции/строки — глубокая копия.
+        // В топологии не участвуют, поэтому syncFaces для них не вызывается.
+        document.texts.clear()
+        document.texts.addAll(texts.map { it.clone() })
+
         document.elevationBaseY = elevationBaseY
 
         document.rebuildIndexes()

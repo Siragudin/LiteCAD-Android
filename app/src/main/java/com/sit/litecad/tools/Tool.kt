@@ -29,6 +29,8 @@ interface Tool {
     fun onStretchInputCancelled(document: CadDocument) {}
     fun onOffsetInputSubmitted(value: Double, document: CadDocument) {}
     fun onOffsetInputCancelled(document: CadDocument) {}
+    fun onTextSubmitted(newText: String, pending: PendingInput.Text, document: CadDocument) {}
+    fun onTextCancelled(document: CadDocument) {}
     fun onStart(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onMove(point: Point2, document: CadDocument, zoom: Double, settings: ToolSettings)
     fun onEnd(document: CadDocument)

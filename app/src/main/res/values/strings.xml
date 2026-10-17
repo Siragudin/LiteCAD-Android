@@ -88,6 +88,7 @@
     <string name="tool_extend">Extend</string>
     <string name="tool_leader">Leader</string>
     <string name="tool_fill">Fill</string>
+    <string name="tool_text">Text</string>
 
     <!-- Панели свойств -->
     <string name="label_ortho">Ortho</string>
@@ -101,6 +102,13 @@
     <string name="label_rounding_1cm">1 cm</string>
     <string name="label_rounding_10cm">10 cm</string>
     <string name="label_rounding_1m">1 m</string>
+    <string name="label_text_color">Color</string>
+    <string name="text_size_12">12</string>
+    <string name="text_size_14">14</string>
+    <string name="text_size_18">18</string>
+    <string name="text_size_24">24</string>
+    <string name="text_rotation_0">0°</string>
+    <string name="text_rotation_90">90°</string>
 
     <!-- Полупрозрачные панели ввода -->
     <string name="label_height">Height:</string>
@@ -113,6 +121,7 @@
     <string name="label_size">Size:</string>
     <string name="label_angle">Angle:</string>
     <string name="label_angle_deg">Angle, °:</string>
+    <string name="label_text">Text:</string>
 
     <!-- Меню редактора -->
     <string name="menu_hide_grid">Hide grid</string>

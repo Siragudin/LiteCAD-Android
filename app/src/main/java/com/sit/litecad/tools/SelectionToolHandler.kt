@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.CadText
 import com.sit.litecad.services.SelectionBounds
 import com.sit.litecad.services.SelectionPickKind
 import com.sit.litecad.services.SelectionPickOperations
@@ -80,7 +81,13 @@ class SelectionToolHandler(
 
     private fun applyTap(document: CadDocument, additive: Boolean) {
         val pickTolerance = SelectionPickTolerance.pixelsToWorld(24.0, zoomAtStart)
-        val pick = SelectionPickOperations.pickAt(document, currentWorld, pickTolerance)
+        val pick = SelectionPickOperations.pickAt(
+            document = document,
+            world = currentWorld,
+            tolerance = pickTolerance,
+            zoom = zoomAtStart,
+            textPixelScale = toolManager.textPixelScale
+        )
 
         val selection = toolManager.selection
 
@@ -118,6 +125,15 @@ class SelectionToolHandler(
                     selection.addPolygon(pick.id)
                 }
             }
+            SelectionPickKind.TEXT -> {
+                val already = selection.selectedTextIds.contains(pick.id)
+                if (additive && already) {
+                    selection.removeText(pick.id)
+                } else {
+                    if (!additive) selection.clear()
+                    selection.addText(pick.id)
+                }
+            }
             SelectionPickKind.DIMENSION -> {
                 // Выделение размеров пока не поддерживается (отдельная задача).
             }
@@ -149,6 +165,9 @@ class SelectionToolHandler(
                 if (polygon.outerLoop.edges.size < 3) continue
                 if (bounds.containsPolygonFully(document, polygon)) selection.addPolygon(polygon.id)
             }
+            for (text in document.texts) {
+                if (textFullyInside(text, bounds)) selection.addText(text.id)
+            }
         } else {
             // Crossing: пересекает или внутри
             for (edge in document.edges) {
@@ -163,7 +182,36 @@ class SelectionToolHandler(
                 if (polygon.outerLoop.edges.size < 3) continue
                 if (bounds.intersectsPolygon(document, polygon)) selection.addPolygon(polygon.id)
             }
+            for (text in document.texts) {
+                if (textIntersects(text, bounds)) selection.addText(text.id)
+            }
         }
+    }
+
+    /**
+     * Window-режим: надпись целиком внутри рамки.
+     * Рамка надписи в мире параллельна осям (её размер — экранный, поэтому делится на zoom),
+     * так что достаточно проверить два противоположных угла.
+     */
+    private fun textFullyInside(text: CadText, bounds: SelectionBounds): Boolean {
+        val (halfWidth, halfHeight) = SelectionPickOperations.textWorldHalfExtents(
+            text, zoomAtStart, toolManager.textPixelScale
+        )
+        return bounds.contains(Point2(text.position.X - halfWidth, text.position.Y - halfHeight)) &&
+            bounds.contains(Point2(text.position.X + halfWidth, text.position.Y + halfHeight))
+    }
+
+    /** Crossing-режим: рамка надписи пересекает рамку выделения или лежит внутри неё. */
+    private fun textIntersects(text: CadText, bounds: SelectionBounds): Boolean {
+        val (halfWidth, halfHeight) = SelectionPickOperations.textWorldHalfExtents(
+            text, zoomAtStart, toolManager.textPixelScale
+        )
+        val minX = text.position.X - halfWidth
+        val maxX = text.position.X + halfWidth
+        val minY = text.position.Y - halfHeight
+        val maxY = text.position.Y + halfHeight
+        return !(bounds.maxX < minX || bounds.minX > maxX ||
+            bounds.maxY < minY || bounds.minY > maxY)
     }
 
     override fun drawPreview(scope: DrawScope, camera: Camera) {

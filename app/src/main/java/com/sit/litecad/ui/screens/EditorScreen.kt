@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,6 +102,11 @@ fun EditorScreen(
 
     // Тема для превью инструментов: на тёмной теме превью рисуются белым.
     toolManager.isDarkTheme = (editorTheme == "dark")
+
+    // Множитель sp → px для экранных оценок надписей (хит-тест инструмента «Текст»).
+    // Надпись хранит размер в sp — экранный размер её прямоугольника зависит от density.
+    val density = LocalDensity.current
+    toolManager.textPixelScale = density.density * density.fontScale
 
     // Интервал периодического автосохранения (Выкл / 3 / 5 / 10 мин), читается при входе.
     val autosaveIntervalMinutes = remember { AutosavePreferences.getIntervalMinutes(context) }
@@ -559,6 +565,16 @@ fun EditorScreen(
                                     onThicknessChange = { settings.dim.thickness = it },
                                 )
                             }
+                            "text" -> {
+                                TextSettingsBar(
+                                    sizeSp = settings.text.sizeSp,
+                                    onSizeSpChange = { settings.text.sizeSp = it },
+                                    rotation = settings.text.rotation,
+                                    onRotationChange = { settings.text.rotation = it },
+                                    color = settings.text.color,
+                                    onColorChange = { settings.text.color = it },
+                                )
+                            }
                             "erase" -> {
                                 // Ластик: панель свойств скрыта — пустая тонкая полоса (как у «hand»).
                                 emptySettingsBar()
@@ -641,6 +657,15 @@ fun EditorScreen(
                                 initial = pending.initial,
                                 onSubmit = { toolManager.submitOffsetInput(it) },
                                 onCancel = { toolManager.cancelOffsetInput() }
+                            )
+                        }
+                    }
+                    is PendingInput.Text -> {
+                        Box(Modifier.align(Alignment.BottomCenter)) {
+                            TextInputPanel(
+                                initialText = pending.initialText,
+                                onSubmit = { toolManager.submitText(it) },
+                                onCancel = { toolManager.cancelText() }
                             )
                         }
                     }

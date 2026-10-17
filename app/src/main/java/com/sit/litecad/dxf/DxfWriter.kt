@@ -126,6 +126,46 @@ class DxfWriter {
         group(72, 0)
     }
 
+    /**
+     * Добавить однострочный текст (TEXT) с выравниванием по ЦЕНТРУ.
+     *
+     * Позиция надписи в модели — её центр, поэтому:
+     *   72 = 1 (горизонтальное выравнивание: Center)
+     *   73 = 2 (вертикальное выравнивание: Middle)
+     *   11/21/31 — точка выравнивания (её используют CAD-программы при 72/73 ≠ 0);
+     *   10/20/30 дублируют ту же точку — для «простых» парсеров, читающих
+     *   только базовую вставку.
+     *
+     * Группы 7 (имя стиля) и 73/72 = 0 (Left/Baseline) не пишутся намеренно:
+     * таблица STYLE в файл не выгружается, а R12 по умолчанию подставляет
+     * STANDARD и Left/Baseline, так что файл читается любой программой.
+     *
+     * @param rotationDeg угол против часовой стрелки в градусах (group 50),
+     *   в СК чертежа (Y вверх).
+     */
+    fun addCenteredText(
+        x: Double,
+        y: Double,
+        height: Double,
+        text: String,
+        layer: String,
+        rotationDeg: Double = 0.0
+    ) {
+        group(0, "TEXT")
+        group(8, layer)
+        group(10, x)
+        group(20, y)
+        group(30, 0.0)
+        group(40, height)
+        group(1, text)
+        group(50, rotationDeg)
+        group(72, 1)
+        group(11, x)
+        group(21, y)
+        group(31, 0.0)
+        group(73, 2)
+    }
+
     /** Закрыть секцию ENTITIES. */
     fun endEntities() {
         group(0, "ENDSEC")

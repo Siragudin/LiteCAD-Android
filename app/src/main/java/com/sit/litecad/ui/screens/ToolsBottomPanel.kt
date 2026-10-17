@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -103,7 +104,8 @@ fun ToolsBottomPanel(
         ToolBarItem.Group(
             items = listOf(
                 ToolBarItem.Single("line", Icons.Default.Edit, stringResource(R.string.tool_line)),
-                ToolBarItem.Single("axis", Icons.Default.HorizontalRule, stringResource(R.string.tool_axis))
+                ToolBarItem.Single("axis", Icons.Default.HorizontalRule, stringResource(R.string.tool_axis)),
+                ToolBarItem.Single("text", Icons.Default.TextFields, stringResource(R.string.tool_text))
             ),
             defaultId = "line",
             currentIdProvider = { settings.common.activeLineTool },

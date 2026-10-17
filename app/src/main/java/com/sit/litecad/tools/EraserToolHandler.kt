@@ -23,16 +23,19 @@ import java.util.UUID
  *  - Тап по выноске (отметке высоты) — удаляет выноску целиком (приоритет выше ребра/грани).
  *  - Тап по ребру (в пределах допуска ~24px, как в «Выборе») — удаляет сегмент целиком
  *    и перестраивает грани.
+ *  - Тап по надписи — удаляет надпись целиком.
  *  - Тап по грани (внутри, не на ребре) — подавляет заливку грани, рёбра не трогает.
  *  - Тап по пустому — ничего.
  *
- * Приоритет: выноска раньше ребра, ребро раньше грани (см. [SelectionPickOperations.pickAt]).
+ * Приоритет: выноска раньше ребра, ребро раньше оси, ось раньше надписи,
+ * надпись раньше грани (см. [SelectionPickOperations.pickAt]).
  *
  * [Tool.onEnd] не получает zoom, поэтому масштаб сохраняется локально в [onStart]
  * (тот же приём, что в [RectangleToolHandler]) — интерфейс [Tool] не меняется.
  */
 class EraserToolHandler(
-    private val historyService: DocumentHistoryService
+    private val historyService: DocumentHistoryService,
+    private val toolManager: ToolManager
 ) : Tool {
 
     /** Точка последнего тапа в мировых координатах. */
@@ -77,13 +80,20 @@ class EraserToolHandler(
         }
 
         val tolerance = SelectionPickTolerance.pixelsToWorld(SelectionPickTolerance.DEFAULT_PIXELS, lastZoom)
-        val pick = SelectionPickOperations.pickAt(document, lastPoint, tolerance)
+        val pick = SelectionPickOperations.pickAt(
+            document = document,
+            world = lastPoint,
+            tolerance = tolerance,
+            zoom = lastZoom,
+            textPixelScale = toolManager.textPixelScale
+        )
 
         if (pick != null) {
             when (pick.kind) {
                 SelectionPickKind.DIMENSION -> eraseDimension(document, pick.id)
                 SelectionPickKind.EDGE -> eraseEdge(document, pick.id)
                 SelectionPickKind.AXIS -> eraseAxis(document, pick.id)
+                SelectionPickKind.TEXT -> eraseText(document, pick.id)
                 SelectionPickKind.POLYGON -> suppressFace(document, pick.id)
             }
         }
@@ -137,6 +147,16 @@ class EraserToolHandler(
         document.removeDimension(dimension)
         // Размер — аннотация, не участвует в топологии. rebuildIndexes не нужен
         // (removeDimension сам синхронизирует dimensionsById).
+        document.bumpRevision()
+    }
+
+    /** Удаление надписи целиком (вне топологии — грани не затрагиваются). */
+    private fun eraseText(document: CadDocument, textId: UUID) {
+        val text = document.textById(textId) ?: return
+
+        historyService.record(document)
+
+        document.removeText(text)
         document.bumpRevision()
     }
 

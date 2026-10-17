@@ -7,6 +7,7 @@ import com.sit.litecad.model.CadAxisPoint
 import com.sit.litecad.model.CadDimension
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
+import com.sit.litecad.model.CadText
 import com.sit.litecad.model.CadVertex
 import com.sit.litecad.model.DimensionAnchorType
 import com.sit.litecad.model.DimensionExtensionStyle
@@ -16,6 +17,8 @@ import com.sit.litecad.model.FaceFillStyle
 import com.sit.litecad.model.Leader
 import com.sit.litecad.model.LeaderKind
 import com.sit.litecad.model.OrthoAlignment
+import com.sit.litecad.model.TextRotation
+import com.sit.litecad.model.TextSizeSp
 import com.sit.litecad.storage.dto.AxisDto
 import com.sit.litecad.storage.dto.AxisPointDto
 import com.sit.litecad.storage.dto.DimensionDto
@@ -23,6 +26,7 @@ import com.sit.litecad.storage.dto.EdgeDto
 import com.sit.litecad.storage.dto.FaceFillStyleDto
 import com.sit.litecad.storage.dto.LeaderDto
 import com.sit.litecad.storage.dto.ProjectDocumentDto
+import com.sit.litecad.storage.dto.TextNoteDto
 import com.sit.litecad.storage.dto.VertexDto
 import java.util.UUID
 
@@ -112,6 +116,20 @@ object ProjectDocumentSerializer {
                     color = argbToHex(leader.colorArgb)
                 )
             }.toMutableList(),
+            texts = document.texts.map { text ->
+                TextNoteDto(
+                    id = text.id.toString(),
+                    kind = "plain",
+                    originX = text.position.X,
+                    originY = text.position.Y,
+                    text = text.text,
+                    // В ПК-поле пишем sp-значение, чтобы надпись хоть как-то читалась ПК-версией.
+                    textSize = text.sizeSp.sp.toDouble(),
+                    sizeSp = textSizeSpToDto(text.sizeSp),
+                    rotation = textRotationToDto(text.rotation),
+                    color = argbToHex(text.colorArgb)
+                )
+            }.toMutableList(),
             elevationBaseY = document.elevationBaseY,
             faceFillStyles = document.faceFillStyles.mapValues { (_, style) ->
                 FaceFillStyleDto(
@@ -122,8 +140,8 @@ object ProjectDocumentSerializer {
             suppressedFaceGeometryKeys = document.suppressedFaceGeometryKeys
                 .map { it.replace("-", "") }
                 .toMutableList()
-            // Остальные поля (userPolygons, texts) остаются пустыми,
-            // т.к. в Android-версии их пока нет.
+            // Остальное поле (userPolygons) остаётся пустым,
+            // т.к. в Android-версии пользовательских полигонов пока нет.
         )
     }
 
@@ -234,6 +252,21 @@ object ProjectDocumentSerializer {
                 )
             )
         }
+        // Надписи. В старых .sit поля "texts" нет — Gson оставит дефолтный пустой список.
+        document.texts.clear()
+        for (t in dto.texts) {
+            document.texts.add(
+                CadText(
+                    id = parseUuid(t.id),
+                    position = Point2(t.originX, t.originY),
+                    text = t.text,
+                    sizeSp = parseTextSizeSp(t.sizeSp, t.textSize),
+                    rotation = parseTextRotation(t.rotation),
+                    colorArgb = hexToArgb(t.color)
+                )
+            )
+        }
+
         document.elevationBaseY = dto.elevationBaseY
 
         document.faceFillStyles.clear()
@@ -317,6 +350,29 @@ object ProjectDocumentSerializer {
             else -> LeaderKind.TEXT
         }
     }
+
+    private fun textSizeSpToDto(size: TextSizeSp): String = size.name.lowercase()
+
+    /**
+     * Разбор экранного размера. [fallbackSp] — значение ПК-поля textSize,
+     * используется, когда поля sizeSp в файле нет (старый .sit / ПК-версия).
+     */
+    private fun parseTextSizeSp(value: String?, fallbackSp: Double): TextSizeSp {
+        when (value?.lowercase()) {
+            "small" -> return TextSizeSp.SMALL
+            "normal" -> return TextSizeSp.NORMAL
+            "large" -> return TextSizeSp.LARGE
+            "xlarge", "extralarge", "extra_large" -> return TextSizeSp.XLARGE
+        }
+        return TextSizeSp.entries.minByOrNull { kotlin.math.abs(it.sp - fallbackSp) }
+            ?: TextSizeSp.NORMAL
+    }
+
+    private fun textRotationToDto(rotation: TextRotation): String =
+        if (rotation == TextRotation.DEG_90) "deg90" else "deg0"
+
+    private fun parseTextRotation(value: String?): TextRotation =
+        if (value?.contains("90") == true) TextRotation.DEG_90 else TextRotation.DEG_0
 
     private fun parseAxisPointKind(value: String): AxisPointKind {
         return when (value.uppercase()) {

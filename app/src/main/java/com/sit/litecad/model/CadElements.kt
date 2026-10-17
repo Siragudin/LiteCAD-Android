@@ -101,3 +101,27 @@ data class CadDimension(
 ) {
     fun clone(): CadDimension = copy()
 }
+
+/** Размер шрифта текста в sp (фиксированный экранный размер). */
+enum class TextSizeSp(val sp: Float) {
+    SMALL(12f), NORMAL(14f), LARGE(18f), XLARGE(24f)
+}
+
+/** Поворот текста на экране: 0 или 90 градусов. */
+enum class TextRotation { DEG_0, DEG_90 }
+
+/**
+ * Надпись на чертеже.
+ * position — мировая точка (мм), привязана к чертежу.
+ * sizeSp — ФИКСИРОВАННЫЙ экранный размер, не зависит от зума.
+ */
+data class CadText(
+    val id: UUID = UUID.randomUUID(),
+    var position: Point2,
+    var text: String,
+    var sizeSp: TextSizeSp = TextSizeSp.NORMAL,
+    var rotation: TextRotation = TextRotation.DEG_0,
+    var colorArgb: Int = 0xFF222222.toInt()
+) {
+    fun clone(): CadText = copy(position = Point2(position.X, position.Y))
+}

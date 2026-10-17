@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -155,5 +156,6 @@ private fun iconFor(toolId: String): ImageVector = when (toolId) {
     "extend" -> LineEnd
     "leader" -> ArrowTopLeft
     "fill" -> Icons.Default.FormatColorFill
+    "text" -> Icons.Default.TextFields
     else -> Icons.Default.PanTool
 }

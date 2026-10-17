@@ -66,6 +66,14 @@ object EditService {
             document.rebuildIndexes()
         }
 
+        // 3.1 Удаляем выделенные надписи (вне топологии — грани не затрагиваются).
+        if (selection.selectedTextIds.isNotEmpty()) {
+            val textsToRemove = document.texts.filter { it.id in selection.selectedTextIds }
+            for (text in textsToRemove) {
+                document.removeText(text)
+            }
+        }
+
         // 4. Удаляем выделенные пользовательские полигоны
         document.polygons.removeAll { polygon ->
             polygon.id in selection.selectedPolygonIds && polygon.type != PolygonType.FACE

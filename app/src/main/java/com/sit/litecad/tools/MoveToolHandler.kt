@@ -4,11 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.geometry.EdgeOperations
 import com.sit.litecad.geometry.PolygonBuilder
@@ -20,7 +22,9 @@ import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadAxis
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
+import com.sit.litecad.model.CadText
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.TextRotation
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapKind
 import com.sit.litecad.services.SnapPoint
@@ -64,6 +68,9 @@ class MoveToolHandler(
     /** Выделенные оси на момент старта — едут вместе с delta. */
     private var movingAxisIds: Set<UUID> = emptySet()
 
+    /** Выделенные надписи на момент старта — едут вместе с delta (позиция, без топологии). */
+    private var movingTextIds: Set<UUID> = emptySet()
+
     /** Позиция якоря группы на старте (для перетаскивания рёбер) — ortho и probe идут от неё. */
     private var movingAnchorStart: Point2? = null
 
@@ -82,6 +89,7 @@ class MoveToolHandler(
     private var draftMovingVertexId: UUID? = null
     private var draftMovingEdgeIds: Set<UUID> = emptySet()
     private var draftMovingAxisIds: Set<UUID> = emptySet()
+    private var draftMovingTextIds: Set<UUID> = emptySet()
     private var draftCopy = false
     private var draftAxis: MoveAxis? = null
 
@@ -105,15 +113,18 @@ class MoveToolHandler(
             movingVertexStart = vertex.position
             movingEdgeIds = emptySet()
             movingAxisIds = emptySet()
+            movingTextIds = emptySet()
             movingVertexIds = emptySet()
             movingAnchorStart = null
         } else if (toolManager.selection.selectedEdgeIds.isNotEmpty() ||
-            toolManager.selection.selectedAxisIds.isNotEmpty()
+            toolManager.selection.selectedAxisIds.isNotEmpty() ||
+            toolManager.selection.selectedTextIds.isNotEmpty()
         ) {
             movingVertexId = null
             movingVertexStart = null
             movingEdgeIds = toolManager.selection.selectedEdgeIds.toSet()
             movingAxisIds = toolManager.selection.selectedAxisIds.toSet()
+            movingTextIds = toolManager.selection.selectedTextIds.toSet()
             // Снапим сам объект — собираем все перемещаемые вершины выделенных рёбер.
             val vids = linkedSetOf<UUID>()
             for (edgeId in movingEdgeIds) {
@@ -123,10 +134,11 @@ class MoveToolHandler(
             }
             movingVertexIds = vids
             // Якорь группы на старте (ortho/probe идут от него): ближайшая перемещаемая
-            // вершина, а если рёбер нет — ближайший конец выделенной оси.
+            // вершина, иначе ближайший конец выделенной оси, иначе позиция ближайшей надписи.
             val anchorId = findNearestMovingVertex(document, point)
             movingAnchorStart = anchorId?.let { document.vertexById(it)?.position }
                 ?: findNearestAxisPoint(document, point)
+                ?: findNearestTextPosition(document, point)
         } else {
             // Тянуть нечего.
             hasStart = false
@@ -230,6 +242,7 @@ class MoveToolHandler(
             draftMovingVertexId = movingVertexId
             draftMovingEdgeIds = movingEdgeIds
             draftMovingAxisIds = movingAxisIds
+            draftMovingTextIds = movingTextIds
             draftCopy = dragCopy
             draftAxis = axis
 
@@ -269,6 +282,7 @@ class MoveToolHandler(
         val vertexId = if (hasDraft) draftMovingVertexId else movingVertexId
         val edgeIds = if (hasDraft) draftMovingEdgeIds else movingEdgeIds
         val axisIds = if (hasDraft) draftMovingAxisIds else movingAxisIds
+        val textIds = if (hasDraft) draftMovingTextIds else movingTextIds
         val copy = if (hasDraft) draftCopy else dragCopy
 
         historyService.record(document)
@@ -376,6 +390,28 @@ class MoveToolHandler(
             AxisPointSync.sync(document)
         }
 
+        // Надписи — вне топологии: сдвигается только мировая позиция, размер в sp не меняется.
+        // В режиме «Копия», как и у осей, добавляется сдвинутый дубль (новый id).
+        if (textIds.isNotEmpty()) {
+            for (textId in textIds) {
+                val text = document.textById(textId) ?: continue
+                val newPosition = Point2(text.position.X + delta.X, text.position.Y + delta.Y)
+                if (copy) {
+                    document.addText(
+                        CadText(
+                            position = newPosition,
+                            text = text.text,
+                            sizeSp = text.sizeSp,
+                            rotation = text.rotation,
+                            colorArgb = text.colorArgb
+                        )
+                    )
+                } else {
+                    text.position = newPosition
+                }
+            }
+        }
+
         document.bumpRevision()
         reset()
     }
@@ -410,6 +446,21 @@ class MoveToolHandler(
             if (dEnd < bestDist) {
                 bestDist = dEnd
                 best = axis.End
+            }
+        }
+        return best
+    }
+
+    /** Ближайшая к курсору выделенная надпись — якорь группы, когда рёбер и осей нет. */
+    private fun findNearestTextPosition(document: CadDocument, cursor: Point2): Point2? {
+        var best: Point2? = null
+        var bestDist = Double.MAX_VALUE
+        for (textId in movingTextIds) {
+            val text = document.textById(textId) ?: continue
+            val d = MathUtils.distance(text.position, cursor)
+            if (d < bestDist) {
+                bestDist = d
+                best = text.position
             }
         }
         return best
@@ -477,6 +528,7 @@ class MoveToolHandler(
         draftMovingVertexId = null
         draftMovingEdgeIds = emptySet()
         draftMovingAxisIds = emptySet()
+        draftMovingTextIds = emptySet()
         draftCopy = false
         draftAxis = null
     }
@@ -489,6 +541,7 @@ class MoveToolHandler(
         movingVertexStart = null
         movingEdgeIds = emptySet()
         movingAxisIds = emptySet()
+        movingTextIds = emptySet()
         movingVertexIds = emptySet()
         movingAnchorStart = null
         dragCopy = false
@@ -541,6 +594,33 @@ class MoveToolHandler(
                     cap = StrokeCap.Round,
                     pathEffect = effect
                 )
+            }
+        }
+
+        // Превью сдвинутых надписей — серая пунктирная рамка.
+        // Измерителя текста в drawPreview нет, поэтому рамка строится по той же оценке,
+        // что и хит-тест (ширина ≈ длина × размер × 0.6, высота ≈ размер × 1.2);
+        // размер фиксирован в sp, поэтому в пикселях он не зависит от зума.
+        if (movingTextIds.isNotEmpty()) {
+            val effect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f), 0f)
+            for (textId in movingTextIds) {
+                val text = document.textById(textId) ?: continue
+                val fontPx = text.sizeSp.sp * toolManager.textPixelScale
+                val halfWidth = text.text.length * fontPx * 0.6f * 0.5f
+                val halfHeight = fontPx * 1.2f * 0.5f
+                val center = camera.worldToScreen(shift(text.position, delta))
+                // Поворот тот же, что у отрисованной надписи (-90° = чтение снизу вверх):
+                // рамка строится в локальных осях текста, rotate поворачивает её сам,
+                // поэтому ручной обмен полуосей не нужен.
+                val degrees = if (text.rotation == TextRotation.DEG_90) -90f else 0f
+                scope.rotate(degrees = degrees, pivot = center) {
+                    drawRect(
+                        color = toolManager.previewStrokeColor(Color.Gray),
+                        topLeft = Offset(center.x - halfWidth, center.y - halfHeight),
+                        size = Size(halfWidth * 2f, halfHeight * 2f),
+                        style = Stroke(width = 2f, pathEffect = effect)
+                    )
+                }
             }
         }
 

@@ -25,6 +25,7 @@ import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.model.PolygonType
+import com.sit.litecad.model.TextExportSizes
 import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -100,6 +101,7 @@ object PdfExporter {
         drawAxes(canvas, document, layout)
         drawDimensions(canvas, document, layout)
         drawLeaders(canvas, document, layout, leaderZoom)
+        drawTexts(canvas, document, layout)
     }
 
     // --- Заливки граней ---
@@ -368,6 +370,52 @@ object PdfExporter {
             val p = toPagePt(layout, midShelf)
             val baseY = p[1] - 2f  // чуть выше полки
             canvas.drawText(leader.text, p[0], baseY, textPaint)
+        }
+    }
+
+    // --- Надписи ---
+
+    /**
+     * Пользовательские надписи [CadDocument.texts].
+     *
+     * Рисуются ПОСЛЕ рёбер/осей/размеров/выносок — текст всегда сверху
+     * (как в CadRenderer). Цвет берётся из модели БЕЗ инверсии для тёмной темы:
+     * лист PDF белый, инверсия чёрного в белый сделала бы текст невидимым.
+     *
+     * Экранный размер sp не зависит от зума, поэтому в PDF надпись имеет
+     * фиксированную высоту по ГОСТ ([TextExportSizes.heightMm]), а не
+     * масштабируется вместе с чертежом.
+     */
+    private fun drawTexts(canvas: Canvas, document: CadDocument, layout: PdfExportLayout) {
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            // Позиция надписи в модели — её ЦЕНТР (той же точкой пользуется хит-тест).
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.DEFAULT
+        }
+
+        for (text in document.texts) {
+            if (text.text.isEmpty()) continue
+
+            val p = toPagePt(layout, text.position)
+            paint.color = text.colorArgb
+            paint.textSize = PdfLineweightTable
+                .mmToPoints(TextExportSizes.heightMm(text.sizeSp).toDouble())
+                .toFloat()
+
+            // Базовая линия смещается так, чтобы центр строки совпал с мировой точкой.
+            val metrics = paint.fontMetrics
+            val baselineY = p[1] - (metrics.ascent + metrics.descent) / 2f
+
+            val rotationDeg = TextExportSizes.pdfRotationDeg(text.rotation)
+            if (rotationDeg == 0f) {
+                canvas.drawText(text.text, p[0], baselineY, paint)
+            } else {
+                canvas.save()
+                // 270° == -90°: вертикальная надпись читается снизу вверх.
+                canvas.rotate(rotationDeg, p[0], p[1])
+                canvas.drawText(text.text, p[0], baselineY, paint)
+                canvas.restore()
+            }
         }
     }
 

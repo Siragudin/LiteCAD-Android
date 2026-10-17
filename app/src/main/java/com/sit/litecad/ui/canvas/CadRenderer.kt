@@ -1,6 +1,7 @@
 package com.sit.litecad.ui.canvas
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.sit.litecad.geometry.DimensionAnchorResolver
 import com.sit.litecad.geometry.DimensionGeometry
@@ -28,6 +30,8 @@ import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.model.Polygon
 import com.sit.litecad.model.PolygonType
+import com.sit.litecad.model.TextRotation
+import com.sit.litecad.model.TextSizeSp
 import com.sit.litecad.tools.ToolManager
 import com.sit.litecad.model.Selection
 import java.util.Locale
@@ -342,6 +346,37 @@ fun DrawScope.drawCadScene(
         }
     }
 
+    // --- НАДПИСИ ---
+    // Размер шрифта ФИКСИРОВАН в sp и НЕ умножается на camera.zoom:
+    // при зуме двигается только позиция, размер шрифта на экране не меняется.
+    // DrawScope реализует Density, поэтому sp резолвится в пиксели сам.
+    document.texts.forEach { text ->
+        if (text.text.isEmpty()) return@forEach
+
+        val screenPos = camera.worldToScreen(text.position)
+        val textStyle = TextStyle(
+            color = visualLineColor(text.colorArgb, isDarkTheme),
+            fontSize = text.sizeSp.fontSize(),
+            fontWeight = FontWeight.Normal
+        )
+        val textLayoutResult = textMeasurer.measure(text = text.text, style = textStyle)
+        // Начало отсчёта — центр надписи (той же точкой пользуется хит-тест).
+        val topLeft = Offset(
+            screenPos.x - textLayoutResult.size.width / 2f,
+            screenPos.y - textLayoutResult.size.height / 2f
+        )
+
+        // -90° (против часовой): экранный Y инвертирован, поэтому +90° читался бы
+        // «сверху вниз». -90° даёт чтение СНИЗУ ВВЕРХ (как вертикальный текст в CAD).
+        val degrees = if (text.rotation == TextRotation.DEG_90) -90f else 0f
+        rotate(degrees = degrees, pivot = screenPos) {
+            drawText(
+                textLayoutResult = textLayoutResult,
+                topLeft = topLeft
+            )
+        }
+    }
+
     // --- ВЫДЕЛЕНИЕ ---
     val selection = toolManager.selection
     val selectedStroke = Color(0xFF1976D2)   // синий
@@ -407,6 +442,38 @@ fun DrawScope.drawCadScene(
         )
     }
 
+    // Надписи — синяя рамка вокруг bounding box (поворот — как у самой надписи)
+    document.texts.forEach { text ->
+        if (text.id !in selection.selectedTextIds) return@forEach
+
+        val screenPos = camera.worldToScreen(text.position)
+        val textLayoutResult = textMeasurer.measure(
+            text = text.text,
+            style = TextStyle(fontSize = text.sizeSp.fontSize())
+        )
+        val halfWidth = textLayoutResult.size.width / 2f
+        val halfHeight = textLayoutResult.size.height / 2f
+        val padding = 4f
+
+        // Тот же знак, что и при рендере самой надписи (-90° = чтение снизу вверх),
+        // иначе рамка оказалась бы повёрнута на 180° относительно текста.
+        val degrees = if (text.rotation == TextRotation.DEG_90) -90f else 0f
+        rotate(degrees = degrees, pivot = screenPos) {
+            drawRect(
+                color = selectedStroke,
+                topLeft = Offset(
+                    screenPos.x - halfWidth - padding,
+                    screenPos.y - halfHeight - padding
+                ),
+                size = Size(
+                    halfWidth * 2f + padding * 2f,
+                    halfHeight * 2f + padding * 2f
+                ),
+                style = Stroke(width = 2f)
+            )
+        }
+    }
+
     // --- РУЧКИ ВЕРШИН (общий рендер, переключается кнопкой в Quick Tools) ---
     // Рисуем ДО превью активного инструмента, чтобы инструмент мог рисовать поверх.
     if (toolManager.settings.common.showVertices) {
@@ -426,6 +493,15 @@ fun DrawScope.drawCadScene(
     // --- ПРЕВЬЮ АКТИВНОГО ИНСТРУМЕНТА ---
     toolManager.activeTool?.drawPreview(this, camera)
 }
+
+/**
+ * Размер шрифта надписи как [TextUnit].
+ *
+ * [TextSizeSp] хранит значение в sp (Float). Масштаб камеры (zoom) здесь НЕ участвует —
+ * надпись имеет фиксированный ЭКРАННЫЙ размер; DrawScope реализует Density, поэтому
+ * `.sp` корректно резолвится в пиксели текущей плотности экрана.
+ */
+private fun TextSizeSp.fontSize(): TextUnit = this.sp.sp
 
 /**
  * Визуальная инверсия чёрного цвета для тёмной темы.

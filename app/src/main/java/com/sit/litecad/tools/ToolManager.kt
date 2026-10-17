@@ -28,7 +28,7 @@ class ToolManager(
         "sector" to SectorToolHandler(snapService, historyService, this),
         "arc" to ArcToolHandler(snapService, historyService, this),
         "select" to SelectionToolHandler(this),
-        "erase" to EraserToolHandler(historyService),
+        "erase" to EraserToolHandler(historyService, this),
         "move" to MoveToolHandler(snapService, historyService, this),
         "rotate" to RotateToolHandler(snapService, historyService, this),
         "mirror" to MirrorToolHandler(snapService, historyService, this),
@@ -37,7 +37,8 @@ class ToolManager(
         "extend" to ExtendToolHandler(historyService, this),
         "leader" to LeaderToolHandler(snapService, historyService, this),
         "dim" to DimensionToolHandler(snapService, historyService, this),
-        "fill" to FillToolHandler(historyService, this)
+        "fill" to FillToolHandler(historyService, this),
+        "text" to TextToolHandler(historyService, this)
     )
 
     var activeToolId by mutableStateOf("hand")
@@ -45,6 +46,14 @@ class ToolManager(
 
     /** Тёмная тема редактора — превью инструментов рисуются белым (см. [previewStrokeColor]). */
     var isDarkTheme: Boolean = false
+
+    /**
+     * Множитель sp → px (density × fontScale) для ЭКРАННЫХ оценок геометрии надписей.
+     * Надпись ([com.sit.litecad.model.CadText]) хранит размер в sp, поэтому её экранный
+     * прямоугольник (хит-тест инструмента «Текст») считается только с этим множителем.
+     * Заполняется из EditorScreen (LocalDensity); 1f — безопасный фолбэк для тестов.
+     */
+    var textPixelScale: Float = 1f
 
     var pendingInput by mutableStateOf<PendingInput?>(null)
         private set
@@ -105,6 +114,8 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onOffsetInputSubmitted(value, document)
             }
+            // Ввод строки идёт через submitText() — числовое значение здесь не используется.
+            is PendingInput.Text -> Unit
         }
     }
 
@@ -153,6 +164,8 @@ class ToolManager(
                 pendingInput = null
                 activeTool?.onOffsetInputCancelled(document)
             }
+            // Отмена ввода строки идёт через cancelText().
+            is PendingInput.Text -> Unit
         }
     }
 
@@ -226,6 +239,20 @@ class ToolManager(
         activeTool?.onOffsetInputCancelled(document)
     }
 
+    /** Отправка текста из панели ввода надписи (создание или редактирование). */
+    fun submitText(newText: String) {
+        val pending = pendingInput as? PendingInput.Text ?: return
+        pendingInput = null
+        activeTool?.onTextSubmitted(newText, pending, document)
+    }
+
+    /** Отмена ввода текста надписи — в документ ничего не коммитится. */
+    fun cancelText() {
+        if (pendingInput !is PendingInput.Text) return
+        pendingInput = null
+        activeTool?.onTextCancelled(document)
+    }
+
     /** Цвет превью-линии под текущую тему: на тёмной — белый, на светлой — исходный. */
     fun previewStrokeColor(base: Color): Color = if (isDarkTheme) Color.White else base
 
@@ -257,9 +284,8 @@ class ToolManager(
         val edgeIds = document.edges.map { it.id }.toHashSet()
         val axisIds = document.axes.map { it.id }.toHashSet()
         val polygonIds = document.polygons.map { it.id }.toHashSet()
-        selection.pruneMissing(edgeIds, axisIds, polygonIds)
-
-
+        val textIds = document.texts.map { it.id }.toHashSet()
+        selection.pruneMissing(edgeIds, axisIds, polygonIds, textIds)
     }
     fun deleteSelected() {
         EditService.delete(document, selection, historyService)

@@ -51,6 +51,8 @@ data class CadDocument(
     val suppressedFaceGeometryKeys: MutableSet<String> = mutableSetOf(),
     @SerializedName("Leaders")
     val leaders: MutableList<Leader> = mutableListOf(),
+    @SerializedName("Texts")
+    val texts: MutableList<CadText> = mutableListOf(),
     @SerializedName("ElevationBaseY")
     var elevationBaseY: Double? = null
 ) {
@@ -66,6 +68,7 @@ data class CadDocument(
     private val axesById: MutableMap<UUID, CadAxis> = mutableMapOf()
     private val dimensionsById: MutableMap<UUID, CadDimension> = mutableMapOf()
     private val axisPointsById: MutableMap<UUID, CadAxisPoint> = mutableMapOf()
+    private val textsById: MutableMap<UUID, CadText> = mutableMapOf()
 
     fun bumpRevision() {
         revision++
@@ -78,6 +81,7 @@ data class CadDocument(
     fun axisById(id: UUID): CadAxis? = axesById[id]
     fun dimensionById(id: UUID): CadDimension? = dimensionsById[id]
     fun axisPointById(id: UUID): CadAxisPoint? = axisPointsById[id]
+    fun textById(id: UUID): CadText? = textsById[id]
 
     // --- mutations ---
 
@@ -126,6 +130,16 @@ data class CadDocument(
         axisPointsById.remove(point.id)
     }
 
+    fun addText(text: CadText) {
+        texts.add(text)
+        textsById[text.id] = text
+    }
+
+    fun removeText(text: CadText) {
+        texts.remove(text)
+        textsById.remove(text.id)
+    }
+
     /**
      * Полная пересборка индексов. Нужна после undo/redo, загрузки проекта,
      * любой замены содержимого списков в обход add/remove.
@@ -136,11 +150,13 @@ data class CadDocument(
         axesById.clear()
         dimensionsById.clear()
         axisPointsById.clear()
+        textsById.clear()
         for (v in vertices) verticesById[v.id] = v
         for (e in edges) edgesById[e.id] = e
         for (a in axes) axesById[a.id] = a
         for (d in dimensions) dimensionsById[d.id] = d
         for (p in axisPoints) axisPointsById[p.id] = p
+        for (t in texts) textsById[t.id] = t
     }
 
     fun clear() {
@@ -151,6 +167,7 @@ data class CadDocument(
         axisPoints.clear()
         polygons.clear()
         leaders.clear()
+        texts.clear()
         elevationBaseY = null
         faceFillStyles.clear()
         suppressedFaceGeometryKeys.clear()
@@ -159,6 +176,7 @@ data class CadDocument(
         axesById.clear()
         dimensionsById.clear()
         axisPointsById.clear()
+        textsById.clear()
     }
 
     fun clearTopology() {

@@ -14,6 +14,7 @@ import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.DimensionExtensionStyle
+import com.sit.litecad.model.TextExportSizes
 import java.io.OutputStream
 import kotlin.math.PI
 import kotlin.math.abs
@@ -39,6 +40,7 @@ object DxfExporter {
     private const val LAYER_AXES = "AXES"
     private const val LAYER_DIMENSIONS = "DIMENSIONS"
     private const val LAYER_LEADERS = "LEADERS"
+    private const val LAYER_TEXTS = "TEXTS"
 
     /** Минимальная высота текста аннотации, мм (нижний порог). */
     private const val MIN_ANNOTATION_HEIGHT_MM = 25.0
@@ -84,6 +86,7 @@ object DxfExporter {
         writer.addLayer(LAYER_AXES, 1, "CENTER")
         writer.addLayer(LAYER_DIMENSIONS, 7, "CONTINUOUS")
         writer.addLayer(LAYER_LEADERS, 7, "CONTINUOUS")
+        writer.addLayer(LAYER_TEXTS, 7, "CONTINUOUS")
         writer.endTables()
 
         // Геометрия.
@@ -92,6 +95,7 @@ object DxfExporter {
         writeAxes(writer, document)
         writeDimensions(writer, document, scale)
         writeLeaders(writer, document, scale)
+        writeTexts(writer, document)
         writer.endEntities()
 
         writer.endDocument()
@@ -242,6 +246,33 @@ object DxfExporter {
             val midX = (ll.elbow.X + ll.landingEnd.X) / 2.0
             val midY = (ll.elbow.Y + ll.landingEnd.Y) / 2.0
             writer.addText(midX, midY, scale.textHeight, leader.text, LAYER_LEADERS)
+        }
+    }
+
+    // --- Надписи ---
+
+    /**
+     * Пользовательские надписи [CadDocument.texts] на слой TEXTS.
+     *
+     * Высота — фиксированная по ГОСТ ([TextExportSizes.heightMm]), как и на экране,
+     * где размер sp не зависит от зума; масштаб аннотаций [AnnotationScale] для них
+     * НЕ применяется.
+     *
+     * Цвет: в R12 (AC1009) нет true color (group 420 появился в R2004), а маппинг
+     * ARGB → ACI требует палитры, поэтому надпись пишется цветом слоя TEXTS (ACI 7),
+     * как это уже сделано для размеров и выносок.
+     */
+    private fun writeTexts(writer: DxfWriter, document: CadDocument) {
+        for (text in document.texts) {
+            if (text.text.isEmpty()) continue
+            writer.addCenteredText(
+                x = text.position.X,
+                y = text.position.Y,
+                height = TextExportSizes.heightMm(text.sizeSp).toDouble(),
+                text = text.text,
+                layer = LAYER_TEXTS,
+                rotationDeg = TextExportSizes.dxfRotationDeg(text.rotation).toDouble()
+            )
         }
     }
 

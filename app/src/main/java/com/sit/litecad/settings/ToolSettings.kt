@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
+import com.sit.litecad.model.TextRotation
+import com.sit.litecad.model.TextSizeSp
 
 /** Состояние настроек инструмента «Линия». */
 class LineSettingsState {
@@ -118,6 +120,13 @@ class FillSettingsState {
     var color by mutableStateOf(FillColorTable.defaultArgb)
 }
 
+/** Состояние настроек инструмента «Текст» (размер — фиксированный экранный, в sp). */
+class TextSettingsState {
+    var sizeSp by mutableStateOf(TextSizeSp.SMALL)
+    var rotation by mutableStateOf(TextRotation.DEG_0)
+    var color by mutableStateOf(0xFF222222.toInt())
+}
+
 /** Общие настройки, не привязанные к конкретному инструменту. */
 class CommonSettingsState {
     var snapEnabled by mutableStateOf(true)
@@ -145,6 +154,7 @@ class ToolSettings {
     val dim = DimSettingsState()
     val leader = LeaderSettingsState()
     val fill = FillSettingsState()
+    val text = TextSettingsState()
     val common = CommonSettingsState()
 
     // Шаблоны строк currentMeasurement (у хендлеров нет Context — заполняются из ресурсов в EditorScreen).

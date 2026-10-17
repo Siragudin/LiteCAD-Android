@@ -22,11 +22,15 @@ LiteCAD is a production-ready, hand-held 2D drafting tool built with Kotlin and 
 This project is a deep architectural redesign and official mobile port of the desktop version:
 👉 **[LiteCAD for Windows (.NET 10 / WPF)](https://github.com)** — Check out the original PC core repository! Projects saved in the `.sit` format can be seamlessly exchanged between the mobile app and the desktop editor.
 
-<p align="center">
-  <img src="docs/screen_home.png" width="230" alt="Home Screen">
-  <img src="docs/screen_editor_light.png" width="230" alt="Editor Light">
-  <img src="docs/screen_editor_dark.png" width="230" alt="Editor Dark">
-</p>
+
+<img width="1080" height="2236" alt="Screenshot_20261017_220700_LiteCAD" src="https://github.com/user-attachments/assets/931c3a93-ec2e-48c1-9f5c-04e62f85e993" />
+<img width="1077" height="2205" alt="Screenshot_20261017_220711_LiteCAD" src="https://github.com/user-attachments/assets/eeaa5c0b-44e7-4a0c-ae04-b6f72eeed226" />
+<img width="1080" height="2240" alt="Screenshot_20261017_220635_LiteCAD" src="https://github.com/user-attachments/assets/c804ae77-bc26-466f-b2ce-c2653c6fe97d" />
+<img width="1080" height="2241" alt="Screenshot_20261017_220643_LiteCAD" src="https://github.com/user-attachments/assets/1f9f0eb8-8c1d-4000-a7ae-a01d5280b07e" />
+
+
+
+
 
 
 ## ✨ Features

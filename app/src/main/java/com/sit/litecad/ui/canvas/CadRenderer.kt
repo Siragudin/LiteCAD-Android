@@ -15,6 +15,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.sit.litecad.geometry.DimensionAnchorResolver
 import com.sit.litecad.geometry.DimensionGeometry
 import com.sit.litecad.geometry.FaceIdentity
 import com.sit.litecad.geometry.PolygonGeometry
@@ -206,10 +207,14 @@ fun DrawScope.drawCadScene(
 
     // --- РАЗМЕРЫ (без текста) ---
     document.dimensions.forEach { dim ->
-        val first = document.vertexById(dim.FirstVertexId) ?: return@forEach
-        val second = document.vertexById(dim.SecondVertexId) ?: return@forEach
+        val firstPosition = DimensionAnchorResolver.resolveAnchorPosition(
+            document, dim.FirstAnchorType, dim.FirstVertexId, dim.FirstAnchorPosition
+        )
+        val secondPosition = DimensionAnchorResolver.resolveAnchorPosition(
+            document, dim.SecondAnchorType, dim.SecondVertexId, dim.SecondAnchorPosition
+        )
         val layout = DimensionGeometry.tryCreateLayout(
-            first.position, second.position, dim.Offset,
+            firstPosition, secondPosition, dim.Offset,
             TopologyTolerance.ForMutation,
             dim.IsOrthogonal, dim.OrthogonalIsHorizontal
         ) ?: return@forEach
@@ -407,6 +412,12 @@ fun DrawScope.drawCadScene(
     if (toolManager.settings.common.showVertices) {
         document.vertices.forEach { vertex ->
             val center = camera.worldToScreen(vertex.position)
+            drawCircle(Color.Red, VERTEX_HANDLE_PX, center)
+            drawCircle(Color.Black, VERTEX_HANDLE_PX + 2f, center, style = Stroke(width = 2f))
+        }
+        // Точки осей (концы/пересечения) — те же кружки, что и у вершин.
+        document.axisPoints.forEach { point ->
+            val center = camera.worldToScreen(point.position)
             drawCircle(Color.Red, VERTEX_HANDLE_PX, center)
             drawCircle(Color.Black, VERTEX_HANDLE_PX + 2f, center, style = Stroke(width = 2f))
         }

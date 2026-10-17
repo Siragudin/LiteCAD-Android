@@ -10,6 +10,7 @@ data class ProjectDocumentDto(
     @SerializedName("userPolygons") var userPolygons: MutableList<PolygonDto> = mutableListOf(),
     @SerializedName("dimensions") var dimensions: MutableList<DimensionDto> = mutableListOf(),
     @SerializedName("axes") var axes: MutableList<AxisDto> = mutableListOf(),
+    @SerializedName("axisPoints") var axisPoints: MutableList<AxisPointDto> = mutableListOf(),
     @SerializedName("leaders") var leaders: MutableList<LeaderDto> = mutableListOf(),
     @SerializedName("texts") var texts: MutableList<TextNoteDto> = mutableListOf(),
     @SerializedName("elevationBaseY") var elevationBaseY: Double? = null,

@@ -1,5 +1,6 @@
 package com.sit.litecad.model
 
+import com.google.gson.annotations.SerializedName
 import com.sit.litecad.math.Point2
 import java.util.UUID
 
@@ -46,8 +47,34 @@ data class CadAxis(
     fun clone(): CadAxis = CadAxis(id, Start, End, colorArgb, thickness)
 }
 
+/**
+ * Вид точки оси: конец—начало, конец—конец или пересечение осей.
+ */
+enum class AxisPointKind { END_START, END_END, INTERSECTION }
+
+/**
+ * Производная точка оси — источник снап-точек и якорь размеров.
+ * Полностью пересобирается [com.sit.litecad.geometry.AxisPointSync] из документа.axes,
+ * но участвует в снапшоте undo/redo и сериализуется в .sit.
+ */
+data class CadAxisPoint(
+    val id: UUID = UUID.randomUUID(),
+    var position: Point2,
+    val kind: AxisPointKind,
+    val axisId: UUID,
+    val otherAxisId: UUID? = null
+) {
+    fun clone(): CadAxisPoint = copy(position = Point2(position.X, position.Y))
+}
+
 /** Стиль выносных линий размера. */
 enum class DimensionExtensionStyle { FULL, SHORT }
+
+/**
+ * Тип якоря размера. VERTEX — привязка к [CadVertex],
+ * AXIS_POINT — привязка к точке оси [CadAxisPoint].
+ */
+enum class DimensionAnchorType { VERTEX, AXIS_POINT }
 
 /**
  * Линейный размер между двумя вершинами документа.
@@ -60,6 +87,10 @@ data class CadDimension(
     val SecondVertexId: UUID,
     val FirstAnchorPosition: Point2,
     val SecondAnchorPosition: Point2,
+    // Тип якоря для каждого конца. Id хранятся в FirstVertexId/SecondVertexId
+    // (имена сохранены для обратной совместимости .sit).
+    @SerializedName("FirstAnchorType") val FirstAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX,
+    @SerializedName("SecondAnchorType") val SecondAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX,
     var Offset: Double = 0.0,
     var ExtensionStyle: DimensionExtensionStyle = DimensionExtensionStyle.FULL,
     var IsOrthogonal: Boolean = false,

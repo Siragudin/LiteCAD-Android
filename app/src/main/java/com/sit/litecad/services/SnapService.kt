@@ -5,6 +5,7 @@ import com.sit.litecad.math.Geometry2D
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
+import com.sit.litecad.model.AxisPointKind
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.OrthoAlignment
 import java.util.UUID
@@ -173,26 +174,38 @@ class SnapService {
             )
         }
 
-        for (axis in document.axes) {
-            candidates.add(
-                Pair(
-                    SnapPoint(axis.Start, SnapKind.Endpoint, AxisId = axis.id),
-                    SnapIdentity.forAxisEndpoint(axis.id, isStart = true)
+        // Точки осей (концы + пересечения) теперь приходят из document.axisPoints
+        // (перестраиваются AxisPointSync). Вершины добавлены выше — при совпадении
+        // позиций deduplicateByPosition оставит именно вершину (приоритет равный, первый побеждает).
+        for (point in document.axisPoints) {
+            when (point.kind) {
+                AxisPointKind.END_START -> candidates.add(
+                    Pair(
+                        SnapPoint(point.position, SnapKind.Endpoint, AxisId = point.axisId),
+                        SnapIdentity.forAxisEndpoint(point.axisId, isStart = true)
+                    )
                 )
-            )
-            candidates.add(
-                Pair(
-                    SnapPoint(axis.End, SnapKind.Endpoint, AxisId = axis.id),
-                    SnapIdentity.forAxisEndpoint(axis.id, isStart = false)
+                AxisPointKind.END_END -> candidates.add(
+                    Pair(
+                        SnapPoint(point.position, SnapKind.Endpoint, AxisId = point.axisId),
+                        SnapIdentity.forAxisEndpoint(point.axisId, isStart = false)
+                    )
                 )
-            )
-            val mid = Point2((axis.Start.X + axis.End.X) / 2.0, (axis.Start.Y + axis.End.Y) / 2.0)
-            candidates.add(
-                Pair(
-                    SnapPoint(mid, SnapKind.Midpoint, AxisId = axis.id),
-                    SnapIdentity.forAxisMidpoint(axis.id)
-                )
-            )
+                AxisPointKind.INTERSECTION -> {
+                    val otherId = point.otherAxisId
+                    val identity = if (otherId != null) {
+                        SnapIdentity.forIntersection(listOf(point.axisId, otherId))
+                    } else {
+                        SnapIdentity.forIntersection(listOf(point.axisId))
+                    }
+                    candidates.add(
+                        Pair(
+                            SnapPoint(point.position, SnapKind.Intersection, AxisId = point.axisId),
+                            identity
+                        )
+                    )
+                }
+            }
         }
 
         addLinearContactCandidates(document, candidates, tolerance)

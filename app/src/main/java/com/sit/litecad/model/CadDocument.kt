@@ -44,6 +44,7 @@ data class CadDocument(
     @SerializedName("Polygons") val polygons: MutableList<Polygon> = mutableListOf(),
     @SerializedName("Axes") val axes: MutableList<CadAxis> = mutableListOf(),
     @SerializedName("Dimensions") val dimensions: MutableList<CadDimension> = mutableListOf(),
+    @SerializedName("AxisPoints") val axisPoints: MutableList<CadAxisPoint> = mutableListOf(),
     @SerializedName("FaceFillStyles")
     val faceFillStyles: MutableMap<String, FaceFillStyle> = mutableMapOf(),
     @SerializedName("SuppressedFaceGeometryKeys")
@@ -64,6 +65,7 @@ data class CadDocument(
     private val edgesById: MutableMap<UUID, CadEdge> = mutableMapOf()
     private val axesById: MutableMap<UUID, CadAxis> = mutableMapOf()
     private val dimensionsById: MutableMap<UUID, CadDimension> = mutableMapOf()
+    private val axisPointsById: MutableMap<UUID, CadAxisPoint> = mutableMapOf()
 
     fun bumpRevision() {
         revision++
@@ -75,6 +77,7 @@ data class CadDocument(
     fun edgeById(id: UUID): CadEdge? = edgesById[id]
     fun axisById(id: UUID): CadAxis? = axesById[id]
     fun dimensionById(id: UUID): CadDimension? = dimensionsById[id]
+    fun axisPointById(id: UUID): CadAxisPoint? = axisPointsById[id]
 
     // --- mutations ---
 
@@ -113,6 +116,16 @@ data class CadDocument(
         dimensionsById.remove(dimension.id)
     }
 
+    fun addAxisPoint(point: CadAxisPoint) {
+        axisPoints.add(point)
+        axisPointsById[point.id] = point
+    }
+
+    fun removeAxisPoint(point: CadAxisPoint) {
+        axisPoints.remove(point)
+        axisPointsById.remove(point.id)
+    }
+
     /**
      * Полная пересборка индексов. Нужна после undo/redo, загрузки проекта,
      * любой замены содержимого списков в обход add/remove.
@@ -122,10 +135,12 @@ data class CadDocument(
         edgesById.clear()
         axesById.clear()
         dimensionsById.clear()
+        axisPointsById.clear()
         for (v in vertices) verticesById[v.id] = v
         for (e in edges) edgesById[e.id] = e
         for (a in axes) axesById[a.id] = a
         for (d in dimensions) dimensionsById[d.id] = d
+        for (p in axisPoints) axisPointsById[p.id] = p
     }
 
     fun clear() {
@@ -133,6 +148,7 @@ data class CadDocument(
         edges.clear()
         axes.clear()
         dimensions.clear()
+        axisPoints.clear()
         polygons.clear()
         leaders.clear()
         elevationBaseY = null
@@ -142,6 +158,7 @@ data class CadDocument(
         edgesById.clear()
         axesById.clear()
         dimensionsById.clear()
+        axisPointsById.clear()
     }
 
     fun clearTopology() {

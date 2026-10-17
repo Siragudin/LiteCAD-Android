@@ -1,11 +1,13 @@
 package com.sit.litecad.tools
 
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.geometry.PolygonBuilder
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.leaders.LeaderPickOperations
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.DimensionAnchorType
 import com.sit.litecad.model.PolygonType
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SelectionPickKind
@@ -103,15 +105,26 @@ class EraserToolHandler(
         document.bumpRevision()
     }
 
-    /** Удаление оси целиком. */
+    /** Удаление оси целиком (вместе с привязанными к ней размерами). */
     private fun eraseAxis(document: CadDocument, axisId: UUID) {
         val axis = document.axisById(axisId) ?: return
 
         historyService.record(document)
 
+        // Размеры, привязанные к удаляемой оси (через её точки), удаляем вместе с ней.
+        val axisPointIds = document.axisPoints.filter { it.axisId == axisId }.map { it.id }.toSet()
+        document.dimensions.removeAll { dim ->
+            (dim.FirstAnchorType == DimensionAnchorType.AXIS_POINT &&
+                (dim.FirstVertexId == axisId || dim.FirstVertexId in axisPointIds)) ||
+                (dim.SecondAnchorType == DimensionAnchorType.AXIS_POINT &&
+                    (dim.SecondVertexId == axisId || dim.SecondVertexId in axisPointIds))
+        }
+
         document.removeAxis(axis)
         // Оси не участвуют в топологии граней и не связаны с вершинами —
         // syncFaces и pruneUnusedVertices не нужны.
+        // Пересобрать производные точки осей.
+        AxisPointSync.sync(document)
         document.bumpRevision()
     }
 

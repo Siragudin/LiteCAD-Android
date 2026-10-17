@@ -6,6 +6,8 @@ data class DimensionDto(
     @SerializedName("id") var id: String = "",
     @SerializedName("firstVertexId") var firstVertexId: String = "",
     @SerializedName("secondVertexId") var secondVertexId: String = "",
+    @SerializedName("firstAnchorType") var firstAnchorType: String = "vertex",
+    @SerializedName("secondAnchorType") var secondAnchorType: String = "vertex",
     @SerializedName("firstAnchorX") var firstAnchorX: Double = 0.0,
     @SerializedName("firstAnchorY") var firstAnchorY: Double = 0.0,
     @SerializedName("secondAnchorX") var secondAnchorX: Double = 0.0,

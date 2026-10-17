@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.geometry.EdgeOperations
 import com.sit.litecad.geometry.PolygonBuilder
 import com.sit.litecad.geometry.TopologyService
@@ -371,6 +372,8 @@ class MoveToolHandler(
                     axis.End = newEnd
                 }
             }
+            // Оси сдвинулись — пересобрать производные точки осей.
+            AxisPointSync.sync(document)
         }
 
         document.bumpRevision()

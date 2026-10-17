@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.math.Point2
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.Selection
@@ -236,6 +237,8 @@ class ToolManager(
 
     fun undo() {
         historyService.undo(document)
+        // Документ заменён целиком — пересобрать производные точки осей.
+        AxisPointSync.sync(document)
         activeTool?.cancel()
         pendingInput = null
         pruneSelection()
@@ -243,6 +246,8 @@ class ToolManager(
 
     fun redo() {
         historyService.redo(document)
+        // Документ заменён целиком — пересобрать производные точки осей.
+        AxisPointSync.sync(document)
         activeTool?.cancel()
         pendingInput = null
         pruneSelection()

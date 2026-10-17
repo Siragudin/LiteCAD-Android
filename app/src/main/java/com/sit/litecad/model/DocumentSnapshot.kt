@@ -11,6 +11,7 @@ class DocumentSnapshot private constructor(
     private val edges: List<CadEdge>,
     private val axes: List<CadAxis>,
     private val dimensions: List<CadDimension>,
+    private val axisPoints: List<CadAxisPoint>,
     private val userPolygons: List<Polygon>,
     private val faceFillStyles: Map<String, FaceFillStyle>,
     private val suppressedFaceGeometryKeys: Set<String>,
@@ -36,6 +37,7 @@ class DocumentSnapshot private constructor(
             }
             val axesCopy = document.axes.map { axis -> axis.clone() }
             val dimensionsCopy = document.dimensions.map { dimension -> dimension.clone() }
+            val axisPointsCopy = document.axisPoints.map { point -> point.clone() }
             val userPolygonsCopy = document.polygons
                 .filter { it.type != PolygonType.FACE }
                 .map { it.clone() }
@@ -50,6 +52,7 @@ class DocumentSnapshot private constructor(
                 edgesCopy,
                 axesCopy,
                 dimensionsCopy,
+                axisPointsCopy,
                 userPolygonsCopy,
                 faceFillStylesCopy,
                 suppressedCopy,
@@ -70,6 +73,9 @@ class DocumentSnapshot private constructor(
         document.dimensions.clear()
         document.dimensions.addAll(dimensions.map { it.clone() })
 
+        document.axisPoints.clear()
+        document.axisPoints.addAll(axisPoints.map { it.clone() })
+
         document.polygons.clear()
         document.polygons.addAll(userPolygons.map { it.clone() })
 
@@ -88,6 +94,8 @@ class DocumentSnapshot private constructor(
 
         document.rebuildIndexes()
         com.sit.litecad.geometry.PolygonBuilder.syncFaces(document)
+        // Точки осей пересобираются из осей — гарантирует согласованность после undo/redo.
+        com.sit.litecad.geometry.AxisPointSync.sync(document)
         document.bumpRevision()
     }
 }

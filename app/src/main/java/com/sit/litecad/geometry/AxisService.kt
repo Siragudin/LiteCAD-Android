@@ -51,6 +51,8 @@ object AxisService {
         }
 
         if (MathUtils.distance(mergedStart, mergedEnd) <= tolerance) {
+            // Оси всё равно удалились (слияние выродилось) — пересобрать точки осей.
+            AxisPointSync.sync(document)
             return null
         }
 
@@ -62,6 +64,8 @@ object AxisService {
     fun delete(document: CadDocument, axisId: UUID): Boolean {
         val axis = document.axisById(axisId) ?: return false
         document.removeAxis(axis)
+        // Пересобрать производные точки осей после удаления.
+        AxisPointSync.sync(document)
         return true
     }
 

@@ -7,6 +7,7 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Typeface
+import com.sit.litecad.geometry.DimensionAnchorResolver
 import com.sit.litecad.geometry.DimensionGeometry
 import com.sit.litecad.geometry.DimensionLayout
 import com.sit.litecad.geometry.FaceIdentity
@@ -72,10 +73,14 @@ object ThumbnailGenerator {
             expand(axis.End.X, axis.End.Y)
         }
         for (dim in document.dimensions) {
-            val first = document.vertexById(dim.FirstVertexId) ?: continue
-            val second = document.vertexById(dim.SecondVertexId) ?: continue
+            val firstPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.FirstAnchorType, dim.FirstVertexId, dim.FirstAnchorPosition
+            )
+            val secondPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.SecondAnchorType, dim.SecondVertexId, dim.SecondAnchorPosition
+            )
             val layout = DimensionGeometry.tryCreateLayout(
-                first.position, second.position, dim.Offset,
+                firstPosition, secondPosition, dim.Offset,
                 TopologyTolerance.ForMutation,
                 dim.IsOrthogonal, dim.OrthogonalIsHorizontal
             ) ?: continue
@@ -220,10 +225,14 @@ object ThumbnailGenerator {
         }
 
         for (dim in document.dimensions) {
-            val first = document.vertexById(dim.FirstVertexId) ?: continue
-            val second = document.vertexById(dim.SecondVertexId) ?: continue
+            val firstPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.FirstAnchorType, dim.FirstVertexId, dim.FirstAnchorPosition
+            )
+            val secondPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.SecondAnchorType, dim.SecondVertexId, dim.SecondAnchorPosition
+            )
             val layout = DimensionGeometry.tryCreateLayout(
-                first.position, second.position, dim.Offset,
+                firstPosition, secondPosition, dim.Offset,
                 TopologyTolerance.ForMutation,
                 dim.IsOrthogonal, dim.OrthogonalIsHorizontal
             ) ?: continue

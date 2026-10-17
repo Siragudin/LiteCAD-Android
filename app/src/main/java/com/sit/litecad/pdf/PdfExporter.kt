@@ -13,6 +13,7 @@ import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import com.sit.litecad.geometry.DimensionAnchorResolver
 import com.sit.litecad.geometry.DimensionGeometry
 import com.sit.litecad.geometry.FaceIdentity
 import com.sit.litecad.geometry.PolygonGeometry
@@ -224,10 +225,14 @@ object PdfExporter {
         }
 
         for (dim in document.dimensions) {
-            val first = document.vertexById(dim.FirstVertexId) ?: continue
-            val second = document.vertexById(dim.SecondVertexId) ?: continue
+            val firstPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.FirstAnchorType, dim.FirstVertexId, dim.FirstAnchorPosition
+            )
+            val secondPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                document, dim.SecondAnchorType, dim.SecondVertexId, dim.SecondAnchorPosition
+            )
             val dl = DimensionGeometry.tryCreateLayout(
-                first.position, second.position, dim.Offset,
+                firstPosition, secondPosition, dim.Offset,
                 TopologyTolerance.ForMutation,
                 dim.IsOrthogonal, dim.OrthogonalIsHorizontal
             ) ?: continue

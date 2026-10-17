@@ -1,11 +1,14 @@
 package com.sit.litecad.storage
 
 import com.sit.litecad.math.Point2
+import com.sit.litecad.model.AxisPointKind
 import com.sit.litecad.model.CadAxis
+import com.sit.litecad.model.CadAxisPoint
 import com.sit.litecad.model.CadDimension
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import com.sit.litecad.model.CadVertex
+import com.sit.litecad.model.DimensionAnchorType
 import com.sit.litecad.model.DimensionExtensionStyle
 import com.sit.litecad.model.EdgeLineType
 import com.sit.litecad.model.FaceFillPattern
@@ -14,6 +17,7 @@ import com.sit.litecad.model.Leader
 import com.sit.litecad.model.LeaderKind
 import com.sit.litecad.model.OrthoAlignment
 import com.sit.litecad.storage.dto.AxisDto
+import com.sit.litecad.storage.dto.AxisPointDto
 import com.sit.litecad.storage.dto.DimensionDto
 import com.sit.litecad.storage.dto.EdgeDto
 import com.sit.litecad.storage.dto.FaceFillStyleDto
@@ -66,6 +70,16 @@ object ProjectDocumentSerializer {
                     thickness = axis.thickness
                 )
             }.toMutableList(),
+            axisPoints = document.axisPoints.map { point ->
+                AxisPointDto(
+                    id = point.id.toString(),
+                    x = point.position.X,
+                    y = point.position.Y,
+                    kind = point.kind.name,
+                    axisId = point.axisId.toString(),
+                    otherAxisId = point.otherAxisId?.toString()
+                )
+            }.toMutableList(),
             dimensions = document.dimensions.map { dim ->
                 DimensionDto(
                     id = dim.id.toString(),
@@ -75,6 +89,8 @@ object ProjectDocumentSerializer {
                     firstAnchorY = dim.FirstAnchorPosition.Y,
                     secondAnchorX = dim.SecondAnchorPosition.X,
                     secondAnchorY = dim.SecondAnchorPosition.Y,
+                    firstAnchorType = dim.FirstAnchorType.name.lowercase(),
+                    secondAnchorType = dim.SecondAnchorType.name.lowercase(),
                     offset = dim.Offset,
                     extensionStyle = dim.ExtensionStyle.name.lowercase(),
                     isOrthogonal = dim.IsOrthogonal,
@@ -166,6 +182,21 @@ object ProjectDocumentSerializer {
             )
         }
 
+        // Точки осей читаются из файла (старые .sit без них — пустой список);
+        // в конце apply() список всё равно пересоберётся через AxisPointSync.
+        document.axisPoints.clear()
+        for (p in dto.axisPoints) {
+            document.axisPoints.add(
+                CadAxisPoint(
+                    id = parseUuid(p.id),
+                    position = Point2(p.x, p.y),
+                    kind = parseAxisPointKind(p.kind),
+                    axisId = parseUuid(p.axisId),
+                    otherAxisId = p.otherAxisId?.let { parseUuid(it) }
+                )
+            )
+        }
+
         document.dimensions.clear()
         for (d in dto.dimensions) {
             val firstId = vertexIdMap[d.firstVertexId] ?: parseUuid(d.firstVertexId)
@@ -177,6 +208,8 @@ object ProjectDocumentSerializer {
                     SecondVertexId = secondId,
                     FirstAnchorPosition = Point2(d.firstAnchorX, d.firstAnchorY),
                     SecondAnchorPosition = Point2(d.secondAnchorX, d.secondAnchorY),
+                    FirstAnchorType = parseDimensionAnchorType(d.firstAnchorType),
+                    SecondAnchorType = parseDimensionAnchorType(d.secondAnchorType),
                     Offset = d.offset,
                     ExtensionStyle = parseDimensionExtensionStyle(d.extensionStyle),
                     IsOrthogonal = d.isOrthogonal,
@@ -227,6 +260,8 @@ object ProjectDocumentSerializer {
 
         document.rebuildIndexes()
         com.sit.litecad.geometry.PolygonBuilder.syncFaces(document)
+        // Пересобрать точки осей из осей (в т.ч. для старых .sit без axisPoints).
+        com.sit.litecad.geometry.AxisPointSync.sync(document)
     }
 
     // --- УТИЛИТЫ ---
@@ -280,6 +315,21 @@ object ProjectDocumentSerializer {
         return when (value.lowercase()) {
             "elevation" -> LeaderKind.ELEVATION
             else -> LeaderKind.TEXT
+        }
+    }
+
+    private fun parseAxisPointKind(value: String): AxisPointKind {
+        return when (value.uppercase()) {
+            "END_END" -> AxisPointKind.END_END
+            "INTERSECTION" -> AxisPointKind.INTERSECTION
+            else -> AxisPointKind.END_START
+        }
+    }
+
+    private fun parseDimensionAnchorType(value: String): DimensionAnchorType {
+        return when (value.lowercase()) {
+            "axis_point", "axispoint" -> DimensionAnchorType.AXIS_POINT
+            else -> DimensionAnchorType.VERTEX
         }
     }
 

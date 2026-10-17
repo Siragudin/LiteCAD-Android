@@ -3,6 +3,7 @@ package com.sit.litecad.geometry
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.model.CadDimension
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.DimensionAnchorType
 import java.util.UUID
 
 /**
@@ -21,22 +22,31 @@ object DimensionService {
         secondVertexId: UUID,
         offset: Double,
         tolerance: Double,
-        textSize: Double = 8.0
+        textSize: Double = 8.0,
+        firstAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX,
+        secondAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX
     ): CadDimension? {
-        val first = document.vertexById(firstVertexId) ?: return null
-        val second = document.vertexById(secondVertexId) ?: return null
+        // Якорь может быть вершиной (VERTEX) либо точкой оси (AXIS_POINT).
+        val firstPosition = DimensionAnchorResolver.tryResolveAnchorPosition(
+            document, firstAnchorType, firstVertexId
+        ) ?: return null
+        val secondPosition = DimensionAnchorResolver.tryResolveAnchorPosition(
+            document, secondAnchorType, secondVertexId
+        ) ?: return null
 
         // Проверяем, что раскладка вообще строится (иначе размер вырожден).
         DimensionGeometry.tryCreateLayout(
-            first.position, second.position, offset, tolerance,
+            firstPosition, secondPosition, offset, tolerance,
             isOrthogonal = false, orthogonalIsHorizontal = true
         ) ?: return null
 
         val dimension = CadDimension(
             FirstVertexId = firstVertexId,
             SecondVertexId = secondVertexId,
-            FirstAnchorPosition = first.position,
-            SecondAnchorPosition = second.position,
+            FirstAnchorPosition = firstPosition,
+            SecondAnchorPosition = secondPosition,
+            FirstAnchorType = firstAnchorType,
+            SecondAnchorType = secondAnchorType,
             Offset = offset,
             TextSize = textSize
         )
@@ -55,11 +65,15 @@ object DimensionService {
      * относительно снимка anchor-позиций.
      */
     fun isValid(document: CadDocument, dimension: CadDimension, tolerance: Double): Boolean {
-        val first = document.vertexById(dimension.FirstVertexId) ?: return false
-        val second = document.vertexById(dimension.SecondVertexId) ?: return false
+        val first = DimensionAnchorResolver.resolveAnchorPosition(
+            document, dimension.FirstAnchorType, dimension.FirstVertexId, dimension.FirstAnchorPosition
+        )
+        val second = DimensionAnchorResolver.resolveAnchorPosition(
+            document, dimension.SecondAnchorType, dimension.SecondVertexId, dimension.SecondAnchorPosition
+        )
 
-        if (!MathUtils.arePointsEqual(first.position, dimension.FirstAnchorPosition, tolerance)) return false
-        if (!MathUtils.arePointsEqual(second.position, dimension.SecondAnchorPosition, tolerance)) return false
+        if (!MathUtils.arePointsEqual(first, dimension.FirstAnchorPosition, tolerance)) return false
+        if (!MathUtils.arePointsEqual(second, dimension.SecondAnchorPosition, tolerance)) return false
         return true
     }
 

@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.geometry.AxisService
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
@@ -197,6 +198,9 @@ class AxisToolHandler(
         // тоже получает текущий цвет/толщину (перезаписываем).
         axis.colorArgb = settings.axis.color
         axis.thickness = settings.axis.thickness
+
+        // Пересобрать производные точки осей (концы + пересечения).
+        AxisPointSync.sync(document)
 
         document.bumpRevision()
     }

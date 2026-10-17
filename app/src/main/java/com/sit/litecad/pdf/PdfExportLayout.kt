@@ -1,5 +1,6 @@
 package com.sit.litecad.pdf
 
+import com.sit.litecad.geometry.DimensionAnchorResolver
 import com.sit.litecad.geometry.DimensionGeometry
 import com.sit.litecad.leaders.LeaderGeometry
 import com.sit.litecad.math.Point2
@@ -120,10 +121,14 @@ class PdfExportLayout private constructor(
 
             // Размеры — через DimensionGeometry (порт есть в Android).
             for (dim in document.dimensions) {
-                val first = document.vertexById(dim.FirstVertexId) ?: continue
-                val second = document.vertexById(dim.SecondVertexId) ?: continue
+                val firstPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                    document, dim.FirstAnchorType, dim.FirstVertexId, dim.FirstAnchorPosition
+                )
+                val secondPosition = DimensionAnchorResolver.resolveAnchorPosition(
+                    document, dim.SecondAnchorType, dim.SecondVertexId, dim.SecondAnchorPosition
+                )
                 val layout = DimensionGeometry.tryCreateLayout(
-                    first.position, second.position, dim.Offset,
+                    firstPosition, secondPosition, dim.Offset,
                     TopologyTolerance.ForMutation,
                     dim.IsOrthogonal, dim.OrthogonalIsHorizontal
                 ) ?: continue

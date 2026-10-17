@@ -13,8 +13,10 @@ import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance
+import com.sit.litecad.model.CadAxisPoint
 import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadVertex
+import com.sit.litecad.model.DimensionAnchorType
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapKind
 import com.sit.litecad.services.SnapService
@@ -46,8 +48,10 @@ class DimensionToolHandler(
     private var phase by mutableStateOf(Phase.IDLE)
 
     private var firstVertexId: UUID? = null
+    private var firstAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX
     private var firstAnchor by mutableStateOf(Point2.Zero)
     private var secondVertexId: UUID? = null
+    private var secondAnchorType: DimensionAnchorType = DimensionAnchorType.VERTEX
     private var secondAnchor by mutableStateOf(Point2.Zero)
 
     private var cursorPoint by mutableStateOf(Point2.Zero)   // для превью протяжки
@@ -73,7 +77,9 @@ class DimensionToolHandler(
             Phase.IDLE -> {
                 // Тап в A: снап обязателен.
                 val snap = resolveMeasurementSnap(document, point, zoom) ?: return
-                firstVertexId = materializeVertex(document, snap)
+                val first = materializeAnchor(document, snap)
+                firstVertexId = first.first
+                firstAnchorType = first.second
                 firstAnchor = snap.position
                 phase = Phase.FIRST_SET
                 currentMeasurement = toolManager.settings.promptDragToDimensionEnd
@@ -135,7 +141,9 @@ class DimensionToolHandler(
                     reset()
                     return
                 }
-                secondVertexId = materializeVertex(document, snap)
+                val second = materializeAnchor(document, snap)
+                secondVertexId = second.first
+                secondAnchorType = second.second
                 secondAnchor = snap.position
                 phase = Phase.END_SET
                 offset = 0.0
@@ -214,25 +222,70 @@ class DimensionToolHandler(
         val best = query.Best.Snap ?: return null
         if (best.Kind !in MEASUREMENT_SNAP_KINDS) return null
 
-        val existingVertexId = if (best.Kind == SnapKind.Endpoint) {
-            best.VertexId ?: return null
-        } else {
-            TopologyService.findVertex(document, best.Position, TopologyTolerance.ForMutation)?.id
+        // 1. Вершина документа (у Endpoint она уже проставлена в SnapPoint.VertexId).
+        val vertexId = best.VertexId
+            ?: TopologyService.findVertex(document, best.Position, TopologyTolerance.ForMutation)?.id
+        if (vertexId != null) {
+            return MeasurementSnap(
+                anchorId = vertexId,
+                anchorType = DimensionAnchorType.VERTEX,
+                position = best.Position,
+                kind = best.Kind
+            )
         }
 
+        // 2. Точка оси (концы/пересечения осей из document.axisPoints).
+        val axisPoint = findAxisPoint(document, best.Position)
+        if (axisPoint != null) {
+            return MeasurementSnap(
+                anchorId = axisPoint.id,
+                anchorType = DimensionAnchorType.AXIS_POINT,
+                position = axisPoint.position,
+                kind = best.Kind
+            )
+        }
+
+        // 3. Чисто геометрический снап (пересечение рёбер, on-edge, midpoint).
+        //    Якорь отсутствует — синтетическая вершина создастся при фиксации.
         return MeasurementSnap(
-            vertexId = existingVertexId,
+            anchorId = null,
+            anchorType = DimensionAnchorType.VERTEX,
             position = best.Position,
             kind = best.Kind
         )
     }
 
-    /** Создаёт (или находит) вершину документа только в момент фиксации A или B. */
-    private fun materializeVertex(document: CadDocument, snap: MeasurementSnap): UUID {
-        snap.vertexId?.let { return it }
+    /** Ближайшая к снапу точка оси в пределах допуска (точное совпадение приоритетно). */
+    private fun findAxisPoint(document: CadDocument, position: Point2): CadAxisPoint? {
+        var best: CadAxisPoint? = null
+        var bestDist = TopologyTolerance.ForMutation
+        for (point in document.axisPoints) {
+            val d = MathUtils.distance(point.position, position)
+            if (d <= bestDist) {
+                bestDist = d
+                best = point
+            }
+        }
+        return best
+    }
+
+    /**
+     * Материализует якорь размера во время фиксации A или B:
+     *  - существующая вершина — VERTEX + vertex.id;
+     *  - точка оси — AXIS_POINT + axisPoint.id (синтетическая вершина НЕ создаётся);
+     *  - чисто геометрический снап — создаём синтетическую вершину (VERTEX).
+     * Возвращает пару (anchorId, anchorType).
+     */
+    private fun materializeAnchor(
+        document: CadDocument,
+        snap: MeasurementSnap
+    ): Pair<UUID, DimensionAnchorType> {
+        val existingId = snap.anchorId
+        if (existingId != null) return existingId to snap.anchorType
+
         val vertex = CadVertex(X = snap.position.X, Y = snap.position.Y)
         document.addVertex(vertex)
-        return vertex.id
+        return vertex.id to DimensionAnchorType.VERTEX
     }
 
     private fun commitDimension(document: CadDocument, settings: ToolSettings) {
@@ -242,7 +295,8 @@ class DimensionToolHandler(
         historyService.record(document)
 
         val dimension = DimensionService.create(
-            document, firstId, secondId, offset, TopologyTolerance.ForMutation, settings.dim.textSize
+            document, firstId, secondId, offset, TopologyTolerance.ForMutation, settings.dim.textSize,
+            firstAnchorType = firstAnchorType, secondAnchorType = secondAnchorType
         ) ?: return
 
         dimension.ExtensionStyle = settings.dim.extensionStyle
@@ -257,7 +311,9 @@ class DimensionToolHandler(
     private fun reset() {
         phase = Phase.IDLE
         firstVertexId = null
+        firstAnchorType = DimensionAnchorType.VERTEX
         secondVertexId = null
+        secondAnchorType = DimensionAnchorType.VERTEX
         firstAnchor = Point2.Zero
         secondAnchor = Point2.Zero
         cursorPoint = Point2.Zero
@@ -369,9 +425,13 @@ class DimensionToolHandler(
         reset()
     }
 
-    /** Разрешённая точка снапа для размера: id существующей вершины (может быть null), позиция и вид снапа. */
+    /**
+     * Разрешённая точка снапа для размера: id и тип якоря (может быть null — создадим вершину),
+     * позиция и вид снапа.
+     */
     private data class MeasurementSnap(
-        val vertexId: UUID?,
+        val anchorId: UUID?,
+        val anchorType: DimensionAnchorType,
         val position: Point2,
         val kind: SnapKind
     )

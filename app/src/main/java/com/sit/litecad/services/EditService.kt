@@ -1,8 +1,10 @@
 package com.sit.litecad.services
 
+import com.sit.litecad.geometry.AxisPointSync
 import com.sit.litecad.geometry.PolygonBuilder
 import com.sit.litecad.geometry.TopologyService
 import com.sit.litecad.model.CadDocument
+import com.sit.litecad.model.DimensionAnchorType
 import com.sit.litecad.model.PolygonType
 import com.sit.litecad.model.Selection
 
@@ -42,7 +44,19 @@ object EditService {
         document.edges.removeAll { it.id in selection.selectedEdgeIds }
         val removedAnyEdge = document.edges.size < edgesBefore
 
-        // 3. Удаляем выделенные оси.
+        // 3. Удаляем выделенные оси (вместе с привязанными к ним размерами).
+        val removedAxisIds = selection.selectedAxisIds.toSet()
+        val axisPointIdsOfRemovedAxes = document.axisPoints
+            .filter { it.axisId in removedAxisIds }
+            .map { it.id }
+            .toSet()
+        document.dimensions.removeAll { dim ->
+            (dim.FirstAnchorType == DimensionAnchorType.AXIS_POINT &&
+                (dim.FirstVertexId in removedAxisIds || dim.FirstVertexId in axisPointIdsOfRemovedAxes)) ||
+                (dim.SecondAnchorType == DimensionAnchorType.AXIS_POINT &&
+                    (dim.SecondVertexId in removedAxisIds || dim.SecondVertexId in axisPointIdsOfRemovedAxes))
+        }
+
         val axesBefore = document.axes.size
         document.axes.removeAll { it.id in selection.selectedAxisIds }
         val removedAnyAxis = document.axes.size < axesBefore
@@ -65,6 +79,8 @@ object EditService {
 
         // 6. Перестроить грани
         PolygonBuilder.syncFaces(document)
+        // Пересобрать производные точки осей после удаления осей.
+        AxisPointSync.sync(document)
 
         document.bumpRevision()
         return true

@@ -27,8 +27,6 @@ This project is a deep architectural redesign and official mobile port of the de
   <tr>
     <td><img src="https://github.com/user-attachments/assets/931c3a93-ec2e-48c1-9f5c-04e62f85e993" width="360" alt="Home Screen" /></td>
     <td><img src="https://github.com/user-attachments/assets/eeaa5c0b-44e7-4a0c-ae04-b6f72eeed226" width="360" alt="Help Screen" /></td>
-  </tr>
-  <tr>
     <td><img src="https://github.com/user-attachments/assets/c804ae77-bc26-466f-b2ce-c2653c6fe97d" width="360" alt="Editor Compact" /></td>
     <td><img src="https://github.com/user-attachments/assets/1f9f0eb8-8c1d-4000-a7ae-a01d5280b07e" width="360" alt="Editor Tools" /></td>
   </tr>

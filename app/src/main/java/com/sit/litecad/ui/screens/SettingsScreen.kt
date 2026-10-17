@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import com.sit.litecad.R
+import com.sit.litecad.settings.AutosavePreferences
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.settings.ThemePreferences
 
@@ -31,8 +32,10 @@ fun SettingsScreen() {
     val context = LocalContext.current
     var currentLanguage by remember { mutableStateOf(LanguagePreferences.getLanguage(context)) }
     var currentTheme by remember { mutableStateOf(ThemePreferences.getTheme(context)) }
+    var currentAutosave by remember { mutableStateOf(AutosavePreferences.getIntervalMinutes(context)) }
     var languageDialogOpen by remember { mutableStateOf(false) }
     var themeDialogOpen by remember { mutableStateOf(false) }
+    var autosaveDialogOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -105,6 +108,26 @@ fun SettingsScreen() {
             )
             Text(
                 text = themeLabel(currentTheme),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Пункт «Autosave» / «Автосохранение» — тап открывает выбор интервала.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { autosaveDialogOpen = true }
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings_autosave),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = autosaveLabel(currentAutosave),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -193,6 +216,54 @@ fun SettingsScreen() {
             }
         )
     }
+
+    if (autosaveDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { autosaveDialogOpen = false },
+            title = { Text(stringResource(R.string.settings_autosave)) },
+            text = {
+                Column {
+                    AutosavePreferences.supported.forEach { minutes ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    autosaveDialogOpen = false
+                                    if (minutes != currentAutosave) {
+                                        AutosavePreferences.setIntervalMinutes(context, minutes)
+                                        // Мгновенно обновляем UI панели; таймер редактора применится при следующем входе.
+                                        currentAutosave = minutes
+                                    }
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = minutes == currentAutosave,
+                                onClick = null
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text(autosaveLabel(minutes))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { autosaveDialogOpen = false }) {
+                    Text(androidx.compose.ui.res.stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
+}
+
+/** Название интервала автосохранения для отображения. */
+@Composable
+private fun autosaveLabel(minutes: Int): String = when (minutes) {
+    AutosavePreferences.MIN_3 -> stringResource(R.string.autosave_3min)
+    AutosavePreferences.MIN_5 -> stringResource(R.string.autosave_5min)
+    AutosavePreferences.MIN_10 -> stringResource(R.string.autosave_10min)
+    else -> stringResource(R.string.autosave_off)
 }
 
 /** Название языка для отображения. */

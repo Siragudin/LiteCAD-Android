@@ -2,6 +2,9 @@ package com.sit.litecad.ui.screens
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -33,6 +36,7 @@ import com.sit.litecad.model.Selection
 import com.sit.litecad.pdf.PdfExporter
 import com.sit.litecad.services.DocumentHistoryService
 import com.sit.litecad.services.SnapService
+import com.sit.litecad.settings.AutosavePreferences
 import com.sit.litecad.settings.QuickToolsPreferences
 import com.sit.litecad.settings.ThemePreferences
 import com.sit.litecad.settings.ToolSettings
@@ -44,6 +48,9 @@ import com.sit.litecad.ui.canvas.CadCanvas
 import com.sit.litecad.ui.canvas.Viewport
 import com.sit.litecad.ui.theme.EditorDarkColorScheme
 import com.sit.litecad.ui.theme.EditorLightColorScheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,6 +102,9 @@ fun EditorScreen(
     // Тема для превью инструментов: на тёмной теме превью рисуются белым.
     toolManager.isDarkTheme = (editorTheme == "dark")
 
+    // Интервал периодического автосохранения (Выкл / 3 / 5 / 10 мин), читается при входе.
+    val autosaveIntervalMinutes = remember { AutosavePreferences.getIntervalMinutes(context) }
+
     // Координаты пальца в мировых мм — приходят из CadCanvas (null, когда палец не на экране).
     var cursorWorld by remember { mutableStateOf<Point2?>(null) }
 
@@ -115,6 +125,32 @@ fun EditorScreen(
     // Загрузка проекта при открытии
     LaunchedEffect(projectName) {
         storage.loadIntoDocument(projectName, document)
+    }
+
+    // Автосохранение при уходе приложения в фон (блокировка экрана, свёртывание,
+    // переключение на другое приложение). Эквивалентно ручному сохранению:
+    // тот же .sit, та же генерация превью, тот же путь через ProjectStorage.
+    // I/O выполняется на Dispatchers.IO; runBlocking + таймаут гарантируют,
+    // что запись успеет до вероятного завершения процесса. Тихий try/catch.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                try {
+                    runBlocking(Dispatchers.IO) {
+                        withTimeoutOrNull(3000L) {
+                            val thumb = ThumbnailGenerator.generate(document)
+                            storage.saveProject(document, projectName, thumb)
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Автосохранение — тихо, без тостов и краша.
+                    e.printStackTrace()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     // Сохранение и выход
@@ -163,6 +199,13 @@ fun EditorScreen(
     }
 
     MaterialTheme(colorScheme = editorColorScheme) {
+        // Периодическое автосохранение по таймеру (Выкл, если интервал = 0).
+        AutosaveTimer(
+            document = document,
+            projectName = projectName,
+            storage = storage,
+            intervalMinutes = autosaveIntervalMinutes,
+        )
         Scaffold(
             topBar = {
                 Column(modifier = Modifier.statusBarsPadding()) {

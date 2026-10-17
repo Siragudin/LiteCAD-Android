@@ -53,6 +53,13 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_language">Язык</string>
     <string name="settings_theme">Тема</string>
+    <string name="settings_autosave">Автосохранение</string>
+
+    <!-- Интервалы автосохранения -->
+    <string name="autosave_off">Выкл</string>
+    <string name="autosave_3min">3 мин</string>
+    <string name="autosave_5min">5 мин</string>
+    <string name="autosave_10min">10 мин</string>
 
     <!-- Названия тем редактора -->
     <string name="theme_light">Светлая</string>

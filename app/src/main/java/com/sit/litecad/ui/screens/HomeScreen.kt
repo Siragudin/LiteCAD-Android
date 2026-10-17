@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FolderOpen
@@ -47,7 +48,8 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     storage: ProjectStorage,
-    onOpenProject: (String) -> Unit
+    onOpenProject: (String) -> Unit,
+    onOpenHelp: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -77,6 +79,7 @@ fun HomeScreen(
     var importError by remember { mutableStateOf<String?>(null) }
 
     var showSettings by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
 
     val headerColor = Color(0xFF383838)
     val bodyColor = Color(0xFF6E6E6E)
@@ -271,20 +274,59 @@ fun HomeScreen(
             }
         }
 
-            // Кнопка "Настройки" (шестерёнка) — слева внизу.
-            FloatingActionButton(
-                onClick = { showSettings = true },
-                containerColor = headerColor,
-                contentColor = Color.White,
-                shape = CircleShape,
+            // Утилитарные кнопки — слева внизу: «Справочник» ровно над «Настройками».
+            // Колонка выровнена по кнопке «Открыть» справа (см. колонку «Открыть/Создать»).
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    // Поднимаем над системной навигацией — на один уровень с кнопкой «Создать».
+                    // Низ колонки — на одном уровне с кнопкой «Создать» (как и раньше).
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(16.dp),
+                // Промежуток подобран так, чтобы «Справочник» встал точно на уровень «Открыть»:
+                // низ колонки совпадает с «Создать», а высота «Создать» (64dp) больше, чем
+                // у «Настроек» (56dp) — эти 8dp добавлены к промежутку.
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                // «Справочник» — полноценный экран, переход через NavHost (см. MainActivity).
+                FloatingActionButton(
+                    onClick = onOpenHelp,
+                    containerColor = headerColor,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.MenuBook, stringResource(R.string.fab_help), modifier = Modifier.size(28.dp))
+                }
+
+                FloatingActionButton(
+                    onClick = { showSettings = true },
+                    containerColor = headerColor,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.Default.Settings, stringResource(R.string.fab_settings), modifier = Modifier.size(28.dp))
+                }
+            }
+
+            // «О приложении» — по центру экрана, на одной вертикали с «Настройками» и «Создать».
+            // Без кружка: сам контейнер FAB не рисуется, остаётся только значок.
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(16.dp)
                     .size(56.dp)
+                    .clickable { showAbout = true },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Settings, stringResource(R.string.fab_settings), modifier = Modifier.size(28.dp))
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = stringResource(R.string.fab_about),
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     }
@@ -405,6 +447,11 @@ fun HomeScreen(
         ) {
             SettingsScreen()
         }
+    }
+
+    // --- ОКНО «О ПРИЛОЖЕНИИ» (маленькое, поверх HomeScreen, размер — по содержимому) ---
+    if (showAbout) {
+        AboutScreen(onDismiss = { showAbout = false })
     }
 }
 

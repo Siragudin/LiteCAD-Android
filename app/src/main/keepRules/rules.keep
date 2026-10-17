@@ -4,6 +4,20 @@
 # For more details, see
 #   https://d.android.com/r/tools/r8/keep-rules
 
+# Since AGP 9.1 R8 repackages classes into the unnamed package by default
+# (equivalent to -repackageclasses), which is what makes the release DEX smaller.
+# Together with the experimental `optimization.packageScope` configuration in
+# app/build.gradle.kts this produced a broken DEX: R8 moved
+# kotlin.sequences.SequencesKt___SequencesJvmKt (-> "qm1", unnamed package) out of
+# its package, while its package-private superclass
+# kotlin.sequences.SequencesKt__SequenceBuilderKt (-> "kotlin.sequences.d") stayed
+# inside, so ART refused to load the class and the app crashed on startup with:
+#   java.lang.IllegalAccessError: Class kotlin.sequences.d extended by class qm1
+#   is inaccessible
+# Opting out of repackaging keeps the package/access relationships of such
+# synthetic Kotlin facade classes intact.
+-dontrepackage
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:

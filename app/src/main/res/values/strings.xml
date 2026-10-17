@@ -13,6 +13,7 @@
     <string name="fab_open">Open</string>
     <string name="fab_create">Create</string>
     <string name="fab_settings">Settings</string>
+    <string name="fab_about">About</string>
 
     <!-- Карточка проекта -->
     <string name="document_type_litecad">LiteCAD document</string>
@@ -55,6 +56,12 @@
     <string name="settings_theme">Theme</string>
     <string name="settings_autosave">Autosave</string>
 
+    <!-- Окно «О приложении» (заголовок окна — app_name, он не зависит от языка) -->
+    <!-- Версия: одна для всех языков, правится здесь (BuildConfig не подключён, версия в build.gradle = 1.0). -->
+    <string name="about_version" translatable="false">v1.0.0</string>
+    <!-- Намеренно только по-английски, не переводится: строки нет в values-*/strings.xml. -->
+    <string name="about_developed_by" translatable="false">Developed by: S`IT</string>
+
     <!-- Интервалы автосохранения -->
     <string name="autosave_off">Off</string>
     <string name="autosave_3min">3 min</string>
@@ -89,6 +96,31 @@
     <string name="tool_leader">Leader</string>
     <string name="tool_fill">Fill</string>
     <string name="tool_text">Text</string>
+
+    <!-- Экран «Справочник» -->
+    <string name="fab_help">Help</string>
+    <string name="help_title">Help</string>
+    <string name="help_welcome_title">Welcome to LiteCAD!</string>
+    <string name="help_welcome_message">Here is a quick guide to the drawing tools. Tap a tool to see how it works.</string>
+    <string name="help_tool_hand">Navigates the drawing. Drag with one finger to pan the canvas and pinch with two fingers to zoom. This is the default tool.</string>
+    <string name="help_tool_select">Selects elements. Tap a line, axis or text to select it, or drag your finger — a rubber-band frame selects everything inside it. Selected elements can then be moved, rotated, mirrored and so on.</string>
+    <string name="help_tool_line">Draws a line segment. Press your finger at the start point, drag to the end point and release. With Ortho enabled the line snaps to horizontal/vertical; the exact length can be entered in the input panel.</string>
+    <string name="help_tool_axis">Draws a construction axis (guide line). Press your finger at the start point, drag to the end and release.</string>
+    <string name="help_tool_rect">Draws a rectangle by two opposite corners. Press at one corner, drag to the opposite corner and release. The current W×H is shown in the preview; exact values can be entered in the panel.</string>
+    <string name="help_tool_circle">Draws a circle by its center and radius. Tap the center point, then drag to the desired radius and release. The radius can also be entered exactly.</string>
+    <string name="help_tool_sector">Draws a pie sector. Tap the center, drag to the radius and release, then drag the arc vertex to set the angle. The angle can be entered exactly in degrees.</string>
+    <string name="help_tool_arc">Draws an arc by two points and a height. Tap the start, drag to the arc end (setting the chord) and release, then drag to set the bulge height (sagitta).</string>
+    <string name="help_tool_text">Adds or edits a text note. Tap an empty area to create a new note, or tap an existing one to edit it; type the text in the panel and confirm with the check mark. Size, color and rotation are set on the properties bar.</string>
+    <string name="help_tool_dim">Places a linear dimension. Tap the first point, drag to the second point and release, then drag sideways to position the dimension line. The offset can be entered exactly.</string>
+    <string name="help_tool_leader">Creates a leader (a shelf with an elevation label). Tap the object to attach to, then tap and drag the leader itself into place. Drag one leader onto another to stack them.</string>
+    <string name="help_tool_fill">Fills a closed contour with color. Tap inside a closed area. The color and style are chosen on the properties bar.</string>
+    <string name="help_tool_move">Moves the selected elements. First select edges/axes with the Select tool, then drag them to a new place. The exact offset along X or Y can be entered in the input panel.</string>
+    <string name="help_tool_rotate">Rotates the selected elements. Tap the pivot point, then drag to set a reference direction, and rotate the elements with your finger. The angle can be entered exactly.</string>
+    <string name="help_tool_mirror">Mirrors the selected elements. Select edges with the Select tool, then drag your finger to define the mirror axis and release. Copy mode keeps the originals.</string>
+    <string name="help_tool_stretch">Stretches an object by moving one of its vertices/sides. Select an edge, then pull it in the desired direction. The distance can be entered exactly.</string>
+    <string name="help_tool_offset">Builds a line parallel to the chosen face at a given distance. Tap a face to select it, then drag inwards or outwards and release. The value can be entered exactly.</string>
+    <string name="help_tool_extend">Extends a line until it meets the nearest object. Tap the line near the end you want to extend.</string>
+    <string name="help_tool_eraser">Deletes elements one by one. Tap an element to erase it. Dragging is not used.</string>
 
     <!-- Панели свойств -->
     <string name="label_ortho">Ortho</string>

@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sit.litecad.ui.screens.EditorScreen
+import com.sit.litecad.ui.screens.HelpScreen
 import com.sit.litecad.ui.screens.HomeScreen
 import com.sit.litecad.settings.LanguagePreferences
 import com.sit.litecad.storage.ProjectStorage
@@ -59,6 +60,17 @@ class MainActivity : AppCompatActivity() {
                         storage = storage,
                         onOpenProject = { projectName ->
                             navController.navigate("editor/$projectName")
+                        },
+                        onOpenHelp = {
+                            navController.navigate("help")
+                        }
+                    )
+                }
+
+                composable("help") {
+                    HelpScreen(
+                        onBack = {
+                            navController.popBackStack()
                         }
                     )
                 }

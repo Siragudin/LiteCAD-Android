@@ -113,10 +113,9 @@ class LineToolHandler(
     }
 
     override fun onInputCancelled(document: CadDocument) {
-        // «принять как нарисовано» — коммит с исходной длиной
-        val start = startPoint
-        val end = previewEnd
-        commitWithLength(MathUtils.distance(start, end), document)
+        // Полная отмена — ничего не коммитим.
+        draftSettings = null
+        reset()
     }
 
     private fun commitWithLength(length: Double, document: CadDocument) {

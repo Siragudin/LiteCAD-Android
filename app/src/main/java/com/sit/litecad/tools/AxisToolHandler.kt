@@ -169,16 +169,8 @@ class AxisToolHandler(
     }
 
     override fun onInputCancelled(document: CadDocument) {
-        val s = draftSettings ?: lastSettings
+        // Полная отмена — ничего не коммитим.
         draftSettings = null
-
-        if (s == null || !hasStart) {
-            reset()
-            return
-        }
-
-        // «принять как нарисовано» — коммит с исходной длиной
-        commitAxis(document, previewEnd, s)
         reset()
     }
 

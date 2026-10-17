@@ -201,14 +201,8 @@ class ArcToolHandler(
     }
 
     override fun onInputCancelled(document: CadDocument) {
+        // Полная отмена — ничего не коммитим.
         draftSettings = null
-
-        // «Принять как нарисовано» — если высота уже задана, коммитим по ней.
-        if (abs(lastSagitta) <= TopologyTolerance.ForMutation) {
-            reset()
-            return
-        }
-        commitArc(document)
         reset()
     }
 

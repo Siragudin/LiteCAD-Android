@@ -49,10 +49,9 @@ fun RectangleSizePanel(
     }
 
     val submit: () -> Unit = {
-        val w = widthText.replace(',', '.').toDoubleOrNull()
-        val h = heightText.replace(',', '.').toDoubleOrNull()
-        if (w != null && h != null) onSubmit(w, h)
-        // если пусто — ничего не делаем (пусть пользователь введёт или отменит)
+        val w = widthText.replace(',', '.').toDoubleOrNull() ?: hintWidth
+        val h = heightText.replace(',', '.').toDoubleOrNull() ?: hintHeight
+        onSubmit(w, h)
     }
 
     Surface(

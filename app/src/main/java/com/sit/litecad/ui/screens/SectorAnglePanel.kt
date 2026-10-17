@@ -51,9 +51,8 @@ fun SectorAnglePanel(
     }
 
     val submit: () -> Unit = {
-        val v = text.toDoubleOrNull()
-        if (v != null) onSubmit(v)
-        // если пусто — ничего не делаем (пусть пользователь введёт или отменит)
+        val v = text.toDoubleOrNull() ?: initial
+        onSubmit(v)
     }
 
     Surface(

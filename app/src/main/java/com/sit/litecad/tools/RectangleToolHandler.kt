@@ -173,16 +173,8 @@ class RectangleToolHandler(
     }
 
     override fun onRectangleInputCancelled(document: CadDocument) {
-        val s = draftSettings ?: lastSettings
+        // Полная отмена — ничего не коммитим.
         draftSettings = null
-
-        if (s == null || !hasStart) {
-            reset()
-            return
-        }
-
-        // «принять как нарисовано» — коммит с исходными размерами
-        commitRectangle(document, oppositeCorner, s)
         reset()
     }
 

@@ -50,9 +50,8 @@ fun RotationAnglePanel(
     }
 
     val submit: () -> Unit = {
-        val v = text.replace(',', '.').toDoubleOrNull()
-        if (v != null) onSubmit(v)
-        // если пусто — ничего не делаем (пусть пользователь введёт или отменит)
+        val v = text.replace(',', '.').toDoubleOrNull() ?: initial
+        onSubmit(v)
     }
 
     Surface(

@@ -56,8 +56,8 @@ Built with a **single-activity, 100% Jetpack Compose** architecture using a unid
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/<your-username>/LiteCAD.git
-cd LiteCAD
+git clone https://github.com/Siragudin/LiteCAD-Android.git
+cd LiteCAD-Android
 
 # Build and test debug configuration
 ./gradlew assembleDebug

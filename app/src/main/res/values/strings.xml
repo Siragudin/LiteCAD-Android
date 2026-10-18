@@ -219,4 +219,15 @@
     <string name="prompt_drag_for_reference">Drag for reference</string>
     <string name="prompt_drag_to_rotate">Drag to rotate</string>
     <string name="prompt_drag_sector_vertex">Drag vertex to set angle</string>
+
+    <!-- Создание чертежа из скрипта (DSL) -->
+    <string name="fab_create_from_script">Create from script</string>
+    <string name="script_dialog_title">Create from script</string>
+    <string name="script_dialog_placeholder" translatable="false">circle(0, 0, 50)</string>
+    <string name="script_progress_percent" translatable="false">%1$d%%</string>
+    <string name="script_ai_prompt_label">Describe what to draw (for AI)</string>
+    <string name="script_ai_prompt_placeholder">A gear with 20 teeth</string>
+    <string name="script_download_ai_button">Download AI prompt file</string>
+    <string name="script_ai_file_saved">File saved. Send it to ChatGPT/DeepSeek</string>
+    <string name="script_ai_file_error">Failed to save file</string>
 </resources>

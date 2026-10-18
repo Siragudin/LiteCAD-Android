@@ -2,12 +2,11 @@ package com.sit.litecad
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
@@ -22,6 +21,10 @@ import com.sit.litecad.storage.ProjectStorage
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Включаем отображение от края до края (Edge-to-Edge) для Android 10+ (SDK 29+)
+        // Это автоматически убирает необходимость менять цвета баров напрямую через устаревшие методы window
+        enableEdgeToEdge()
+
         super.onCreate(savedInstanceState)
 
         // Применяем сохранённый язык на холодном старте (до первой композиции).
@@ -34,22 +37,22 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val navController = rememberNavController()
 
-
-            // --- НАСТРОЙКА ЦВЕТОВ СИСТЕМНЫХ ПАНЕЛЕЙ (Из plane2d) ---
+            // --- СОВРЕМЕННАЯ НАСТРОЙКА ЦВЕТОВ СИСТЕМНЫХ ПАНЕЛЕЙ ---
+            val view = androidx.compose.ui.platform.LocalView.current
             val window = this.window
-            val headerColor = Color(0xFF333333).toArgb() // Темно-серый (под шапку HomeScreen)
-            val navBarColor = Color(0xFFF5F5F5).toArgb() // Светло-серый (под фон списка)
 
             SideEffect {
-                // Статус-бар (Верх) -> Делаем иконки светлыми на темном фоне
-                window.statusBarColor = headerColor
-                WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+                // Управляем только контрастностью иконок (светлые/темные)
+                val insetsController = WindowCompat.getInsetsController(window, view)
 
-                // Навигационная панель (Низ) -> Делаем иконки темными на светлом фоне
-                window.navigationBarColor = navBarColor
-                WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = true
+                // Статус-бар (Верх) -> Иконки будут БЕЛЫМИ (isAppearanceLightStatusBars = false)
+                insetsController.isAppearanceLightStatusBars = false
+
+                // Навигационная панель (Низ) -> Иконки будут ТЕМНЫМИ (isAppearanceLightNavigationBars = true)
+                insetsController.isAppearanceLightNavigationBars = true
             }
             // ------------------------------------------------------
+
             val storage = remember { ProjectStorage(applicationContext) }
 
             // Навигация с заглушками: пока просто передаем имя проекта между экранами

@@ -1,6 +1,5 @@
 package com.sit.litecad.geometry
 
-import com.sit.litecad.math.Geometry2D
 import com.sit.litecad.math.MathUtils
 import com.sit.litecad.math.Point2
 import com.sit.litecad.math.TopologyTolerance

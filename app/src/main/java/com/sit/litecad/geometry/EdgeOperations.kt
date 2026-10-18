@@ -8,7 +8,6 @@ import com.sit.litecad.model.CadDocument
 import com.sit.litecad.model.CadEdge
 import kotlin.collections.sortWith
 import kotlin.math.abs
-import com.sit.litecad.geometry.PolygonBuilder
 object EdgeOperations {
     private const val ParameterTolerance = 1e-6
 

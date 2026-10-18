@@ -34,6 +34,12 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        // Локальные JVM-тесты (src/test) вызывают код, который внутри обращается к
+        // android.util.Log (например EdgeOperations). Без этого флага немоканные методы
+        // android.jar бросают RuntimeException; с флагом они возвращают значения по умолчанию.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {

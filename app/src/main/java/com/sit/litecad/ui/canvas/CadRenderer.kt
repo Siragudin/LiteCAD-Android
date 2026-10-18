@@ -33,7 +33,6 @@ import com.sit.litecad.model.PolygonType
 import com.sit.litecad.model.TextRotation
 import com.sit.litecad.model.TextSizeSp
 import com.sit.litecad.tools.ToolManager
-import com.sit.litecad.model.Selection
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.PI

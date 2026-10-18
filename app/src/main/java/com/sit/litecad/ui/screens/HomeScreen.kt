@@ -80,6 +80,7 @@ fun HomeScreen(
 
     var showSettings by remember { mutableStateOf(false) }
     var showAbout by remember { mutableStateOf(false) }
+    var showScriptDialog by remember { mutableStateOf(false) }
 
     val headerColor = Color(0xFF383838)
     val bodyColor = Color(0xFF6E6E6E)
@@ -123,6 +124,15 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Кнопка «Создать из скрипта» — открывает диалог ввода DSL-кода.
+                ExtendedFloatingActionButton(
+                    onClick = { showScriptDialog = true },
+                    containerColor = headerColor,
+                    contentColor = Color.White,
+                    icon = { Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(24.dp)) },
+                    text = { Text(stringResource(R.string.fab_create_from_script)) }
+                )
+
                 // Кнопка "Открыть"
                 SmallFloatingActionButton(
                     onClick = {
@@ -363,6 +373,17 @@ fun HomeScreen(
                     onClick = { showCreateDialog = false; newProjectName = "" },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
                 ) { Text(stringResource(R.string.button_cancel)) }
+            }
+        )
+    }
+
+    // --- ДИАЛОГ СОЗДАНИЯ ИЗ СКРИПТА ---
+    if (showScriptDialog) {
+        CreateFromScriptDialog(
+            onDismiss = { showScriptDialog = false },
+            onCreated = { projectName ->
+                showScriptDialog = false
+                onOpenProject(projectName)
             }
         )
     }

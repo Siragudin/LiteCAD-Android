@@ -216,4 +216,13 @@
     <string name="prompt_drag_for_reference">Тяните для отсчёта</string>
     <string name="prompt_drag_to_rotate">Тяните для поворота</string>
     <string name="prompt_drag_sector_vertex">Тяните вершину, чтобы задать угол</string>
+
+    <!-- Создание чертежа из скрипта (DSL) -->
+    <string name="fab_create_from_script">Создать из скрипта</string>
+    <string name="script_dialog_title">Создание по скрипту</string>
+    <string name="script_ai_prompt_label">Опишите, что нарисовать (для ИИ)</string>
+    <string name="script_ai_prompt_placeholder">Шестерёнка с 20 зубьями</string>
+    <string name="script_download_ai_button">Скачать файл для ИИ</string>
+    <string name="script_ai_file_saved">Файл сохранён. Отправьте его в ChatGPT/DeepSeek</string>
+    <string name="script_ai_file_error">Не удалось сохранить файл</string>
 </resources>

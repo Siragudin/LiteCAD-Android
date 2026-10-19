@@ -20,7 +20,7 @@ Draft, dimension and annotate technical drawings on the go — then export to PD
 LiteCAD is a production-ready, hand-held 2D drafting tool built with Kotlin and Jetpack Compose. It is deliberately **small, offline, private, and subscription-free**: no accounts, no analytics, and zero network permissions required. Full architectural and usage details can be inspected in the project files and referenced documentation.
 
 This project is a deep architectural redesign and official mobile port of the desktop version:
-👉 **[LiteCAD for Windows (.NET 10 / WPF)](https://github.com)** — Check out the original PC core repository! Projects saved in the `.sit` format can be seamlessly exchanged between the mobile app and the desktop editor.
+👉 **[LiteCAD for Windows (.NET 10 / WPF)](https://https://github.com/Siragudin/LiteCAD)** — Check out the original PC core repository! Projects saved in the `.sit` format can be seamlessly exchanged between the mobile app and the desktop editor.
 
 
 <table align="center" border="0" cellpadding="0" cellspacing="0">
